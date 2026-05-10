@@ -13,6 +13,8 @@ import { Conversation, ConversationType } from '../messages/entities/conversatio
 import { ConversationParticipant } from '../messages/entities/conversation-participant.entity'
 import { PrivateMessage } from '../messages/entities/private-message.entity'
 import { FriendRequest } from '../friends/entities/friend-request.entity'
+import { Achievement } from '../achievements/entities/achievement.entity'
+import { UserAchievement } from '../achievements/entities/user-achievement.entity'
 import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
 
@@ -35,6 +37,8 @@ const dataSource = new DataSource({
     ConversationParticipant,
     PrivateMessage,
     FriendRequest,
+    Achievement,
+    UserAchievement,
   ],
   synchronize: true,
 })
@@ -62,7 +66,6 @@ const seedGames = [
   { name: 'CS Mock', slug: 'cs-mock', platform: 'PC', isTeamBased: true },
 ]
 
-// Fixed stats — DemoPlayer ranks ~4th
 const playerStatsData: Record<string, { kills: number; deaths: number; wins: number; losses: number; matchesPlayed: number; playtimeMinutes: number }> = {
   AceKiller:    { kills: 3200, deaths: 980,  wins: 72, losses: 18, matchesPlayed: 90,  playtimeMinutes: 3800 },
   TitanFrag:    { kills: 2900, deaths: 1100, wins: 65, losses: 25, matchesPlayed: 90,  playtimeMinutes: 3500 },
@@ -97,6 +100,27 @@ const demoDirectMessages = [
   { username: 'DemoPlayer', content: 'Parfait. Je passe par la conversation privée pour la démo.' },
 ]
 
+const seedAchievements = [
+  { code: 'FIRST_LOGIN', name: 'First Login', description: "Première connexion au MVP.", icon: 'LOGIN', points: 10 },
+  { code: 'FIRST_STATS_SYNC', name: 'Stat Tracker', description: 'Première synchronisation de statistiques.', icon: 'SYNC', points: 20 },
+  { code: 'TOP_5_LEADERBOARD', name: 'Top 5', description: 'Présent dans le top 5 du leaderboard.', icon: 'TOP5', points: 50 },
+  { code: 'TEAM_FOUNDER', name: 'Team Founder', description: "Créateur ou capitaine d'équipe.", icon: 'TEAM', points: 30 },
+  { code: 'SOCIAL_PLAYER', name: 'Social Player', description: 'Joueur actif dans les interactions sociales.', icon: 'SOCIAL', points: 25 },
+  { code: 'FRIENDLY', name: 'Friendly', description: 'A déjà développé un lien social.', icon: 'FRIEND', points: 15 },
+  { code: 'CHATTER', name: 'Chatter', description: 'A participé au chat de démonstration.', icon: 'CHAT', points: 15 },
+]
+
+const userAchievementMap: Record<string, string[]> = {
+  DemoPlayer: ['FIRST_LOGIN', 'FIRST_STATS_SYNC', 'TOP_5_LEADERBOARD', 'TEAM_FOUNDER', 'SOCIAL_PLAYER', 'CHATTER'],
+  FriendTester: ['FIRST_LOGIN', 'FRIENDLY'],
+  SearchTester: ['FIRST_LOGIN'],
+  ClutchMaster: ['FIRST_LOGIN', 'SOCIAL_PLAYER'],
+  AceKiller: ['FIRST_LOGIN', 'TOP_5_LEADERBOARD'],
+  TitanFrag: ['FIRST_LOGIN', 'TOP_5_LEADERBOARD'],
+  GhostOp: ['FIRST_LOGIN', 'CHATTER'],
+  ProGamer: ['FIRST_LOGIN'],
+}
+
 async function seed() {
   await dataSource.initialize()
   const userRepo    = dataSource.getRepository(User)
@@ -109,6 +133,8 @@ async function seed() {
   const conversationRepo = dataSource.getRepository(Conversation)
   const conversationParticipantRepo = dataSource.getRepository(ConversationParticipant)
   const privateMessageRepo = dataSource.getRepository(PrivateMessage)
+  const achievementRepo = dataSource.getRepository(Achievement)
+  const userAchievementRepo = dataSource.getRepository(UserAchievement)
 
   const passwordHash = await bcrypt.hash('Demo1234!', 10)
 
@@ -187,10 +213,10 @@ async function seed() {
 
   // Upsert team members
   const teamMembersToAdd = [
-    { username: 'DemoPlayer',  role: 'CAPTAIN' },
-    { username: 'AceKiller',   role: 'MEMBER' },
-    { username: 'TitanFrag',   role: 'MEMBER' },
-    { username: 'GhostOp',     role: 'MEMBER' },
+    { username: 'DemoPlayer',   role: 'CAPTAIN' },
+    { username: 'AceKiller',    role: 'MEMBER' },
+    { username: 'TitanFrag',    role: 'MEMBER' },
+    { username: 'GhostOp',      role: 'MEMBER' },
     { username: 'ClutchMaster', role: 'MEMBER' },
   ]
 
@@ -215,6 +241,7 @@ async function seed() {
     }
   }
 
+  // Seed demo direct conversation
   const demoUser = userMap['DemoPlayer']
   const clutchUser = userMap['ClutchMaster']
 
@@ -231,8 +258,8 @@ async function seed() {
           (conversation) =>
             conversation.type === ConversationType.DIRECT
             && conversation.participants.length === 2
-            && conversation.participants.some((participant) => participant.userId === demoUser.id)
-            && conversation.participants.some((participant) => participant.userId === clutchUser.id),
+            && conversation.participants.some((p) => p.userId === demoUser.id)
+            && conversation.participants.some((p) => p.userId === clutchUser.id),
         ) ?? null
 
     if (!directConversation) {
@@ -274,6 +301,41 @@ async function seed() {
         )
       }
       console.log('Created demo private messages.')
+    }
+  }
+
+  // Upsert achievements
+  const achievementMap: Record<string, Achievement> = {}
+  for (const item of seedAchievements) {
+    let achievement = await achievementRepo.findOne({ where: { code: item.code } })
+    if (!achievement) {
+      achievement = await achievementRepo.save(achievementRepo.create(item))
+      console.log(`Created achievement: ${item.code}`)
+    }
+    achievementMap[item.code] = achievement
+  }
+
+  // Assign achievements to users
+  for (const [username, codes] of Object.entries(userAchievementMap)) {
+    const user = userMap[username]
+    if (!user) continue
+
+    for (const code of codes) {
+      const achievement = achievementMap[code]
+      if (!achievement) continue
+
+      const existing = await userAchievementRepo.findOne({
+        where: { userId: user.id, achievementId: achievement.id },
+      })
+
+      if (!existing) {
+        await userAchievementRepo.save(
+          userAchievementRepo.create({
+            userId: user.id,
+            achievementId: achievement.id,
+          }),
+        )
+      }
     }
   }
 

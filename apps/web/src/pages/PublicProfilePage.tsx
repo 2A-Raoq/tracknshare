@@ -6,6 +6,7 @@ import { friendsApi } from '../services/friends.api'
 import { messagesApi } from '../services/messages.api'
 import { playersApi } from '../services/players.api'
 import type { FriendRequestsData, FriendUser } from '../types/friends'
+import type { AchievementItem } from '../types/achievements'
 import type { PublicPlayerProfile } from '../types/players'
 
 type ApiError = {
@@ -140,7 +141,7 @@ export default function PublicProfilePage() {
   }
 
   const isOwnProfile = user?.username === profile?.username
-  const bio = profile?.bio ?? 'Ce joueur n’a pas encore ajouté de bio publique.'
+  const bio = profile?.bio ?? "Ce joueur n’a pas encore ajouté de bio publique."
   const isFriend = profile ? friends.some((item) => item.id === profile.id) : false
   const incomingRequest = profile
     ? requests.incoming.find((item) => item.user.id === profile.id) ?? null
@@ -254,6 +255,21 @@ export default function PublicProfilePage() {
     )
   }
 
+  function renderBadgeCard(badge: AchievementItem) {
+    return (
+      <article key={`${badge.code}-${badge.unlockedAt ?? badge.id}`} className="data-card">
+        <div className="panel-header">
+          <div>
+            <p className="muted-text">{badge.icon}</p>
+            <h2>{badge.name}</h2>
+          </div>
+          <div className="pill">{badge.points} pts</div>
+        </div>
+        <p className="section-copy">{badge.description}</p>
+      </article>
+    )
+  }
+
   return (
     <div className="page-shell">
       <div className="topbar">
@@ -342,7 +358,7 @@ export default function PublicProfilePage() {
                           ? 'Cette personne vous a envoyé une demande.'
                           : outgoingRequest
                             ? 'Vous avez déjà envoyé une demande à ce joueur.'
-                            : 'Aucun lien d’amitié pour le moment.'}
+                            : "Aucun lien d’amitié pour le moment."}
                   </p>
                 )}
                 {friendActionError && (
@@ -448,17 +464,15 @@ export default function PublicProfilePage() {
               <div className="section-heading" style={{ marginBottom: '16px' }}>
                 <h2>Badges</h2>
                 <p className="section-copy">
-                  Placeholder MVP tant qu&apos;aucun module achievements n&apos;est branché.
+                  Badges publics visibles sur le profil du joueur.
                 </p>
               </div>
 
               {profile.badges.length === 0 ? (
-                <div className="empty-box">Aucun badge public pour le moment.</div>
+                <div className="empty-box">Aucun badge débloqué.</div>
               ) : (
-                <div className="button-row">
-                  {profile.badges.map((badge) => (
-                    <span key={badge} className="pill">{badge}</span>
-                  ))}
+                <div className="stats-grid">
+                  {profile.badges.map((badge) => renderBadgeCard(badge))}
                 </div>
               )}
             </section>

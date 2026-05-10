@@ -4,6 +4,7 @@ import { ILike, MoreThan, Repository } from 'typeorm'
 import { User } from '../users/entities/user.entity'
 import { PlayerStats } from '../stats/entities/player-stats.entity'
 import { TeamMember } from '../teams/entities/team-member.entity'
+import { UserAchievement } from '../achievements/entities/user-achievement.entity'
 
 @Injectable()
 export class PlayersService {
@@ -14,6 +15,8 @@ export class PlayersService {
     private readonly statsRepo: Repository<PlayerStats>,
     @InjectRepository(TeamMember)
     private readonly memberRepo: Repository<TeamMember>,
+    @InjectRepository(UserAchievement)
+    private readonly userAchievementRepo: Repository<UserAchievement>,
   ) {}
 
   async getPublicProfileByUsername(username: string) {
@@ -42,6 +45,12 @@ export class PlayersService {
       where: { userId: user.id },
       relations: ['team'],
       order: { joinedAt: 'ASC' },
+    })
+
+    const achievements = await this.userAchievementRepo.find({
+      where: { userId: user.id },
+      relations: ['achievement'],
+      order: { unlockedAt: 'DESC' },
     })
 
     return {
@@ -83,7 +92,17 @@ export class PlayersService {
         tag: membership.team.tag,
         role: membership.role,
       })),
-      badges: [],
+      badges: achievements
+        .filter((item) => item.achievement)
+        .map((item) => ({
+          id: item.achievement.id,
+          code: item.achievement.code,
+          name: item.achievement.name,
+          description: item.achievement.description,
+          icon: item.achievement.icon,
+          points: item.achievement.points,
+          unlockedAt: item.unlockedAt,
+        })),
     }
   }
 
