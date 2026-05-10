@@ -58,6 +58,7 @@ export default function DashboardPage() {
         <div className="nav-actions">
           <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
           <Link href="/teams" className="secondary-button">Teams</Link>
+          <Link href="/messages" className="ghost-button">Messages</Link>
           <button onClick={handleLogout} className="primary-button">Se déconnecter</button>
         </div>
       </div>
@@ -151,6 +152,9 @@ export default function DashboardPage() {
             </button>
             <button onClick={() => navigate('/teams')} className="ghost-button">
               Ouvrir mes équipes
+            </button>
+            <button onClick={() => navigate('/messages')} className="ghost-button">
+              Ouvrir mes messages
             </button>
           </div>
         </section>

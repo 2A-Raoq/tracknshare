@@ -13,6 +13,10 @@ import { PlayerStats } from './stats/entities/player-stats.entity'
 import { Team } from './teams/entities/team.entity'
 import { TeamMember } from './teams/entities/team-member.entity'
 import { ChatMessage } from './teams/entities/chat-message.entity'
+import { Conversation } from './messages/entities/conversation.entity'
+import { ConversationParticipant } from './messages/entities/conversation-participant.entity'
+import { PrivateMessage } from './messages/entities/private-message.entity'
+import { MessagesModule } from './messages/messages.module'
 
 @Module({
   imports: [
@@ -26,7 +30,18 @@ import { ChatMessage } from './teams/entities/chat-message.entity'
         username: config.get<string>('DB_USER', 'tracknshare'),
         password: config.get<string>('DB_PASSWORD', 'tracknshare'),
         database: config.get<string>('DB_NAME', 'tracknshare'),
-        entities: [User, Game, Season, PlayerStats, Team, TeamMember, ChatMessage],
+        entities: [
+          User,
+          Game,
+          Season,
+          PlayerStats,
+          Team,
+          TeamMember,
+          ChatMessage,
+          Conversation,
+          ConversationParticipant,
+          PrivateMessage,
+        ],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
       inject: [ConfigService],
@@ -36,6 +51,7 @@ import { ChatMessage } from './teams/entities/chat-message.entity'
     StatsModule,
     LeaderboardsModule,
     TeamsModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

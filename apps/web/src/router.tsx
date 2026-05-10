@@ -8,6 +8,8 @@ import ProfilePage from './pages/ProfilePage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import TeamsPage from './pages/TeamsPage'
 import TeamDetailPage from './pages/TeamDetailPage'
+import MessagesPage from './pages/MessagesPage'
+import ConversationPage from './pages/ConversationPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function AppRouter() {
@@ -40,6 +42,16 @@ export default function AppRouter() {
       <Route path="/teams/:teamId">
         <ProtectedRoute>
           <TeamDetailPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/messages">
+        <ProtectedRoute>
+          <MessagesPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/messages/:conversationId">
+        <ProtectedRoute>
+          <ConversationPage />
         </ProtectedRoute>
       </Route>
       <Route path="/">

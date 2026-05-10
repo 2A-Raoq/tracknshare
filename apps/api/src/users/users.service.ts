@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { ILike, Repository } from 'typeorm'
 import { User } from './entities/user.entity'
 import * as bcrypt from 'bcrypt'
 
@@ -34,6 +34,27 @@ export class UsersService {
     const user = await this.findById(id)
     if (!user) throw new NotFoundException()
     return this.toPublic(user)
+  }
+
+  async searchByUsername(query: string, excludeUserId?: string) {
+    const trimmed = query.trim()
+    if (!trimmed) {
+      return []
+    }
+
+    const users = await this.userRepo.find({
+      where: { username: ILike(`%${trimmed}%`) },
+      order: { username: 'ASC' },
+      take: 10,
+    })
+
+    return users
+      .filter((user) => user.id !== excludeUserId)
+      .map((user) => ({
+        id: user.id,
+        username: user.username,
+        avatar: null,
+      }))
   }
 
   toPublic(user: User): PublicUser {

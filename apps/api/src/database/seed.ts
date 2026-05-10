@@ -9,6 +9,9 @@ import { PlayerStats } from '../stats/entities/player-stats.entity'
 import { Team } from '../teams/entities/team.entity'
 import { TeamMember } from '../teams/entities/team-member.entity'
 import { ChatMessage } from '../teams/entities/chat-message.entity'
+import { Conversation, ConversationType } from '../messages/entities/conversation.entity'
+import { ConversationParticipant } from '../messages/entities/conversation-participant.entity'
+import { PrivateMessage } from '../messages/entities/private-message.entity'
 import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
 
@@ -19,7 +22,18 @@ const dataSource = new DataSource({
   username: process.env.DB_USER ?? 'tracknshare',
   password: process.env.DB_PASSWORD ?? 'tracknshare',
   database: process.env.DB_NAME ?? 'tracknshare',
-  entities: [User, Game, Season, PlayerStats, Team, TeamMember, ChatMessage],
+  entities: [
+    User,
+    Game,
+    Season,
+    PlayerStats,
+    Team,
+    TeamMember,
+    ChatMessage,
+    Conversation,
+    ConversationParticipant,
+    PrivateMessage,
+  ],
   synchronize: true,
 })
 
@@ -71,6 +85,12 @@ const demoMessages = [
   { username: 'DemoPlayer',   content: "Mon K/D remonte bien cette saison, content de vous avoir dans l'équipe." },
 ]
 
+const demoDirectMessages = [
+  { username: 'DemoPlayer', content: 'Salut ClutchMaster, tu peux relire la strat avant ce soir ?' },
+  { username: 'ClutchMaster', content: 'Oui, je check le scoreboard et je te fais un retour.' },
+  { username: 'DemoPlayer', content: 'Parfait. Je passe par la conversation privée pour la démo.' },
+]
+
 async function seed() {
   await dataSource.initialize()
   const userRepo    = dataSource.getRepository(User)
@@ -80,6 +100,9 @@ async function seed() {
   const teamRepo    = dataSource.getRepository(Team)
   const memberRepo  = dataSource.getRepository(TeamMember)
   const messageRepo = dataSource.getRepository(ChatMessage)
+  const conversationRepo = dataSource.getRepository(Conversation)
+  const conversationParticipantRepo = dataSource.getRepository(ConversationParticipant)
+  const privateMessageRepo = dataSource.getRepository(PrivateMessage)
 
   const passwordHash = await bcrypt.hash('Demo1234!', 10)
 
@@ -183,6 +206,68 @@ async function seed() {
       if (!sender) continue
       await messageRepo.save(messageRepo.create({ teamId: team.id, senderId: sender.id, content: m.content }))
       console.log(`Message from ${m.username}: [logged]`)
+    }
+  }
+
+  const demoUser = userMap['DemoPlayer']
+  const clutchUser = userMap['ClutchMaster']
+
+  if (demoUser && clutchUser) {
+    const existingParticipants = await conversationParticipantRepo.find({
+      where: [{ userId: demoUser.id }, { userId: clutchUser.id }],
+      relations: ['conversation', 'conversation.participants'],
+    })
+
+    let directConversation =
+      existingParticipants
+        .map((entry) => entry.conversation)
+        .find(
+          (conversation) =>
+            conversation.type === ConversationType.DIRECT
+            && conversation.participants.length === 2
+            && conversation.participants.some((participant) => participant.userId === demoUser.id)
+            && conversation.participants.some((participant) => participant.userId === clutchUser.id),
+        ) ?? null
+
+    if (!directConversation) {
+      directConversation = await conversationRepo.save(
+        conversationRepo.create({ type: ConversationType.DIRECT }),
+      )
+
+      await conversationParticipantRepo.save([
+        conversationParticipantRepo.create({
+          conversationId: directConversation.id,
+          userId: demoUser.id,
+          lastReadAt: new Date(),
+        }),
+        conversationParticipantRepo.create({
+          conversationId: directConversation.id,
+          userId: clutchUser.id,
+          lastReadAt: new Date(),
+        }),
+      ])
+      console.log('Created demo direct conversation.')
+    }
+
+    const privateCount = await privateMessageRepo.count({
+      where: { conversationId: directConversation.id },
+    })
+
+    if (privateCount === 0) {
+      for (const entry of demoDirectMessages) {
+        const sender = userMap[entry.username]
+        if (!sender) continue
+        await privateMessageRepo.save(
+          privateMessageRepo.create({
+            conversationId: directConversation.id,
+            senderId: sender.id,
+            content: entry.content,
+            editedAt: null,
+            deletedAt: null,
+          }),
+        )
+      }
+      console.log('Created demo private messages.')
     }
   }
 
