@@ -3,19 +3,25 @@ import { authStore } from '../store/auth.store'
 import { api } from '../services/api'
 
 export function useAuth() {
-  console.log('useAuth called')
-
   useEffect(() => {
-    console.log('fetch /auth/me')
+    const savedToken = localStorage.getItem('access_token')
 
-    api.get('/auth/me')
+    if (!savedToken) {
+      authStore.loading = false
+      return
+    }
+
+    authStore.token = savedToken
+
+    api
+      .get('/users/me')
       .then((res) => {
-        console.log('user ok', res.data)
-        authStore.user = res.data.user
+        authStore.user = res.data.data
       })
-      .catch((err) => {
-        console.log('user fail', err)
+      .catch(() => {
         authStore.user = null
+        authStore.token = null
+        localStorage.removeItem('access_token')
       })
       .finally(() => {
         authStore.loading = false

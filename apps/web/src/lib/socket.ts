@@ -1,5 +1,10 @@
-import { io } from 'socket.io-client'
+import { io, Socket } from 'socket.io-client'
 
-export const socket = io('http://localhost:3000', {
-  withCredentials: true,
-})
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? 'http://localhost:3000'
+
+export function createTeamSocket(token: string): Socket {
+  return io(SOCKET_URL, {
+    auth: { token },
+    autoConnect: true,
+  })
+}

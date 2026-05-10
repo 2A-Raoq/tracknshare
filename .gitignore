@@ -1,1 +1,36 @@
-node_modules
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# build output
+dist/
+build/
+
+# env files — NEVER commit .env
+.env
+.env.local
+.env.*.local
+
+# coverage
+coverage/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# turbo
+.turbo/
+
+# TypeScript
+*.tsbuildinfo

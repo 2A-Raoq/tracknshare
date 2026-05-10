@@ -1,23 +1,29 @@
 import axios from 'axios'
+import { authStore } from '../store/auth.store'
 
 export const api = axios.create({
-  baseURL: 'http://localhost:3000',
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api',
 })
 
-// Interceptor auto refresh
+api.interceptors.request.use((config) => {
+  const token = authStore.token ?? localStorage.getItem('access_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 api.interceptors.response.use(
   (res) => res,
-  async (error) => {
-    if (error.response?.status === 401) {
-      try {
-        await api.post('/auth/refresh')
-        return api(error.config)
-      } catch {
-        window.location.href = '/login'
-      }
-    }
+  (error) => {
+    const hasStoredToken = authStore.token ?? localStorage.getItem('access_token')
 
+    if (error.response?.status === 401 && hasStoredToken) {
+      authStore.user = null
+      authStore.token = null
+      localStorage.removeItem('access_token')
+      // Let React/ProtectedRoute handle the redirect — no window.location.href
+    }
     return Promise.reject(error)
   },
 )

@@ -1,58 +1,41 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common'
-import type { Request, Response } from 'express'
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from './jwt-auth.guard'
+import { RegisterDto } from './dto/register.dto'
+import { LoginDto } from './dto/login.dto'
 
-
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('register')
+  async register(@Body() dto: RegisterDto) {
+    const data = await this.authService.register(dto.email, dto.username, dto.password)
+    return { success: true, data }
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() dto: LoginDto) {
+    const data = await this.authService.login(dto.email, dto.password)
+    return { success: true, data }
+  }
+
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('me')
   me(@Req() req: any) {
-    return {
-      user: req.user,
-    }
-  }
-
-  @Get('steam')
-  steamLogin(@Req() req: Request, @Res() res: Response) {
-    const returnUrl =
-      'http://localhost:3000/auth/steam/return'
-
-    const steamOpenIdUrl =
-      `https://steamcommunity.com/openid/login` +
-      `?openid.mode=checkid_setup` +
-      `&openid.return_to=${returnUrl}` +
-      `&openid.realm=http://localhost:3000` +
-      `&openid.ns=http://specs.openid.net/auth/2.0`
-
-    return res.redirect(steamOpenIdUrl)
-  }
-
-  @Get('steam/callback')
-  async steamCallback(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const claimedId =
-      req.query['openid.claimed_id'] as string
-
-    const steamId = claimedId?.split('/').pop()
-
-    if (!steamId) {
-      return res.redirect('http://localhost:5173/login')
-    }
-
-    const user =
-      await this.authService.loginSteam(steamId)
-
-    res.cookie('access_token', user.accessToken, {
-      httpOnly: true,
-      sameSite: 'lax',
-    })
-
-    return res.redirect('http://localhost:5173')
+    return { success: true, data: req.user }
   }
 }

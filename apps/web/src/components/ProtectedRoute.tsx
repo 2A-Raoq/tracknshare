@@ -14,10 +14,5 @@ export default function ProtectedRoute({ children }: any) {
     return <Redirect to="/login" />
   }
 
-  console.log('ProtectedRoute', {
-    loading: auth.loading,
-    user: auth.user,
-  })
-
   return children
 }
