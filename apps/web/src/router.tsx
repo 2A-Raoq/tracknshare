@@ -11,6 +11,7 @@ import TeamDetailPage from './pages/TeamDetailPage'
 import MessagesPage from './pages/MessagesPage'
 import ConversationPage from './pages/ConversationPage'
 import PublicProfilePage from './pages/PublicProfilePage'
+import FriendsPage from './pages/FriendsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function AppRouter() {
@@ -56,6 +57,11 @@ export default function AppRouter() {
       <Route path="/messages/:conversationId">
         <ProtectedRoute>
           <ConversationPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/friends">
+        <ProtectedRoute>
+          <FriendsPage />
         </ProtectedRoute>
       </Route>
       <Route path="/">

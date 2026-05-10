@@ -18,6 +18,8 @@ import { ConversationParticipant } from './messages/entities/conversation-partic
 import { PrivateMessage } from './messages/entities/private-message.entity'
 import { MessagesModule } from './messages/messages.module'
 import { PlayersModule } from './players/players.module'
+import { FriendRequest } from './friends/entities/friend-request.entity'
+import { FriendsModule } from './friends/friends.module'
 
 @Module({
   imports: [
@@ -42,6 +44,7 @@ import { PlayersModule } from './players/players.module'
           Conversation,
           ConversationParticipant,
           PrivateMessage,
+          FriendRequest,
         ],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
@@ -54,6 +57,7 @@ import { PlayersModule } from './players/players.module'
     TeamsModule,
     MessagesModule,
     PlayersModule,
+    FriendsModule,
   ],
 })
 export class AppModule {}

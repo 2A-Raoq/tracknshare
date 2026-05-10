@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'wouter'
 import { useSnapshot } from 'valtio'
 import { authStore } from '../store/auth.store'
+import { friendsApi } from '../services/friends.api'
 import { messagesApi } from '../services/messages.api'
 import { playersApi } from '../services/players.api'
+import type { FriendRequestsData, FriendUser } from '../types/friends'
 import type { PublicPlayerProfile } from '../types/players'
 
 type ApiError = {
@@ -20,6 +22,12 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<PublicPlayerProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [friendStateLoading, setFriendStateLoading] = useState(false)
+  const [friends, setFriends] = useState<FriendUser[]>([])
+  const [requests, setRequests] = useState<FriendRequestsData>({ incoming: [], outgoing: [] })
+  const [friendActionLoading, setFriendActionLoading] = useState(false)
+  const [friendActionError, setFriendActionError] = useState('')
+  const [friendActionSuccess, setFriendActionSuccess] = useState('')
   const [startingConversation, setStartingConversation] = useState(false)
   const [messageError, setMessageError] = useState('')
 
@@ -33,6 +41,7 @@ export default function PublicProfilePage() {
     setLoading(true)
     setError('')
     setMessageError('')
+    setFriendActionSuccess('')
 
     playersApi
       .getPublicProfile(username)
@@ -47,6 +56,65 @@ export default function PublicProfilePage() {
       })
       .finally(() => setLoading(false))
   }, [username])
+
+  useEffect(() => {
+    if (!user || !profile || user.id === profile.id) {
+      setFriends([])
+      setRequests({ incoming: [], outgoing: [] })
+      setFriendStateLoading(false)
+      return
+    }
+
+    setFriendStateLoading(true)
+    setFriendActionError('')
+
+    Promise.all([friendsApi.getFriends(), friendsApi.getRequests()])
+      .then(([friendsData, requestsData]) => {
+        setFriends(friendsData)
+        setRequests(requestsData)
+      })
+      .catch(() => {
+        setFriendActionError("Impossible de charger l'état d'amitié pour ce profil.")
+      })
+      .finally(() => setFriendStateLoading(false))
+  }, [user, profile])
+
+  useEffect(() => {
+    setFriendActionError('')
+    setFriendActionSuccess('')
+  }, [profile?.id, user?.id])
+
+  async function refreshFriendState() {
+    if (!user || !profile || user.id === profile.id) {
+      return
+    }
+
+    const [friendsData, requestsData] = await Promise.all([
+      friendsApi.getFriends(),
+      friendsApi.getFriendRequests(),
+    ])
+
+    setFriends(friendsData)
+    setRequests(requestsData)
+  }
+
+  async function runFriendAction(
+    action: () => Promise<unknown>,
+    successMessage: string,
+  ) {
+    setFriendActionLoading(true)
+    setFriendActionError('')
+    setFriendActionSuccess('')
+    try {
+      await action()
+      await refreshFriendState()
+      setFriendActionSuccess(successMessage)
+    } catch {
+      setFriendActionError("L'action d'amitié n'a pas pu être effectuée.")
+    } finally {
+      setFriendActionLoading(false)
+    }
+  }
 
   async function handlePrivateMessage() {
     if (!profile) {
@@ -73,6 +141,118 @@ export default function PublicProfilePage() {
 
   const isOwnProfile = user?.username === profile?.username
   const bio = profile?.bio ?? 'Ce joueur n’a pas encore ajouté de bio publique.'
+  const isFriend = profile ? friends.some((item) => item.id === profile.id) : false
+  const incomingRequest = profile
+    ? requests.incoming.find((item) => item.user.id === profile.id) ?? null
+    : null
+  const outgoingRequest = profile
+    ? requests.outgoing.find((item) => item.user.id === profile.id) ?? null
+    : null
+
+  function renderRelationshipActions() {
+    if (!profile) {
+      return null
+    }
+
+    if (!user) {
+      return (
+        <div className="button-row">
+          <button onClick={() => navigate('/login')} className="primary-button">
+            Se connecter pour ajouter
+          </button>
+        </div>
+      )
+    }
+
+    if (isOwnProfile) {
+      return <div className="pill connected">C&apos;est votre profil</div>
+    }
+
+    if (friendStateLoading) {
+      return <div className="pill">Chargement relation...</div>
+    }
+
+    if (isFriend) {
+      return (
+        <>
+          <div className="pill connected">Ami</div>
+          <button
+            onClick={handlePrivateMessage}
+            className="primary-button"
+            disabled={startingConversation}
+          >
+            {startingConversation ? 'Ouverture...' : 'Message privé'}
+          </button>
+        </>
+      )
+    }
+
+    if (incomingRequest) {
+      return (
+        <>
+          <button
+            onClick={() =>
+              runFriendAction(
+                () => friendsApi.acceptFriendRequest(incomingRequest.id),
+                'Demande acceptée. Vous êtes maintenant amis.',
+              )
+            }
+            className="primary-button"
+            disabled={friendActionLoading}
+          >
+            {friendActionLoading ? 'Traitement...' : 'Accepter'}
+          </button>
+          <button
+            onClick={() =>
+              runFriendAction(
+                () => friendsApi.refuseFriendRequest(incomingRequest.id),
+                'Demande refusée.',
+              )
+            }
+            className="ghost-button"
+            disabled={friendActionLoading}
+          >
+            Refuser
+          </button>
+        </>
+      )
+    }
+
+    if (outgoingRequest) {
+      return (
+        <>
+          <div className="pill">Demande envoyée</div>
+          <button
+            onClick={() =>
+              runFriendAction(
+                () => friendsApi.cancelFriendRequest(outgoingRequest.id),
+                'Demande annulée.',
+              )
+            }
+            className="ghost-button"
+            disabled={friendActionLoading}
+          >
+            {friendActionLoading ? 'Annulation...' : 'Annuler'}
+          </button>
+        </>
+      )
+    }
+
+    return (
+      <button
+        onClick={() =>
+          runFriendAction(
+            () => friendsApi.createFriendRequest(profile.id),
+            'Demande envoyée.',
+          )
+        }
+        className="primary-button"
+        disabled={friendActionLoading}
+      >
+        {friendActionLoading ? 'Envoi...' : 'Ajouter en ami'}
+      </button>
+    )
+  }
 
   return (
     <div className="page-shell">
@@ -83,6 +263,7 @@ export default function PublicProfilePage() {
         </Link>
         <div className="nav-actions">
           <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
+          <Link href={user ? '/friends' : '/login'} className="ghost-button">Amis</Link>
           <Link href={user ? '/messages' : '/login'} className="ghost-button">Messages</Link>
           <Link href={user ? '/dashboard' : '/login'} className="secondary-button">
             {user ? 'Dashboard' : 'Login'}
@@ -147,18 +328,33 @@ export default function PublicProfilePage() {
                 </div>
 
                 <div className="button-row" style={{ marginTop: '20px' }}>
-                  {!isOwnProfile && (
-                    <button
-                      onClick={handlePrivateMessage}
-                      className="primary-button"
-                      disabled={startingConversation}
-                    >
-                      {startingConversation ? 'Ouverture...' : 'Message privé'}
-                    </button>
-                  )}
+                  {renderRelationshipActions()}
                   <Link href="/leaderboard" className="ghost-button">Voir leaderboard</Link>
                 </div>
 
+                {!isOwnProfile && user && (
+                  <p className="muted-text" style={{ marginTop: '12px' }}>
+                    {friendStateLoading
+                      ? 'Chargement de la relation...'
+                      : isFriend
+                        ? 'Vous êtes déjà amis.'
+                        : incomingRequest
+                          ? 'Cette personne vous a envoyé une demande.'
+                          : outgoingRequest
+                            ? 'Vous avez déjà envoyé une demande à ce joueur.'
+                            : 'Aucun lien d’amitié pour le moment.'}
+                  </p>
+                )}
+                {friendActionError && (
+                  <p className="status-message error" style={{ marginTop: '16px' }}>
+                    {friendActionError}
+                  </p>
+                )}
+                {friendActionSuccess && (
+                  <p className="status-message" style={{ marginTop: '16px' }}>
+                    {friendActionSuccess}
+                  </p>
+                )}
                 {messageError && (
                   <p className="status-message error" style={{ marginTop: '16px' }}>
                     {messageError}

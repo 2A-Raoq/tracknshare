@@ -54,6 +54,7 @@ export default function HomePage() {
           <Link href="/leaderboard" className="nav-link">Leaderboard</Link>
           <Link href={isAuthenticated ? '/teams' : '/login'} className="nav-link">Teams</Link>
           <Link href={isAuthenticated ? '/messages' : '/login'} className="nav-link">Messages</Link>
+          <Link href={isAuthenticated ? '/friends' : '/login'} className="nav-link">Amis</Link>
           <Link href={isAuthenticated ? '/dashboard' : '/login'} className="nav-link">
             {isAuthenticated ? 'Dashboard' : 'Demo access'}
           </Link>
@@ -147,6 +148,9 @@ export default function HomePage() {
               <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
               <Link href={isAuthenticated ? '/dashboard' : '/login'} className="ghost-button">
                 Dashboard
+              </Link>
+              <Link href={isAuthenticated ? '/friends' : '/login'} className="ghost-button">
+                Amis
               </Link>
               <Link href={isAuthenticated ? '/teams' : '/login'} className="ghost-button">
                 Teams

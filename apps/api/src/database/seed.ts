@@ -12,6 +12,7 @@ import { ChatMessage } from '../teams/entities/chat-message.entity'
 import { Conversation, ConversationType } from '../messages/entities/conversation.entity'
 import { ConversationParticipant } from '../messages/entities/conversation-participant.entity'
 import { PrivateMessage } from '../messages/entities/private-message.entity'
+import { FriendRequest } from '../friends/entities/friend-request.entity'
 import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
 
@@ -33,6 +34,7 @@ const dataSource = new DataSource({
     Conversation,
     ConversationParticipant,
     PrivateMessage,
+    FriendRequest,
   ],
   synchronize: true,
 })
@@ -50,6 +52,7 @@ const seedUsers = [
   { email: 'nexus@tracknshare.local', username: 'NexusOne' },
   { email: 'blaze@tracknshare.local', username: 'BlazeRunner' },
   { email: 'void@tracknshare.local', username: 'VoidWalker' },
+  { email: 'friendtest@tracknshare.local', username: 'FriendTester' },
 ]
 
 const seedGames = [
@@ -72,6 +75,7 @@ const playerStatsData: Record<string, { kills: number; deaths: number; wins: num
   VoidWalker:   { kills: 1400, deaths: 1300, wins: 30, losses: 50, matchesPlayed: 80,  playtimeMinutes: 2000 },
   RushB:        { kills: 1200, deaths: 1400, wins: 25, losses: 55, matchesPlayed: 80,  playtimeMinutes: 1800 },
   NewPlayer:    { kills: 600,  deaths: 1800, wins: 10, losses: 60, matchesPlayed: 70,  playtimeMinutes: 1200 },
+  FriendTester: { kills: 1750, deaths: 1120, wins: 39, losses: 36, matchesPlayed: 75,  playtimeMinutes: 2300 },
 }
 
 const DEMO_INVITE_CODE = 'DEMO0001'
@@ -273,6 +277,7 @@ async function seed() {
 
   console.log('\nSeed complete.')
   console.log('Login:       demo@tracknshare.local / Demo1234!')
+  console.log('Friend test: friendtest@tracknshare.local / Demo1234!')
   console.log('Invite code: DEMO0001')
   await dataSource.destroy()
 }
