@@ -10,6 +10,7 @@ import TeamsPage from './pages/TeamsPage'
 import TeamDetailPage from './pages/TeamDetailPage'
 import MessagesPage from './pages/MessagesPage'
 import ConversationPage from './pages/ConversationPage'
+import PublicProfilePage from './pages/PublicProfilePage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function AppRouter() {
@@ -33,6 +34,9 @@ export default function AppRouter() {
       </Route>
       <Route path="/leaderboard">
         <LeaderboardPage />
+      </Route>
+      <Route path="/players/:username">
+        <PublicProfilePage />
       </Route>
       <Route path="/teams">
         <ProtectedRoute>

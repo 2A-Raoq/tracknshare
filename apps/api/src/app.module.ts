@@ -17,6 +17,7 @@ import { Conversation } from './messages/entities/conversation.entity'
 import { ConversationParticipant } from './messages/entities/conversation-participant.entity'
 import { PrivateMessage } from './messages/entities/private-message.entity'
 import { MessagesModule } from './messages/messages.module'
+import { PlayersModule } from './players/players.module'
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { MessagesModule } from './messages/messages.module'
     LeaderboardsModule,
     TeamsModule,
     MessagesModule,
+    PlayersModule,
   ],
 })
 export class AppModule {}

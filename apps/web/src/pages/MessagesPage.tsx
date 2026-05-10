@@ -121,7 +121,18 @@ export default function MessagesPage() {
                   <div className="panel-header">
                     <div>
                       <p className="muted-text">Participant</p>
-                      <h2>{conversation.participant?.username ?? 'Utilisateur inconnu'}</h2>
+                      <h2>
+                        {conversation.participant?.username ? (
+                          <Link
+                            href={`/players/${conversation.participant.username}`}
+                            className="nav-link"
+                          >
+                            {conversation.participant.username}
+                          </Link>
+                        ) : (
+                          'Utilisateur inconnu'
+                        )}
+                      </h2>
                     </div>
                     <div className="pill">
                       {new Date(
@@ -181,7 +192,15 @@ export default function MessagesPage() {
                   <div className="panel-header">
                     <div>
                       <p className="muted-text">Pseudo trouvé</p>
-                      <h2>{user.username ?? 'Utilisateur'}</h2>
+                      <h2>
+                        {user.username ? (
+                          <Link href={`/players/${user.username}`} className="nav-link">
+                            {user.username}
+                          </Link>
+                        ) : (
+                          'Utilisateur'
+                        )}
+                      </h2>
                     </div>
                   </div>
                   <button

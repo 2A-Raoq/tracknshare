@@ -75,7 +75,11 @@ export default function LeaderboardPage() {
                   {entries.map((entry) => (
                     <tr key={entry.userId}>
                       <td>{entry.rank}</td>
-                      <td>{entry.username}</td>
+                      <td>
+                        <Link href={`/players/${entry.username}`} className="nav-link">
+                          {entry.username}
+                        </Link>
+                      </td>
                       <td><strong>{entry.score}</strong></td>
                       <td>{entry.kdRatio.toFixed(2)}</td>
                       <td>{entry.winrate}%</td>

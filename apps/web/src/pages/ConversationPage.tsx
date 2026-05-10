@@ -159,7 +159,16 @@ export default function ConversationPage() {
             <div>
               <p className="hero-kicker">Private conversation</p>
               <h1 className="page-title">
-                {conversation?.participant?.username ?? 'Conversation privée'}
+                {conversation?.participant?.username ? (
+                  <Link
+                    href={`/players/${conversation.participant.username}`}
+                    className="nav-link"
+                  >
+                    {conversation.participant.username}
+                  </Link>
+                ) : (
+                  'Conversation privée'
+                )}
               </h1>
               <p className="section-copy">
                 Canal direct 1-to-1 avec fallback REST si le socket est indisponible.
@@ -200,7 +209,13 @@ export default function ConversationPage() {
                     }}
                   >
                     <div className="message-meta">
-                      <strong>{message.sender.username ?? 'Utilisateur'}</strong>
+                      {message.sender.username ? (
+                        <Link href={`/players/${message.sender.username}`} className="nav-link">
+                          <strong>{message.sender.username}</strong>
+                        </Link>
+                      ) : (
+                        <strong>Utilisateur</strong>
+                      )}
                       <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
                     </div>
                     <div>{message.content}</div>

@@ -184,7 +184,13 @@ export default function TeamDetailPage() {
             <ul className="member-list">
               {team.members.map((member) => (
                 <li key={member.id} className="member-item">
-                  <strong>{member.username ?? member.id}</strong>
+                  {member.username ? (
+                    <Link href={`/players/${member.username}`} className="nav-link">
+                      <strong>{member.username}</strong>
+                    </Link>
+                  ) : (
+                    <strong>{member.id}</strong>
+                  )}
                   <div className="muted-text">{member.role}</div>
                 </li>
               ))}
