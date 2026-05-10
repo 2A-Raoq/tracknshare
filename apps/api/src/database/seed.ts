@@ -53,6 +53,7 @@ const seedUsers = [
   { email: 'blaze@tracknshare.local', username: 'BlazeRunner' },
   { email: 'void@tracknshare.local', username: 'VoidWalker' },
   { email: 'friendtest@tracknshare.local', username: 'FriendTester' },
+  { email: 'searchtest@tracknshare.local', username: 'SearchTester' },
 ]
 
 const seedGames = [
@@ -76,6 +77,7 @@ const playerStatsData: Record<string, { kills: number; deaths: number; wins: num
   RushB:        { kills: 1200, deaths: 1400, wins: 25, losses: 55, matchesPlayed: 80,  playtimeMinutes: 1800 },
   NewPlayer:    { kills: 600,  deaths: 1800, wins: 10, losses: 60, matchesPlayed: 70,  playtimeMinutes: 1200 },
   FriendTester: { kills: 1750, deaths: 1120, wins: 39, losses: 36, matchesPlayed: 75,  playtimeMinutes: 2300 },
+  SearchTester: { kills: 1680, deaths: 1080, wins: 37, losses: 34, matchesPlayed: 71,  playtimeMinutes: 2180 },
 }
 
 const DEMO_INVITE_CODE = 'DEMO0001'
@@ -278,6 +280,7 @@ async function seed() {
   console.log('\nSeed complete.')
   console.log('Login:       demo@tracknshare.local / Demo1234!')
   console.log('Friend test: friendtest@tracknshare.local / Demo1234!')
+  console.log('Search test: searchtest@tracknshare.local / Demo1234!')
   console.log('Invite code: DEMO0001')
   await dataSource.destroy()
 }
