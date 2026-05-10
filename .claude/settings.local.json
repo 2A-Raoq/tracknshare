@@ -6,7 +6,17 @@
       "Bash(mkdir -p apps/api/src/database)",
       "Bash(npx tsc *)",
       "Bash(./node_modules/.bin/tsc --noEmit)",
-      "Bash(C:/Users/codcl/Documents/GitHub/tracknshare/apps/api/node_modules/.bin/tsc --noEmit --project C:/Users/codcl/Documents/GitHub/tracknshare/apps/api/tsconfig.json)"
+      "Bash(C:/Users/codcl/Documents/GitHub/tracknshare/apps/api/node_modules/.bin/tsc --noEmit --project C:/Users/codcl/Documents/GitHub/tracknshare/apps/api/tsconfig.json)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(pnpm --filter api exec tsc -b --noEmit)",
+      "Bash(pnpm --filter web exec tsc -b --noEmit)",
+      "Bash(cp apps/api/.env.example apps/api/.env)",
+      "Bash(cp apps/web/.env.example apps/web/.env)",
+      "Bash(docker compose *)",
+      "Bash(pnpm --filter api seed)",
+      "Bash(git check-ignore *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
