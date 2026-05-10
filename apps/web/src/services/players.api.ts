@@ -1,4 +1,5 @@
 import { api } from './api'
+import type { AchievementItem } from '../types/achievements'
 import type { PublicPlayerProfile } from '../types/players'
 
 function isStats(value: unknown): value is PublicPlayerProfile['stats'] {
@@ -78,12 +79,33 @@ function ensureTeams(value: unknown): PublicPlayerProfile['teams'] {
   })
 }
 
-function ensureBadges(value: unknown): string[] {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+function isBadge(value: unknown): value is AchievementItem {
+  const record = value as Record<string, unknown>
+  return (
+    !!value
+    && typeof value === 'object'
+    && typeof record.id === 'string'
+    && typeof record.code === 'string'
+    && typeof record.name === 'string'
+    && typeof record.description === 'string'
+    && typeof record.icon === 'string'
+    && typeof record.points === 'number'
+    && typeof record.unlockedAt === 'string'
+  )
+}
+
+function ensureBadges(value: unknown): AchievementItem[] {
+  if (!Array.isArray(value)) {
     throw new Error('Invalid public player profile response: expected badge array.')
   }
 
-  return value
+  return value.map((item) => {
+    if (!isBadge(item)) {
+      throw new Error('Invalid public player profile response: malformed badge item.')
+    }
+
+    return item
+  })
 }
 
 function ensureProfile(payload: unknown): PublicPlayerProfile {

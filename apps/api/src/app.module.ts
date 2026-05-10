@@ -18,6 +18,9 @@ import { ConversationParticipant } from './messages/entities/conversation-partic
 import { PrivateMessage } from './messages/entities/private-message.entity'
 import { MessagesModule } from './messages/messages.module'
 import { PlayersModule } from './players/players.module'
+import { Achievement } from './achievements/entities/achievement.entity'
+import { UserAchievement } from './achievements/entities/user-achievement.entity'
+import { AchievementsModule } from './achievements/achievements.module'
 
 @Module({
   imports: [
@@ -42,6 +45,8 @@ import { PlayersModule } from './players/players.module'
           Conversation,
           ConversationParticipant,
           PrivateMessage,
+          Achievement,
+          UserAchievement,
         ],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
@@ -54,6 +59,7 @@ import { PlayersModule } from './players/players.module'
     TeamsModule,
     MessagesModule,
     PlayersModule,
+    AchievementsModule,
   ],
 })
 export class AppModule {}

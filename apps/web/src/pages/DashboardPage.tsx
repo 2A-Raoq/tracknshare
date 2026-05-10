@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { useLocation, Link } from 'wouter'
 import { authStore } from '../store/auth.store'
+import { achievementsApi } from '../services/achievements.api'
 import { getMyStats, syncStats } from '../services/stats.api'
+import type { AchievementItem } from '../types/achievements'
 import type { PlayerStatsData } from '../types/stats'
 
 export default function DashboardPage() {
@@ -11,6 +13,9 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<PlayerStatsData[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
   const [statsError, setStatsError] = useState('')
+  const [badges, setBadges] = useState<AchievementItem[]>([])
+  const [badgesLoading, setBadgesLoading] = useState(true)
+  const [badgesError, setBadgesError] = useState('')
   const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
@@ -18,6 +23,14 @@ export default function DashboardPage() {
       .then(setStats)
       .catch(() => setStatsError('Impossible de charger les stats.'))
       .finally(() => setStatsLoading(false))
+  }, [])
+
+  useEffect(() => {
+    achievementsApi
+      .getMyAchievements()
+      .then(setBadges)
+      .catch(() => setBadgesError('Impossible de charger vos badges.'))
+      .finally(() => setBadgesLoading(false))
   }, [])
 
   function handleLogout() {
@@ -134,6 +147,37 @@ export default function DashboardPage() {
                   <li className="metric-row">Parties jouées : {item.matchesPlayed}</li>
                   <li className="metric-row">Temps de jeu : {Math.round(item.playtimeMinutes / 60)}h</li>
                 </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section-stack">
+          <div className="section-heading">
+            <h2>Mes badges</h2>
+            <p className="section-copy">
+              Badges démo débloqués pour enrichir visuellement le dashboard.
+            </p>
+          </div>
+
+          {badgesLoading && <p className="status-message">Chargement des badges...</p>}
+          {badgesError && <p className="status-message error">{badgesError}</p>}
+
+          {!badgesLoading && !badgesError && badges.length === 0 && (
+            <div className="empty-box">Aucun badge débloqué pour le moment.</div>
+          )}
+
+          <div className="stats-grid">
+            {badges.map((badge) => (
+              <article key={`${badge.code}-${badge.unlockedAt ?? badge.id}`} className="data-card">
+                <div className="panel-header">
+                  <div>
+                    <p className="muted-text">{badge.icon}</p>
+                    <h2>{badge.name}</h2>
+                  </div>
+                  <div className="pill">{badge.points} pts</div>
+                </div>
+                <p className="section-copy">{badge.description}</p>
               </article>
             ))}
           </div>

@@ -12,6 +12,8 @@ import { ChatMessage } from '../teams/entities/chat-message.entity'
 import { Conversation, ConversationType } from '../messages/entities/conversation.entity'
 import { ConversationParticipant } from '../messages/entities/conversation-participant.entity'
 import { PrivateMessage } from '../messages/entities/private-message.entity'
+import { Achievement } from '../achievements/entities/achievement.entity'
+import { UserAchievement } from '../achievements/entities/user-achievement.entity'
 import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
 
@@ -33,6 +35,8 @@ const dataSource = new DataSource({
     Conversation,
     ConversationParticipant,
     PrivateMessage,
+    Achievement,
+    UserAchievement,
   ],
   synchronize: true,
 })
@@ -50,6 +54,8 @@ const seedUsers = [
   { email: 'nexus@tracknshare.local', username: 'NexusOne' },
   { email: 'blaze@tracknshare.local', username: 'BlazeRunner' },
   { email: 'void@tracknshare.local', username: 'VoidWalker' },
+  { email: 'friendtest@tracknshare.local', username: 'FriendTester' },
+  { email: 'searchtest@tracknshare.local', username: 'SearchTester' },
 ]
 
 const seedGames = [
@@ -72,6 +78,8 @@ const playerStatsData: Record<string, { kills: number; deaths: number; wins: num
   VoidWalker:   { kills: 1400, deaths: 1300, wins: 30, losses: 50, matchesPlayed: 80,  playtimeMinutes: 2000 },
   RushB:        { kills: 1200, deaths: 1400, wins: 25, losses: 55, matchesPlayed: 80,  playtimeMinutes: 1800 },
   NewPlayer:    { kills: 600,  deaths: 1800, wins: 10, losses: 60, matchesPlayed: 70,  playtimeMinutes: 1200 },
+  FriendTester: { kills: 1750, deaths: 1120, wins: 39, losses: 36, matchesPlayed: 75,  playtimeMinutes: 2300 },
+  SearchTester: { kills: 1680, deaths: 1080, wins: 37, losses: 34, matchesPlayed: 71,  playtimeMinutes: 2180 },
 }
 
 const DEMO_INVITE_CODE = 'DEMO0001'
@@ -91,6 +99,27 @@ const demoDirectMessages = [
   { username: 'DemoPlayer', content: 'Parfait. Je passe par la conversation privée pour la démo.' },
 ]
 
+const seedAchievements = [
+  { code: 'FIRST_LOGIN', name: 'First Login', description: 'Première connexion au MVP.', icon: 'LOGIN', points: 10 },
+  { code: 'FIRST_STATS_SYNC', name: 'Stat Tracker', description: 'Première synchronisation de statistiques.', icon: 'SYNC', points: 20 },
+  { code: 'TOP_5_LEADERBOARD', name: 'Top 5', description: 'Présent dans le top 5 du leaderboard.', icon: 'TOP5', points: 50 },
+  { code: 'TEAM_FOUNDER', name: 'Team Founder', description: 'Créateur ou capitaine d’équipe.', icon: 'TEAM', points: 30 },
+  { code: 'SOCIAL_PLAYER', name: 'Social Player', description: 'Joueur actif dans les interactions sociales.', icon: 'SOCIAL', points: 25 },
+  { code: 'FRIENDLY', name: 'Friendly', description: 'A déjà développé un lien social.', icon: 'FRIEND', points: 15 },
+  { code: 'CHATTER', name: 'Chatter', description: 'A participé au chat de démonstration.', icon: 'CHAT', points: 15 },
+]
+
+const userAchievementMap: Record<string, string[]> = {
+  DemoPlayer: ['FIRST_LOGIN', 'FIRST_STATS_SYNC', 'TOP_5_LEADERBOARD', 'TEAM_FOUNDER', 'SOCIAL_PLAYER', 'CHATTER'],
+  FriendTester: ['FIRST_LOGIN', 'FRIENDLY'],
+  SearchTester: ['FIRST_LOGIN'],
+  ClutchMaster: ['FIRST_LOGIN', 'SOCIAL_PLAYER'],
+  AceKiller: ['FIRST_LOGIN', 'TOP_5_LEADERBOARD'],
+  TitanFrag: ['FIRST_LOGIN', 'TOP_5_LEADERBOARD'],
+  GhostOp: ['FIRST_LOGIN', 'CHATTER'],
+  ProGamer: ['FIRST_LOGIN'],
+}
+
 async function seed() {
   await dataSource.initialize()
   const userRepo    = dataSource.getRepository(User)
@@ -103,6 +132,8 @@ async function seed() {
   const conversationRepo = dataSource.getRepository(Conversation)
   const conversationParticipantRepo = dataSource.getRepository(ConversationParticipant)
   const privateMessageRepo = dataSource.getRepository(PrivateMessage)
+  const achievementRepo = dataSource.getRepository(Achievement)
+  const userAchievementRepo = dataSource.getRepository(UserAchievement)
 
   const passwordHash = await bcrypt.hash('Demo1234!', 10)
 
@@ -271,8 +302,43 @@ async function seed() {
     }
   }
 
+  const achievementMap: Record<string, Achievement> = {}
+  for (const item of seedAchievements) {
+    let achievement = await achievementRepo.findOne({ where: { code: item.code } })
+    if (!achievement) {
+      achievement = await achievementRepo.save(achievementRepo.create(item))
+      console.log(`Created achievement: ${item.code}`)
+    }
+    achievementMap[item.code] = achievement
+  }
+
+  for (const [username, codes] of Object.entries(userAchievementMap)) {
+    const user = userMap[username]
+    if (!user) continue
+
+    for (const code of codes) {
+      const achievement = achievementMap[code]
+      if (!achievement) continue
+
+      const existing = await userAchievementRepo.findOne({
+        where: { userId: user.id, achievementId: achievement.id },
+      })
+
+      if (!existing) {
+        await userAchievementRepo.save(
+          userAchievementRepo.create({
+            userId: user.id,
+            achievementId: achievement.id,
+          }),
+        )
+      }
+    }
+  }
+
   console.log('\nSeed complete.')
   console.log('Login:       demo@tracknshare.local / Demo1234!')
+  console.log('Friend test: friendtest@tracknshare.local / Demo1234!')
+  console.log('Search test: searchtest@tracknshare.local / Demo1234!')
   console.log('Invite code: DEMO0001')
   await dataSource.destroy()
 }
