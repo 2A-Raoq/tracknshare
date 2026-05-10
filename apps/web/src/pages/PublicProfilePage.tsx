@@ -8,6 +8,7 @@ import { playersApi } from '../services/players.api'
 import type { FriendRequestsData, FriendUser } from '../types/friends'
 import type { AchievementItem } from '../types/achievements'
 import type { PublicPlayerProfile } from '../types/players'
+import AppNavigation from '../components/AppNavigation'
 
 type ApiError = {
   response?: {
@@ -272,20 +273,7 @@ export default function PublicProfilePage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
-          <Link href={user ? '/friends' : '/login'} className="ghost-button">Amis</Link>
-          <Link href={user ? '/messages' : '/login'} className="ghost-button">Messages</Link>
-          <Link href={user ? '/dashboard' : '/login'} className="secondary-button">
-            {user ? 'Dashboard' : 'Login'}
-          </Link>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

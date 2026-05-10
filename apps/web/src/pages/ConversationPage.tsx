@@ -6,6 +6,7 @@ import { authStore } from '../store/auth.store'
 import { messagesApi } from '../services/messages.api'
 import { createPrivateSocket } from '../lib/socket'
 import type { ConversationSummary, PrivateMessageItem } from '../types/messages'
+import AppNavigation from '../components/AppNavigation'
 
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
@@ -122,6 +123,7 @@ export default function ConversationPage() {
   if (loading) {
     return (
       <div className="page-shell">
+        <AppNavigation />
         <p className="status-message">Chargement de la conversation...</p>
       </div>
     )
@@ -130,6 +132,7 @@ export default function ConversationPage() {
   if (error) {
     return (
       <div className="page-shell">
+        <AppNavigation />
         <p className="status-message error">{error}</p>
         <div className="button-row" style={{ marginTop: '16px' }}>
           <button onClick={() => navigate('/messages')} className="ghost-button">
@@ -142,16 +145,7 @@ export default function ConversationPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <button onClick={() => navigate('/messages')} className="ghost-button">Messages</button>
-          <button onClick={() => navigate('/dashboard')} className="secondary-button">Dashboard</button>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

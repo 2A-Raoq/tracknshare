@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'wouter'
 import { messagesApi } from '../services/messages.api'
 import type { ConversationPeer, ConversationSummary } from '../types/messages'
+import AppNavigation from '../components/AppNavigation'
 
 type ApiError = {
   response?: {
@@ -75,16 +76,7 @@ export default function MessagesPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <Link href="/dashboard" className="ghost-button">Dashboard</Link>
-          <Link href="/teams" className="secondary-button">Teams</Link>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useLocation, Link } from 'wouter'
+import { useLocation } from 'wouter'
 import { useSnapshot } from 'valtio'
 import { authStore } from '../store/auth.store'
 import { teamsApi } from '../services/teams.api'
 import type { TeamSummary } from '../types/teams'
+import AppNavigation from '../components/AppNavigation'
 
 type ApiError = {
   response?: {
@@ -116,16 +117,7 @@ export default function TeamsPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <button onClick={() => navigate('/dashboard')} className="ghost-button">Dashboard</button>
-          <button onClick={() => navigate('/leaderboard')} className="secondary-button">Leaderboard</button>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

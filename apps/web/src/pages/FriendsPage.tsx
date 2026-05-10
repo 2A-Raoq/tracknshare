@@ -4,6 +4,7 @@ import type { AxiosError } from 'axios'
 import { friendsApi } from '../services/friends.api'
 import type { FriendRequestItem, FriendRequestsData, FriendUser } from '../types/friends'
 import { usersApi, type UserSearchResult } from '../services/users.api'
+import AppNavigation from '../components/AppNavigation'
 
 type ApiErrorPayload = {
   message?: string
@@ -213,17 +214,7 @@ export default function FriendsPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <Link href="/dashboard" className="ghost-button">Dashboard</Link>
-          <Link href="/messages" className="ghost-button">Messages</Link>
-          <Link href="/teams" className="secondary-button">Teams</Link>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

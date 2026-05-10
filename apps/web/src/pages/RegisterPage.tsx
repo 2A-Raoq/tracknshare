@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'wouter'
 import { api } from '../services/api'
 import { authStore } from '../store/auth.store'
+import AppNavigation from '../components/AppNavigation'
 
 type RegisterError = {
   response?: {
@@ -40,16 +41,7 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-layout">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
-          <Link href="/login" className="secondary-button">Login</Link>
-        </div>
-      </div>
+      <AppNavigation />
 
       <div className="auth-grid">
         <aside className="auth-aside">

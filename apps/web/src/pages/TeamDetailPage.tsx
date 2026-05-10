@@ -6,6 +6,7 @@ import { authStore } from '../store/auth.store'
 import { teamsApi } from '../services/teams.api'
 import { createTeamSocket } from '../lib/socket'
 import type { TeamDetail, ChatMessage } from '../types/teams'
+import AppNavigation from '../components/AppNavigation'
 
 export default function TeamDetailPage() {
   const { teamId } = useParams<{ teamId: string }>()
@@ -112,6 +113,7 @@ export default function TeamDetailPage() {
   if (teamLoading) {
     return (
       <div className="page-shell">
+        <AppNavigation />
         <p className="status-message">Chargement de l&apos;équipe...</p>
       </div>
     )
@@ -120,6 +122,7 @@ export default function TeamDetailPage() {
   if (teamError) {
     return (
       <div className="page-shell">
+        <AppNavigation />
         <div className="status-message error">{teamError}</div>
         <div className="button-row" style={{ marginTop: '16px' }}>
           <button onClick={() => navigate('/teams')} className="ghost-button">Retour aux équipes</button>
@@ -131,6 +134,7 @@ export default function TeamDetailPage() {
   if (!team) {
     return (
       <div className="page-shell">
+        <AppNavigation />
         <div className="empty-box">Aucune équipe sélectionnée.</div>
       </div>
     )
@@ -138,16 +142,7 @@ export default function TeamDetailPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <button onClick={() => navigate('/teams')} className="ghost-button">Mes équipes</button>
-          <button onClick={() => navigate('/dashboard')} className="secondary-button">Dashboard</button>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

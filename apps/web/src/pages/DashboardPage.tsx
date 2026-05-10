@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { useLocation, Link } from 'wouter'
+import { useLocation } from 'wouter'
 import { authStore } from '../store/auth.store'
 import { achievementsApi } from '../services/achievements.api'
 import { getMyStats, syncStats } from '../services/stats.api'
 import type { AchievementItem } from '../types/achievements'
 import type { PlayerStatsData } from '../types/stats'
+import AppNavigation from '../components/AppNavigation'
 
 export default function DashboardPage() {
   const { user } = useSnapshot(authStore)
   const [, navigate] = useLocation()
+  // navigate kept for quick-nav buttons below
   const [stats, setStats] = useState<PlayerStatsData[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
   const [statsError, setStatsError] = useState('')
@@ -32,13 +34,6 @@ export default function DashboardPage() {
       .catch(() => setBadgesError('Impossible de charger vos badges.'))
       .finally(() => setBadgesLoading(false))
   }, [])
-
-  function handleLogout() {
-    authStore.user = null
-    authStore.token = null
-    localStorage.removeItem('access_token')
-    navigate('/login')
-  }
 
   async function handleSync() {
     setSyncing(true)
@@ -63,19 +58,7 @@ export default function DashboardPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
-          <Link href="/friends" className="ghost-button">Amis</Link>
-          <Link href="/teams" className="secondary-button">Teams</Link>
-          <Link href="/messages" className="ghost-button">Messages</Link>
-          <button onClick={handleLogout} className="primary-button">Se déconnecter</button>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">

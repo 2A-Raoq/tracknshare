@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'wouter'
-import { useSnapshot } from 'valtio'
 import { getSoloLeaderboard } from '../services/stats.api'
-import { authStore } from '../store/auth.store'
 import type { LeaderboardEntry } from '../types/stats'
+import AppNavigation from '../components/AppNavigation'
 
 export default function LeaderboardPage() {
-  const { user } = useSnapshot(authStore)
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -20,18 +18,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="page-shell">
-      <div className="topbar">
-        <Link href="/" className="brand">
-          <span className="brand-badge" />
-          <span>Track N&apos; Share</span>
-        </Link>
-        <div className="nav-actions">
-          <Link href={user ? '/dashboard' : '/login'} className="ghost-button">
-            {user ? 'Dashboard' : 'Login'}
-          </Link>
-          <Link href={user ? '/teams' : '/login'} className="secondary-button">Teams</Link>
-        </div>
-      </div>
+      <AppNavigation />
 
       <main className="section-stack">
         <section className="panel">
