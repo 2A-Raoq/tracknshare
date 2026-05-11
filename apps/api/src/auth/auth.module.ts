@@ -14,8 +14,8 @@ import { UsersModule } from '../users/users.module'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const secret = config.get<string>('JWT_SECRET', 'dev-secret-change-me')
-        const expiresIn = config.get<string>('JWT_EXPIRES_IN', '1d') as SignOptions['expiresIn']
+        const secret = config.getOrThrow<string>('JWT_SECRET')
+        const expiresIn = (config.get<string>('JWT_EXPIRES_IN') ?? '1d') as SignOptions['expiresIn']
 
         return {
           secret,

@@ -9,11 +9,13 @@ import { TeamsController } from './teams.controller'
 import { TeamMemberGuard } from './guards/team-member.guard'
 import { TeamRoleGuard } from './guards/team-role.guard'
 import { ChatGateway } from './chat.gateway'
+import { SecurityModule } from '../security/security.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Team, TeamMember, ChatMessage]),
     ConfigModule,
+    SecurityModule,
   ],
   controllers: [TeamsController],
   providers: [TeamsService, TeamMemberGuard, TeamRoleGuard, ChatGateway],

@@ -20,8 +20,17 @@ export class PrivateMessage {
   @Column()
   senderId: string
 
-  @Column({ length: 1000 })
-  content: string
+  @Column({ type: 'text', nullable: true, select: false })
+  content: string | null
+
+  @Column({ type: 'text', nullable: true, select: false })
+  encryptedContent: string | null
+
+  @Column({ type: 'varchar', length: 64, nullable: true, select: false })
+  iv: string | null
+
+  @Column({ type: 'varchar', length: 64, nullable: true, select: false })
+  authTag: string | null
 
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'conversationId' })

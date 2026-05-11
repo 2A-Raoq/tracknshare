@@ -14,7 +14,11 @@ export class UsersService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { email } })
+    return this.userRepo
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.email = :email', { email })
+      .getOne()
   }
 
   async findById(id: string): Promise<User | null> {

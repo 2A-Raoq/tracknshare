@@ -17,6 +17,7 @@ import { Achievement } from '../achievements/entities/achievement.entity'
 import { UserAchievement } from '../achievements/entities/user-achievement.entity'
 import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
+import { decodeMessageEncryptionKey, encryptWithKey } from '../security/encryption.util'
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -121,7 +122,22 @@ const userAchievementMap: Record<string, string[]> = {
   ProGamer: ['FIRST_LOGIN'],
 }
 
+function getSeedEncryptionKey(): Buffer {
+  const encodedKey = process.env.MESSAGE_ENCRYPTION_KEY
+
+  if (!encodedKey) {
+    throw new Error('MESSAGE_ENCRYPTION_KEY_MISSING')
+  }
+
+  return decodeMessageEncryptionKey(encodedKey)
+}
+
+function encryptSeedMessage(key: Buffer, content: string) {
+  return encryptWithKey(key, content)
+}
+
 async function seed() {
+  const encryptionKey = getSeedEncryptionKey()
   await dataSource.initialize()
   const userRepo    = dataSource.getRepository(User)
   const gameRepo    = dataSource.getRepository(Game)
@@ -236,9 +252,43 @@ async function seed() {
     for (const m of demoMessages) {
       const sender = userMap[m.username]
       if (!sender) continue
-      await messageRepo.save(messageRepo.create({ teamId: team.id, senderId: sender.id, content: m.content }))
+      const encrypted = encryptSeedMessage(encryptionKey, m.content)
+      await messageRepo.save(
+        messageRepo.create({
+          teamId: team.id,
+          senderId: sender.id,
+          content: null,
+          encryptedContent: encrypted.ciphertext,
+          iv: encrypted.iv,
+          authTag: encrypted.authTag,
+        }),
+      )
       console.log(`Message from ${m.username}: [logged]`)
     }
+  }
+
+  const existingTeamMessages = await messageRepo
+    .createQueryBuilder('message')
+    .addSelect([
+      'message.content',
+      'message.encryptedContent',
+      'message.iv',
+      'message.authTag',
+    ])
+    .where('message.teamId = :teamId', { teamId: team.id })
+    .getMany()
+
+  for (const message of existingTeamMessages) {
+    if (message.encryptedContent || !message.content) {
+      continue
+    }
+
+    const encrypted = encryptSeedMessage(encryptionKey, message.content)
+    message.content = null
+    message.encryptedContent = encrypted.ciphertext
+    message.iv = encrypted.iv
+    message.authTag = encrypted.authTag
+    await messageRepo.save(message)
   }
 
   // Seed demo direct conversation
@@ -290,17 +340,47 @@ async function seed() {
       for (const entry of demoDirectMessages) {
         const sender = userMap[entry.username]
         if (!sender) continue
+        const encrypted = encryptSeedMessage(encryptionKey, entry.content)
         await privateMessageRepo.save(
           privateMessageRepo.create({
             conversationId: directConversation.id,
             senderId: sender.id,
-            content: entry.content,
+            content: null,
+            encryptedContent: encrypted.ciphertext,
+            iv: encrypted.iv,
+            authTag: encrypted.authTag,
             editedAt: null,
             deletedAt: null,
           }),
         )
       }
       console.log('Created demo private messages.')
+    }
+
+    const existingPrivateMessages = await privateMessageRepo
+      .createQueryBuilder('message')
+      .addSelect([
+        'message.content',
+        'message.encryptedContent',
+        'message.iv',
+        'message.authTag',
+      ])
+      .where('message.conversationId = :conversationId', {
+        conversationId: directConversation.id,
+      })
+      .getMany()
+
+    for (const message of existingPrivateMessages) {
+      if (message.encryptedContent || !message.content) {
+        continue
+      }
+
+      const encrypted = encryptSeedMessage(encryptionKey, message.content)
+      message.content = null
+      message.encryptedContent = encrypted.ciphertext
+      message.iv = encrypted.iv
+      message.authTag = encrypted.authTag
+      await privateMessageRepo.save(message)
     }
   }
 
@@ -351,10 +431,7 @@ async function seed() {
   }
 
   console.log('\nSeed complete.')
-  console.log('Login:       demo@tracknshare.local / Demo1234!')
-  console.log('Friend test: friendtest@tracknshare.local / Demo1234!')
-  console.log('Search test: searchtest@tracknshare.local / Demo1234!')
-  console.log('Invite code: DEMO0001')
+  console.log('Demo accounts and invite code are documented in README.md.')
   await dataSource.destroy()
 }
 

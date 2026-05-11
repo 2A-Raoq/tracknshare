@@ -52,6 +52,7 @@ Variables clés :
 | `DB_NAME` | `tracknshare` | Nom de la base |
 | `JWT_SECRET` | *(voir .env.example)* | Secret JWT — **changer en prod** |
 | `JWT_EXPIRES_IN` | `1d` | Durée de vie du token |
+| `MESSAGE_ENCRYPTION_KEY` | *(obligatoire)* | Clé base64 32 bytes pour chiffrer les messages au repos |
 | `CORS_ORIGIN` | `http://localhost:5173` | Origine autorisée par CORS |
 
 ### Web (`apps/web/.env`)
@@ -143,6 +144,22 @@ Code d'invitation équipe : **DEMO0001**
 ## API
 
 Swagger disponible sur `http://localhost:3000/docs` quand l'API est lancée.
+
+## Sécurité
+
+- Les mots de passe sont hashés avec `bcrypt` et `passwordHash` n'est jamais exposé dans les réponses publiques.
+- `JWT_SECRET` et `JWT_EXPIRES_IN` doivent venir de l'environnement API.
+- Les messages privés et les messages d'équipe sont chiffrés au repos en `AES-256-GCM`.
+- Le front ne reçoit jamais la clé de chiffrement, ni les champs internes `encryptedContent`, `iv` ou `authTag`.
+- `MESSAGE_ENCRYPTION_KEY` est obligatoire côté API et doit contenir une clé base64 de 32 bytes.
+- Ce chiffrement protège les données au repos côté serveur, mais ce n'est pas du chiffrement de bout en bout.
+- En production, HTTPS doit être activé partout.
+
+Générer une clé locale :
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
 ## Limites connues du MVP
 

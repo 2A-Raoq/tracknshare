@@ -17,7 +17,7 @@ export class User {
   @Column({ unique: true })
   username: string
 
-  @Column()
+  @Column({ type: 'varchar', select: false })
   passwordHash: string
 
   @Column({ default: 'PLAYER' })

@@ -9,10 +9,12 @@ import { MessagesService } from './messages.service'
 import { MessagesController } from './messages.controller'
 import { MessagesGateway } from './messages.gateway'
 import { ConversationParticipantGuard } from './guards/conversation-participant.guard'
+import { SecurityModule } from '../security/security.module'
 
 @Module({
   imports: [
     ConfigModule,
+    SecurityModule,
     UsersModule,
     TypeOrmModule.forFeature([Conversation, ConversationParticipant, PrivateMessage]),
   ],

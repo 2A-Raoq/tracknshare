@@ -5,11 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, IsNull, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { Conversation, ConversationType } from './entities/conversation.entity'
 import { ConversationParticipant } from './entities/conversation-participant.entity'
 import { PrivateMessage } from './entities/private-message.entity'
 import { UsersService } from '../users/users.service'
+import { EncryptionService } from '../security/encryption.service'
+
+const UNAVAILABLE_MESSAGE_CONTENT = 'Message indisponible'
 
 @Injectable()
 export class MessagesService {
@@ -21,6 +24,7 @@ export class MessagesService {
     @InjectRepository(PrivateMessage)
     private readonly privateMessageRepo: Repository<PrivateMessage>,
     private readonly usersService: UsersService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async listConversations(userId: string) {
@@ -84,11 +88,11 @@ export class MessagesService {
 
   async getConversationMessages(conversationId: string, userId: string) {
     const participant = await this.getParticipantOrThrow(conversationId, userId)
-    const messages = await this.privateMessageRepo.find({
-      where: { conversationId, deletedAt: IsNull() },
-      relations: ['sender'],
-      order: { createdAt: 'ASC' },
-    })
+    const messages = await this.createMessageQueryBuilder()
+      .where('message.conversationId = :conversationId', { conversationId })
+      .andWhere('message.deletedAt IS NULL')
+      .orderBy('message.createdAt', 'ASC')
+      .getMany()
 
     const otherParticipant = participant.conversation.participants.find(
       (entry) => entry.userId !== userId,
@@ -119,11 +123,15 @@ export class MessagesService {
       throw new BadRequestException('PRIVATE_MESSAGE_TOO_LONG')
     }
 
+    const encrypted = this.encryptionService.encrypt(trimmed)
     const message = await this.privateMessageRepo.save(
       this.privateMessageRepo.create({
         conversationId,
         senderId,
-        content: trimmed,
+        content: null,
+        encryptedContent: encrypted.ciphertext,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
         editedAt: null,
         deletedAt: null,
       }),
@@ -131,10 +139,9 @@ export class MessagesService {
 
     await this.conversationRepo.update(conversationId, { updatedAt: new Date() })
 
-    const fullMessage = await this.privateMessageRepo.findOne({
-      where: { id: message.id },
-      relations: ['sender'],
-    })
+    const fullMessage = await this.createMessageQueryBuilder()
+      .where('message.id = :id', { id: message.id })
+      .getOne()
 
     if (!fullMessage) {
       throw new NotFoundException('PRIVATE_MESSAGE_NOT_FOUND')
@@ -200,11 +207,11 @@ export class MessagesService {
       return new Map<string, PrivateMessage>()
     }
 
-    const messages = await this.privateMessageRepo.find({
-      where: { conversationId: In(conversationIds), deletedAt: IsNull() },
-      relations: ['sender'],
-      order: { createdAt: 'DESC' },
-    })
+    const messages = await this.createMessageQueryBuilder()
+      .where('message.conversationId IN (:...conversationIds)', { conversationIds })
+      .andWhere('message.deletedAt IS NULL')
+      .orderBy('message.createdAt', 'DESC')
+      .getMany()
 
     const lastMessages = new Map<string, PrivateMessage>()
     for (const message of messages) {
@@ -246,7 +253,7 @@ export class MessagesService {
     return {
       id: message.id,
       senderId: message.senderId,
-      content: message.content,
+      content: this.getDecryptedContent(message),
       createdAt: message.createdAt,
     }
   }
@@ -259,10 +266,42 @@ export class MessagesService {
         id: message.senderId,
         username: message.sender?.username ?? null,
       },
-      content: message.content,
+      content: this.getDecryptedContent(message),
       createdAt: message.createdAt,
       editedAt: message.editedAt,
       deletedAt: message.deletedAt,
     }
+  }
+
+  private getDecryptedContent(message: PrivateMessage): string {
+    try {
+      if (message.encryptedContent && message.iv && message.authTag) {
+        return this.encryptionService.decrypt({
+          ciphertext: message.encryptedContent,
+          iv: message.iv,
+          authTag: message.authTag,
+        })
+      }
+
+      if (message.content) {
+        return message.content
+      }
+    } catch {
+      return UNAVAILABLE_MESSAGE_CONTENT
+    }
+
+    return UNAVAILABLE_MESSAGE_CONTENT
+  }
+
+  private createMessageQueryBuilder() {
+    return this.privateMessageRepo
+      .createQueryBuilder('message')
+      .addSelect([
+        'message.content',
+        'message.encryptedContent',
+        'message.iv',
+        'message.authTag',
+      ])
+      .leftJoinAndSelect('message.sender', 'sender')
   }
 }

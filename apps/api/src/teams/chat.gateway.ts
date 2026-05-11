@@ -39,7 +39,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.disconnect()
         return
       }
-      const secret = this.configService.get<string>('JWT_SECRET', 'dev-secret-change-me')
+      const secret = this.configService.getOrThrow<string>('JWT_SECRET')
       const payload = jwt.verify(token, secret) as JwtPayload
       client.data.userId = payload.sub
     } catch {
@@ -87,8 +87,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const content = data.content?.trim() ?? ''
-    if (!content || content.length > 1000) {
+    if (!content) {
       client.emit('error', { code: 'CHAT_MESSAGE_EMPTY' })
+      return
+    }
+
+    if (content.length > 1000) {
+      client.emit('error', { code: 'CHAT_MESSAGE_TOO_LONG' })
       return
     }
 

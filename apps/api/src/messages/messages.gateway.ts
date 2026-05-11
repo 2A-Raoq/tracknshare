@@ -40,7 +40,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         return
       }
 
-      const secret = this.configService.get<string>('JWT_SECRET', 'dev-secret-change-me')
+      const secret = this.configService.getOrThrow<string>('JWT_SECRET')
       const payload = jwt.verify(token, secret) as JwtPayload
       client.data.userId = payload.sub
     } catch {

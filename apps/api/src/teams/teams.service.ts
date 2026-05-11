@@ -13,6 +13,18 @@ import { ChatMessage } from './entities/chat-message.entity'
 import { CreateTeamDto } from './dto/create-team.dto'
 import { JoinTeamDto } from './dto/join-team.dto'
 import { SendMessageDto } from './dto/send-message.dto'
+import { EncryptionService } from '../security/encryption.service'
+
+const UNAVAILABLE_MESSAGE_CONTENT = 'Message indisponible'
+
+type TeamMessagePayload = {
+  id: string
+  teamId: string
+  senderId: string
+  sender: ChatMessage['sender']
+  content: string
+  createdAt: Date
+}
 
 @Injectable()
 export class TeamsService {
@@ -20,6 +32,7 @@ export class TeamsService {
     @InjectRepository(Team) private readonly teamRepo: Repository<Team>,
     @InjectRepository(TeamMember) private readonly memberRepo: Repository<TeamMember>,
     @InjectRepository(ChatMessage) private readonly messageRepo: Repository<ChatMessage>,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async create(userId: string, dto: CreateTeamDto): Promise<Team> {
@@ -93,36 +106,93 @@ export class TeamsService {
     return { teamId: team.id, role: 'MEMBER' }
   }
 
-  async getMessages(teamId: string, limit = 50) {
-    return this.messageRepo.find({
-      where: { teamId },
-      relations: ['sender'],
-      order: { createdAt: 'ASC' },
-      take: limit,
-    })
+  async getMessages(teamId: string, limit = 50): Promise<TeamMessagePayload[]> {
+    const messages = await this.createMessageQueryBuilder()
+      .where('message.teamId = :teamId', { teamId })
+      .orderBy('message.createdAt', 'ASC')
+      .take(limit)
+      .getMany()
+
+    return messages.map((message) => this.toChatMessagePayload(message))
   }
 
   async saveMessage(
     teamId: string,
     senderId: string,
     dto: SendMessageDto,
-  ): Promise<ChatMessage> {
+  ): Promise<TeamMessagePayload> {
     const trimmed = dto.content.trim()
     if (!trimmed) throw new BadRequestException('CHAT_MESSAGE_EMPTY')
+    if (trimmed.length > 1000) throw new BadRequestException('CHAT_MESSAGE_TOO_LONG')
 
+    const encrypted = this.encryptionService.encrypt(trimmed)
     const msg = await this.messageRepo.save(
-      this.messageRepo.create({ teamId, senderId, content: trimmed }),
+      this.messageRepo.create({
+        teamId,
+        senderId,
+        content: null,
+        encryptedContent: encrypted.ciphertext,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
+      }),
     )
 
-    const full = await this.messageRepo.findOne({
-      where: { id: msg.id },
-      relations: ['sender'],
-    })
-    return full!
+    const full = await this.createMessageQueryBuilder()
+      .where('message.id = :id', { id: msg.id })
+      .getOne()
+
+    if (!full) {
+      throw new NotFoundException('CHAT_MESSAGE_NOT_FOUND')
+    }
+
+    return this.toChatMessagePayload(full)
   }
 
   async isMember(teamId: string, userId: string): Promise<boolean> {
     const member = await this.memberRepo.findOne({ where: { teamId, userId } })
     return !!member
+  }
+
+  private toChatMessagePayload(message: ChatMessage): TeamMessagePayload {
+    return {
+      id: message.id,
+      teamId: message.teamId,
+      senderId: message.senderId,
+      sender: message.sender,
+      content: this.getDecryptedContent(message),
+      createdAt: message.createdAt,
+    }
+  }
+
+  private getDecryptedContent(message: ChatMessage): string {
+    try {
+      if (message.encryptedContent && message.iv && message.authTag) {
+        return this.encryptionService.decrypt({
+          ciphertext: message.encryptedContent,
+          iv: message.iv,
+          authTag: message.authTag,
+        })
+      }
+
+      if (message.content) {
+        return message.content
+      }
+    } catch {
+      return UNAVAILABLE_MESSAGE_CONTENT
+    }
+
+    return UNAVAILABLE_MESSAGE_CONTENT
+  }
+
+  private createMessageQueryBuilder() {
+    return this.messageRepo
+      .createQueryBuilder('message')
+      .addSelect([
+        'message.content',
+        'message.encryptedContent',
+        'message.iv',
+        'message.authTag',
+      ])
+      .leftJoinAndSelect('message.sender', 'sender')
   }
 }
