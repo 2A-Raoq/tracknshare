@@ -164,6 +164,17 @@ button {
   padding: 24px;
 }
 
+.hero--immersive {
+  background:
+    linear-gradient(125deg, rgba(5, 8, 18, 0.96) 0%, rgba(10, 14, 29, 0.9) 38%, rgba(16, 26, 49, 0.82) 68%, rgba(120, 72, 15, 0.72) 100%),
+    radial-gradient(circle at 18% 20%, rgba(124, 140, 255, 0.36), transparent 0 24%),
+    radial-gradient(circle at 84% 20%, rgba(245, 158, 11, 0.26), transparent 0 20%);
+}
+
+.hero-grid--product {
+  align-items: center;
+}
+
 .hero-visual {
   min-height: 280px;
   border-radius: 24px;
@@ -200,6 +211,261 @@ button {
   font-size: 0.82rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.landing-micro-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.landing-chip {
+  min-width: 140px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.landing-chip__label,
+.landing-card-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-product {
+  display: grid;
+  gap: 16px;
+}
+
+.hero-product__surface {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+    rgba(7, 11, 22, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px);
+}
+
+.hero-product__surface--main {
+  padding: 20px;
+}
+
+.hero-product__surface--side,
+.hero-product__surface--chat {
+  padding: 18px;
+}
+
+.hero-product__topline,
+.hero-product__mini-head,
+.hero-product__panel-head,
+.hero-product__scoreline {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero-product__topline,
+.hero-product__panel-head {
+  align-items: flex-start;
+}
+
+.hero-product__mini-head {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.hero-product__topline h2,
+.hero-product__mini-head strong,
+.landing-achievement-card strong {
+  margin: 0;
+}
+
+.hero-product__scoreline {
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+
+.hero-product__scorecard {
+  flex: 1 1 120px;
+  min-width: 120px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hero-product__scorecard strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.5rem;
+}
+
+.hero-product__grid,
+.landing-visual-columns,
+.landing-achievement-showcase,
+.landing-social-grid,
+.landing-pillars {
+  display: grid;
+  gap: 16px;
+}
+
+.hero-product__panel {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-progress {
+  position: relative;
+  height: 10px;
+  margin: 14px 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.landing-progress__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+}
+
+.landing-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.landing-badge-token {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(124, 140, 255, 0.12);
+  border: 1px solid rgba(124, 140, 255, 0.24);
+  color: #dfe4ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.landing-mini-list,
+.landing-mini-ranking {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.landing-mini-list li,
+.landing-mini-ranking li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-chat-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.landing-chat-bubble {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 18px 18px 18px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-chat-bubble--accent {
+  border-radius: 18px 18px 8px 18px;
+  background: rgba(124, 140, 255, 0.12);
+  border-color: rgba(124, 140, 255, 0.22);
+}
+
+.action-grid--expanded {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.action-card--premium {
+  min-height: 190px;
+}
+
+.landing-panel {
+  padding: 24px;
+}
+
+.landing-panel--soft {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(14, 19, 34, 0.84);
+}
+
+.landing-pillar-card h3 {
+  margin: 0;
+}
+
+.landing-social-card {
+  height: 100%;
+}
+
+.landing-achievement-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-achievement-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 64px;
+  padding: 0 10px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(124, 140, 255, 0.18));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.landing-achievement-progress {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-account-card strong {
+  word-break: break-word;
+}
+
+.landing-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(1180px, calc(100% - 32px));
+  margin: 28px auto 0;
+  padding: 24px 0 48px;
 }
 
 .hero-copy h1 {
@@ -419,6 +685,26 @@ button {
 .auth-aside,
 .auth-card {
   min-height: 100%;
+}
+
+@media (min-width: 900px) {
+  .hero-grid--product {
+    grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  }
+
+  .hero-product__grid,
+  .landing-social-grid,
+  .landing-pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-visual-columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .landing-achievement-showcase {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .auth-aside {

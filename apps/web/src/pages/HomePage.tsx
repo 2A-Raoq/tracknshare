@@ -3,49 +3,27 @@ import { useSnapshot } from 'valtio'
 import { authStore } from '../store/auth.store'
 import AppNavigation from '../components/AppNavigation'
 
-type ActionCard = {
+type FeatureCard = {
   title: string
   description: string
-  authPath: string
-  guestPath: string
 }
 
-const ACTION_CARDS: ActionCard[] = [
+const FEATURE_CARDS: FeatureCard[] = [
   {
-    title: 'Mes stats',
-    description: 'Score, K/D, winrate et progression saisonnière en un coup d’œil.',
-    authPath: '/dashboard',
-    guestPath: '/login',
+    title: 'Stats',
+    description: 'Visualisez vos performances, votre score, votre K/D et votre winrate.',
   },
   {
-    title: 'Leaderboard',
-    description: 'Classement solo en temps réel. Compare ton rang contre tous les joueurs.',
-    authPath: '/leaderboard',
-    guestPath: '/leaderboard',
+    title: 'Classements',
+    description: 'Comparez votre progression avec les autres joueurs.',
   },
   {
     title: 'Équipes',
-    description: 'Crée ta squad, invite des joueurs via code et attribue les rôles.',
-    authPath: '/teams',
-    guestPath: '/login',
+    description: 'Rejoignez une équipe, échangez avec vos membres et suivez votre roster.',
   },
   {
-    title: 'Messages',
-    description: 'Chat d’équipe et messages privés 1-to-1 dans un layout Discord-like.',
-    authPath: '/messages',
-    guestPath: '/login',
-  },
-  {
-    title: 'Amis',
-    description: 'Envoie des demandes d’amis, consulte les profils publics des joueurs.',
-    authPath: '/friends',
-    guestPath: '/login',
-  },
-  {
-    title: 'Achievements',
-    description: 'Badges débloquables avec barre de progression en temps réel sur chaque objectif.',
-    authPath: '/dashboard',
-    guestPath: '/login',
+    title: 'Social',
+    description: 'Ajoutez des amis, envoyez des messages privés et débloquez des badges.',
   },
 ]
 
@@ -53,145 +31,96 @@ export default function HomePage() {
   const { user, loading } = useSnapshot(authStore)
   const isAuthenticated = Boolean(user)
 
+  const primaryHref = isAuthenticated ? '/dashboard' : '/register'
+  const primaryLabel = isAuthenticated ? 'Ouvrir le dashboard' : 'Commencer'
+  const secondaryHref = isAuthenticated ? '/leaderboard' : '/login'
+  const secondaryLabel = isAuthenticated ? 'Voir le leaderboard' : 'Se connecter'
+  const footerSecondaryHref = isAuthenticated ? '/dashboard' : '/login'
+  const footerSecondaryLabel = isAuthenticated ? 'Dashboard' : 'Connexion'
+
   return (
     <div className="app-shell">
       <AppNavigation />
 
       <main className="section-stack">
-
-        {/* ── Hero ─────────────────────────────────────────── */}
         <section className="hero">
-          <div className="hero-grid">
+          <div className="hero-grid" style={{ padding: '36px 24px' }}>
             <div className="hero-copy">
-              <span className="hero-kicker">Track&apos;N Share — Gaming Platform MVP</span>
-              <h1>Own your stats. Build your squad. Dominate the board.</h1>
-              <p>
-                Suis tes performances, gère ton équipe et compare-toi aux autres joueurs
-                depuis un seul tableau de bord compétitif.
+              <span className="hero-kicker">Gaming performance platform</span>
+              <h1>Track&apos;N Share</h1>
+              <p style={{ fontSize: '1.08rem', color: 'var(--text)' }}>
+                Suivez vos performances, comparez vos stats et progressez avec votre équipe.
               </p>
+              <p>
+                Une plateforme gaming pour centraliser vos statistiques, vos classements, vos
+                équipes, vos messages et vos badges.
+              </p>
+
               {!loading && (
-                <div className="page-actions" style={{ marginTop: '20px' }}>
-                  <Link
-                    href={isAuthenticated ? '/dashboard' : '/login'}
-                    className="primary-button"
-                  >
-                    {isAuthenticated ? 'Ouvrir le dashboard' : 'Se connecter'}
+                <div className="page-actions" style={{ marginTop: '24px' }}>
+                  <Link href={primaryHref} className="primary-button">
+                    {primaryLabel}
                   </Link>
-                  <Link
-                    href={isAuthenticated ? '/leaderboard' : '/register'}
-                    className="secondary-button"
-                  >
-                    {isAuthenticated ? 'Voir le leaderboard' : 'Créer un compte'}
+                  <Link href={secondaryHref} className="secondary-button">
+                    {secondaryLabel}
                   </Link>
                 </div>
               )}
             </div>
-
-            <div className="hero-visual">
-              <div>
-                <span className="hero-kicker">DemoPlayer — Saison 1</span>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '14px' }}>
-                  <div className="status-card" style={{ padding: '12px 14px' }}>
-                    <p className="muted-text" style={{ margin: 0, fontSize: '0.75rem' }}>Score</p>
-                    <strong style={{ fontSize: '1.4rem' }}>1&nbsp;850</strong>
-                  </div>
-                  <div className="status-card" style={{ padding: '12px 14px' }}>
-                    <p className="muted-text" style={{ margin: 0, fontSize: '0.75rem' }}>Rang</p>
-                    <strong style={{ fontSize: '1.4rem' }}>#3</strong>
-                  </div>
-                  <div className="status-card" style={{ padding: '12px 14px' }}>
-                    <p className="muted-text" style={{ margin: 0, fontSize: '0.75rem' }}>K/D</p>
-                    <strong style={{ fontSize: '1.4rem' }}>1.84</strong>
-                  </div>
-                  <div className="status-card" style={{ padding: '12px 14px' }}>
-                    <p className="muted-text" style={{ margin: 0, fontSize: '0.75rem' }}>Winrate</p>
-                    <strong style={{ fontSize: '1.4rem' }}>62%</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* ── Feature cards ────────────────────────────────── */}
         <section className="section-stack">
           <div className="section-heading">
-            <h2>Tout ce que tu peux faire</h2>
+            <h2>Ce que fait Track&apos;N Share</h2>
             <p className="section-copy">
-              Six fonctionnalités démontrables, tracées de bout en bout avec des données mockées stables.
+              Les outils essentiels pour suivre votre progression et rester connecté à votre
+              écosystème de jeu.
             </p>
           </div>
 
           <div className="action-grid">
-            {ACTION_CARDS.map((card) => (
-              <Link
-                key={card.title}
-                href={isAuthenticated ? card.authPath : card.guestPath}
-                className="action-card"
-              >
+            {FEATURE_CARDS.map((card) => (
+              <article key={card.title} className="action-card">
                 <h3>{card.title}</h3>
                 <p>{card.description}</p>
-              </Link>
+              </article>
             ))}
           </div>
         </section>
 
-        {/* ── Info / Demo ───────────────────────────────────── */}
-        <section className="info-grid">
-          <div className="panel">
-            <div className="section-heading" style={{ marginBottom: '16px' }}>
-              <h2>Accès rapide</h2>
-              <p className="section-copy">Toutes les pages pour la démonstration.</p>
-            </div>
-            <div className="button-row" style={{ flexWrap: 'wrap' }}>
-              <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
-              <Link href={isAuthenticated ? '/dashboard' : '/login'} className="ghost-button">
-                Dashboard
-              </Link>
-              <Link href={isAuthenticated ? '/teams' : '/login'} className="ghost-button">
-                Équipes
-              </Link>
-              <Link href={isAuthenticated ? '/messages' : '/login'} className="ghost-button">
-                Messages
-              </Link>
-              <Link href={isAuthenticated ? '/friends' : '/login'} className="ghost-button">
-                Amis
-              </Link>
-              {isAuthenticated && user && (
-                <Link href={`/players/${user.username}`} className="ghost-button">
-                  Mon profil
-                </Link>
-              )}
-            </div>
+        <section className="panel">
+          <div className="section-heading">
+            <h2>Pensé pour les joueurs compétitifs</h2>
+            <p className="section-copy">
+              Track&apos;N Share rassemble les outils essentiels pour suivre votre progression et
+              rester connecté à votre équipe.
+            </p>
           </div>
 
-          <div className="panel">
-            <div className="section-heading" style={{ marginBottom: '16px' }}>
-              <h2>Compte démo</h2>
-              <p className="section-copy">Données stables pour la soutenance.</p>
-            </div>
-            <ul className="metric-list">
-              <li className="metric-row">
-                <span className="muted-text">Email</span>
-                <strong>demo@tracknshare.local</strong>
-              </li>
-              <li className="metric-row">
-                <span className="muted-text">Mot de passe</span>
-                <strong>Demo1234!</strong>
-              </li>
-              <li className="metric-row">
-                <span className="muted-text">Code équipe</span>
-                <strong>DEMO0001</strong>
-              </li>
-              <li className="metric-row">
-                <span className="muted-text">Provider</span>
-                <strong>MockProvider</strong>
-              </li>
-            </ul>
+          <div className="button-row" style={{ marginTop: '8px' }}>
+            <span className="pill">Dashboard joueur</span>
+            <span className="pill">Chat et messages</span>
+            <span className="pill">Badges et progression</span>
           </div>
         </section>
-
       </main>
+
+      <footer className="landing-footer">
+        <div>
+          <strong>Track&apos;N Share</strong>
+          <p className="muted-text">Gaming performance platform</p>
+        </div>
+        <div className="button-row">
+          <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
+          <Link href={footerSecondaryHref} className="ghost-button">
+            {footerSecondaryLabel}
+          </Link>
+          {!isAuthenticated && (
+            <Link href="/register" className="ghost-button">Inscription</Link>
+          )}
+        </div>
+      </footer>
     </div>
   )
 }
