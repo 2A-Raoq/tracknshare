@@ -585,6 +585,11 @@ button {
   }
 }
 
+/* Burger button — hidden on desktop, shown via mobile media query */
+.burger-btn {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .app-shell,
   .page-shell,
@@ -594,14 +599,129 @@ button {
     padding-bottom: 40px;
   }
 
+  /* Sticky topbar on mobile: row layout, no stack */
   .topbar {
-    flex-direction: column;
-    align-items: stretch;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 12px;
   }
 
+  /* Hide desktop nav links and actions — burger takes over */
   .nav-links,
   .nav-actions {
+    display: none;
+  }
+
+  /* Burger button */
+  .burger-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: var(--text);
+  }
+
+  .burger-bar {
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+  }
+
+  /* Dark overlay behind the panel */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 200;
+  }
+
+  /* Side panel */
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(300px, 88vw);
+    height: 100dvh;
+    background: var(--bg-strong);
+    border-left: 1px solid var(--border);
+    z-index: 201;
+    overflow-y: auto;
+  }
+
+  .mobile-menu__header {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .mobile-menu__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .mobile-menu__close:hover {
+    border-color: var(--border-strong);
+  }
+
+  .mobile-menu__links {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .mobile-menu__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    font-size: 1rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .mobile-menu__link:hover {
+    color: var(--text);
+    background: rgba(124, 140, 255, 0.06);
+  }
+
+  .mobile-menu__link.nav-link--active {
+    color: var(--accent);
+    background: rgba(124, 140, 255, 0.08);
+  }
+
+  .mobile-menu__footer {
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
   .hero-grid,
