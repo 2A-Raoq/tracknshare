@@ -11,6 +11,11 @@ export async function syncStats(gameId?: string): Promise<PlayerStatsData> {
   return res.data.data
 }
 
+export async function syncSteamStats(): Promise<PlayerStatsData> {
+  const res = await api.post('/stats/sync/steam')
+  return res.data.data
+}
+
 export async function getSoloLeaderboard(params?: {
   gameId?: string
   seasonId?: string

@@ -15,6 +15,7 @@ export interface PlayerStatsData {
   userId: string
   gameId: string
   seasonId: string
+  provider: string
   kills: number
   deaths: number
   wins: number

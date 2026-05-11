@@ -66,6 +66,9 @@ export class PlayerStats {
   @Column({ default: 0 })
   score: number
 
+  @Column({ default: 'MOCK' })
+  provider: string
+
   @Column({ type: 'timestamp', nullable: true })
   fetchedAt: Date | null
 

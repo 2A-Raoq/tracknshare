@@ -27,4 +27,13 @@ export class StatsController {
     const stats = await this.statsService.syncStats(req.user.userId, dto.gameId)
     return { success: true, data: stats }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Sync my stats from Steam' })
+  @Post('sync/steam')
+  async syncSteamStats(@Req() req: any) {
+    const stats = await this.statsService.syncSteamStats(req.user.userId)
+    return { success: true, data: stats }
+  }
 }

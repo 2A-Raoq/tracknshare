@@ -18,6 +18,7 @@ import { UserAchievement } from '../achievements/entities/user-achievement.entit
 import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
 import { decodeMessageEncryptionKey, encryptWithKey } from '../security/encryption.util'
+import { GameAccount } from '../game-accounts/entities/game-account.entity'
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -40,6 +41,7 @@ const dataSource = new DataSource({
     FriendRequest,
     Achievement,
     UserAchievement,
+    GameAccount,
   ],
   synchronize: true,
 })

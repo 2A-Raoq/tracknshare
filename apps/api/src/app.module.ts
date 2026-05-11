@@ -23,6 +23,8 @@ import { FriendsModule } from './friends/friends.module'
 import { Achievement } from './achievements/entities/achievement.entity'
 import { UserAchievement } from './achievements/entities/user-achievement.entity'
 import { AchievementsModule } from './achievements/achievements.module'
+import { GameAccount } from './game-accounts/entities/game-account.entity'
+import { GameAccountsModule } from './game-accounts/game-accounts.module'
 
 @Module({
   imports: [
@@ -50,6 +52,7 @@ import { AchievementsModule } from './achievements/achievements.module'
           FriendRequest,
           Achievement,
           UserAchievement,
+          GameAccount,
         ],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
@@ -64,6 +67,7 @@ import { AchievementsModule } from './achievements/achievements.module'
     PlayersModule,
     FriendsModule,
     AchievementsModule,
+    GameAccountsModule,
   ],
 })
 export class AppModule {}

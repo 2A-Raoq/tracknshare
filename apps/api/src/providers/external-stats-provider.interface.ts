@@ -1,4 +1,14 @@
+export type StatsProviderName = 'MOCK' | 'STEAM'
+
+export interface StatsProviderRequest {
+  userId: string
+  gameSlug: string
+  externalId?: string
+}
+
 export interface RawStats {
+  provider: StatsProviderName
+  externalUsername?: string | null
   kills: number
   deaths: number
   wins: number
@@ -8,5 +18,6 @@ export interface RawStats {
 }
 
 export interface IStatsProvider {
-  fetchStats(userId: string, gameSlug: string): Promise<RawStats>
+  readonly provider: StatsProviderName
+  fetchStats(request: StatsProviderRequest): Promise<RawStats>
 }

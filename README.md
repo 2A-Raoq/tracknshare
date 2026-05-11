@@ -53,6 +53,7 @@ Variables clés :
 | `JWT_SECRET` | *(voir .env.example)* | Secret JWT — **changer en prod** |
 | `JWT_EXPIRES_IN` | `1d` | Durée de vie du token |
 | `MESSAGE_ENCRYPTION_KEY` | *(obligatoire)* | Clé base64 32 bytes pour chiffrer les messages au repos |
+| `STEAM_API_KEY` | *(optionnel)* | Clé Steam Web API utilisée uniquement côté API |
 | `CORS_ORIGIN` | `http://localhost:5173` | Origine autorisée par CORS |
 
 ### Web (`apps/web/.env`)
@@ -144,6 +145,16 @@ Code d'invitation équipe : **DEMO0001**
 ## API
 
 Swagger disponible sur `http://localhost:3000/docs` quand l'API est lancée.
+
+## Intégration Steam
+
+- `STEAM_API_KEY` reste uniquement côté API. Elle ne doit jamais être exposée au front.
+- Obtenir une clé Steam Web API : `https://steamcommunity.com/dev/apikey`
+- Le SteamID à lier doit être un `SteamID64` public.
+- Certaines données Steam exigent un profil public.
+- Steam ne fournit pas toujours des statistiques détaillées homogènes sur les kills, deaths ou winrate.
+- Dans ce MVP, le sync Steam produit donc des stats Track'N Share simplifiées et cohérentes à partir du profil et du temps de jeu disponible.
+- Si Steam échoue ou n'est pas configuré, le `MockProvider` reste disponible pour la démo via le sync standard.
 
 ## Sécurité
 
