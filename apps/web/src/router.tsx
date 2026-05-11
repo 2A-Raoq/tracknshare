@@ -10,6 +10,7 @@ import TeamsPage from './pages/TeamsPage'
 import TeamDetailPage from './pages/TeamDetailPage'
 import MessagesPage from './pages/MessagesPage'
 import ConversationPage from './pages/ConversationPage'
+import TeamChatPage from './pages/TeamChatPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 import FriendsPage from './pages/FriendsPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -52,6 +53,11 @@ export default function AppRouter() {
       <Route path="/messages">
         <ProtectedRoute>
           <MessagesPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/messages/teams/:teamId">
+        <ProtectedRoute>
+          <TeamChatPage />
         </ProtectedRoute>
       </Route>
       <Route path="/messages/:conversationId">

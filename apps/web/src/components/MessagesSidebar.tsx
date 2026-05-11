@@ -8,13 +8,14 @@ import AvatarInitial from './AvatarInitial'
 
 interface Props {
   activeConversationId?: string
+  activeTeamId?: string
 }
 
 type ApiError = {
   response?: { data?: { message?: string } }
 }
 
-export default function MessagesSidebar({ activeConversationId }: Props) {
+export default function MessagesSidebar({ activeConversationId, activeTeamId }: Props) {
   const [, navigate] = useLocation()
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [teams, setTeams] = useState<TeamSummary[]>([])
@@ -152,11 +153,13 @@ export default function MessagesSidebar({ activeConversationId }: Props) {
       {teams.length === 0 && (
         <p className="dc-sidebar__empty">Aucune équipe.</p>
       )}
-      {teams.map((team) => (
+      {teams.map((team) => {
+        const isActiveTeam = team.id === activeTeamId
+        return (
         <button
           key={team.id}
-          className="dc-sidebar__item"
-          onClick={() => navigate(`/teams/${team.id}`)}
+          className={`dc-sidebar__item${isActiveTeam ? ' dc-sidebar__item--active' : ''}`}
+          onClick={() => navigate(`/messages/teams/${team.id}`)}
         >
           <div
             className="dc-avatar dc-avatar--team"
@@ -167,7 +170,8 @@ export default function MessagesSidebar({ activeConversationId }: Props) {
           </div>
           <span className="dc-sidebar__item-name">{team.name}</span>
         </button>
-      ))}
+        )
+      })}
     </aside>
   )
 }
