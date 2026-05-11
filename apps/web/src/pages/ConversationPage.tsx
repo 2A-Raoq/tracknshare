@@ -7,6 +7,8 @@ import { messagesApi } from '../services/messages.api'
 import { createPrivateSocket } from '../lib/socket'
 import type { ConversationSummary, PrivateMessageItem } from '../types/messages'
 import AppNavigation from '../components/AppNavigation'
+import MessagesSidebar from '../components/MessagesSidebar'
+import AvatarInitial from '../components/AvatarInitial'
 
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
@@ -92,14 +94,10 @@ export default function ConversationPage() {
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
-    if (!conversationId) {
-      return
-    }
+    if (!conversationId) return
 
     const content = input.trim()
-    if (!content) {
-      return
-    }
+    if (!content) return
 
     setSending(true)
     setSendError('')
@@ -120,124 +118,96 @@ export default function ConversationPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="page-shell">
-        <AppNavigation />
-        <p className="status-message">Chargement de la conversation...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="page-shell">
-        <AppNavigation />
-        <p className="status-message error">{error}</p>
-        <div className="button-row" style={{ marginTop: '16px' }}>
-          <button onClick={() => navigate('/messages')} className="ghost-button">
-            Retour aux messages
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const peer = conversation?.participant?.username ?? null
 
   return (
-    <div className="page-shell">
+    <div className="page-shell dc-page-shell">
       <AppNavigation />
+      <div className="dc-layout dc-layout--chat-active">
+        <MessagesSidebar activeConversationId={conversationId} />
 
-      <main className="section-stack">
-        <section className="panel">
-          <div className="panel-header">
-            <div>
-              <p className="hero-kicker">Private conversation</p>
-              <h1 className="page-title">
-                {conversation?.participant?.username ? (
-                  <Link
-                    href={`/players/${conversation.participant.username}`}
-                    className="nav-link"
-                  >
-                    {conversation.participant.username}
-                  </Link>
-                ) : (
-                  'Conversation privée'
-                )}
-              </h1>
-              <p className="section-copy">
-                Canal direct 1-to-1 avec fallback REST si le socket est indisponible.
-              </p>
-            </div>
-            <div className={socketReady ? 'pill connected' : 'pill'}>
-              <span className="pill-dot" />
+        <div className="dc-chat">
+          <div className="dc-chat__header">
+            <button
+              className="dc-back-btn"
+              onClick={() => navigate('/messages')}
+              aria-label="Retour aux messages"
+            >
+              ←
+            </button>
+            <AvatarInitial username={peer} size={32} />
+            <span className="dc-chat__peer">
+              {peer ? (
+                <Link href={`/players/${peer}`} className="nav-link">
+                  {peer}
+                </Link>
+              ) : (
+                'Conversation privée'
+              )}
+            </span>
+            <span className={socketReady ? 'pill connected dc-pill' : 'pill dc-pill'}>
               {socketReady ? 'Socket actif' : 'Fallback REST'}
-            </div>
-          </div>
-        </section>
-
-        <section className="panel">
-          <div className="section-heading" style={{ marginBottom: '16px' }}>
-            <h2>Historique</h2>
-            <p className="section-copy">
-              Les participants sont les seuls à pouvoir lire et envoyer des messages.
-            </p>
+            </span>
           </div>
 
-          {messages.length === 0 && (
-            <div className="empty-box">Aucun message privé pour le moment.</div>
-          )}
-
-          <div className="message-feed">
-            <ul className="message-list">
-              {messages.map((message) => {
-                const isOwnMessage = message.sender.id === user?.id
-
-                return (
-                  <li
-                    key={message.id}
-                    className="message-item"
-                    style={{
-                      background: isOwnMessage
-                        ? 'rgba(124, 140, 255, 0.12)'
-                        : 'rgba(255, 255, 255, 0.03)',
-                    }}
-                  >
-                    <div className="message-meta">
-                      {message.sender.username ? (
-                        <Link href={`/players/${message.sender.username}`} className="nav-link">
-                          <strong>{message.sender.username}</strong>
-                        </Link>
-                      ) : (
-                        <strong>Utilisateur</strong>
-                      )}
-                      <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+          <div className="dc-chat__feed">
+            {loading && <p className="dc-chat__status">Chargement...</p>}
+            {error && <p className="dc-chat__status dc-chat__status--error">{error}</p>}
+            {!loading && !error && messages.length === 0 && (
+              <p className="dc-chat__status">Aucun message pour le moment.</p>
+            )}
+            {messages.map((message) => {
+              const isOwn = message.sender.id === user?.id
+              return (
+                <div
+                  key={message.id}
+                  className={`dc-message${isOwn ? ' dc-message--own' : ''}`}
+                >
+                  <AvatarInitial username={message.sender.username} size={28} />
+                  <div className="dc-message__body">
+                    <div className="dc-message__meta">
+                      <span className="dc-message__name">
+                        {message.sender.username ?? 'Utilisateur'}
+                      </span>
+                      <span className="dc-message__time">
+                        {new Date(message.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
                     </div>
-                    <div>{message.content}</div>
-                  </li>
-                )
-              })}
-            </ul>
+                    <p className="dc-message__content">{message.content}</p>
+                  </div>
+                </div>
+              )
+            })}
             <div ref={bottomRef} />
           </div>
 
-          <form onSubmit={handleSend} className="form-stack" style={{ marginTop: '16px' }}>
-            <div className="field">
-              <label htmlFor="private-message">Message</label>
-              <textarea
-                id="private-message"
+          <form className="dc-chat__form" onSubmit={handleSend}>
+            {sendError && <p className="dc-chat__send-error">{sendError}</p>}
+            <div className="dc-chat__input-row">
+              <input
+                className="dc-chat__input"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Votre message privé..."
+                placeholder={`Message ${peer ? `@${peer}` : 'privé'}…`}
                 maxLength={1000}
+                disabled={sending}
+                autoComplete="off"
               />
+              <button
+                type="submit"
+                className="dc-chat__send-btn"
+                disabled={sending || !input.trim()}
+                aria-label="Envoyer"
+              >
+                {sending ? '…' : '↵'}
+              </button>
             </div>
-            {sendError && <p className="status-message error">{sendError}</p>}
-            <button type="submit" className="primary-button" disabled={sending || !input.trim()}>
-              {sending ? 'Envoi...' : 'Envoyer'}
-            </button>
           </form>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   )
 }
