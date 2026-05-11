@@ -73,6 +73,9 @@ button {
 }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -81,7 +84,7 @@ button {
   margin-bottom: 20px;
   border: 1px solid var(--border);
   border-radius: 18px;
-  background: rgba(11, 14, 27, 0.82);
+  background: rgba(11, 14, 27, 0.92);
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow);
 }
@@ -702,11 +705,8 @@ button {
     padding-bottom: 40px;
   }
 
-  /* Sticky topbar on mobile: row layout, no stack */
+  /* On mobile: override column stacking from older rules, tighten margin */
   .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 50;
     flex-direction: row;
     align-items: center;
     margin-bottom: 12px;
