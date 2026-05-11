@@ -1,5 +1,3 @@
-import type { AchievementItem } from './achievements'
-
 export interface PublicPlayerStats {
   score: number
   kdRatio: number
@@ -30,6 +28,17 @@ export interface PublicPlayerTeam {
   role: string
 }
 
+export interface PublicAchievementBadge {
+  id: string
+  code: string
+  name: string
+  description: string
+  iconKey?: string | null
+  points: number
+  category?: string | null
+  unlockedAt?: string | null
+}
+
 export interface PublicPlayerProfile {
   id: string
   username: string
@@ -41,5 +50,5 @@ export interface PublicPlayerProfile {
   primaryGame: PublicPlayerGame | null
   activeSeason: PublicPlayerSeason | null
   teams: PublicPlayerTeam[]
-  badges: AchievementItem[]
+  badges: PublicAchievementBadge[]
 }

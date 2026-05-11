@@ -442,15 +442,18 @@ export default function PublicProfilePage() {
                 </p>
               </div>
 
-              {profile.badges.length === 0 ? (
-                <div className="empty-box">Aucun badge débloqué.</div>
-              ) : (
-                <div className="stats-grid">
-                  {profile.badges.map((badge) => (
-                    <AchievementCard key={badge.code} achievement={badge} variant="public" />
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const badges = Array.isArray(profile.badges) ? profile.badges : []
+                return badges.length === 0 ? (
+                  <div className="empty-box">Aucun badge débloqué.</div>
+                ) : (
+                  <div className="stats-grid">
+                    {badges.map((badge) => (
+                      <AchievementCard key={badge.code} achievement={badge} variant="public" />
+                    ))}
+                  </div>
+                )
+              })()}
             </section>
           </>
         )}

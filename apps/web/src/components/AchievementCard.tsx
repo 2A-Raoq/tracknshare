@@ -1,8 +1,19 @@
 import AchievementIcon from './AchievementIcons'
-import type { AchievementItem } from '../types/achievements'
+
+interface BadgeInput {
+  name: string
+  description: string
+  iconKey?: string | null
+  points: number
+  unlocked?: boolean
+  currentValue?: number
+  targetValue?: number
+  progressPercent?: number
+  unlockedAt?: string | null
+}
 
 interface AchievementCardProps {
-  achievement: AchievementItem
+  achievement: BadgeInput
   variant?: 'progress' | 'public'
 }
 
