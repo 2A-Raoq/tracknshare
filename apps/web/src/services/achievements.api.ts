@@ -10,10 +10,7 @@ function isAchievementItem(value: unknown): value is AchievementItem {
     && typeof record.code === 'string'
     && typeof record.name === 'string'
     && typeof record.description === 'string'
-    && typeof record.icon === 'string'
     && typeof record.points === 'number'
-    && (typeof record.createdAt === 'string' || typeof record.createdAt === 'undefined')
-    && (typeof record.unlockedAt === 'string' || typeof record.unlockedAt === 'undefined')
   )
 }
 
@@ -21,7 +18,6 @@ function ensureAchievementArray(payload: unknown): AchievementItem[] {
   if (!Array.isArray(payload)) {
     throw new Error('Invalid achievements response: expected an array.')
   }
-
   return payload.map((item) => {
     if (!isAchievementItem(item)) {
       throw new Error('Invalid achievements response: malformed badge item.')

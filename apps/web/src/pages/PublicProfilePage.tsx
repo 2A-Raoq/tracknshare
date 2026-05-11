@@ -6,9 +6,9 @@ import { friendsApi } from '../services/friends.api'
 import { messagesApi } from '../services/messages.api'
 import { playersApi } from '../services/players.api'
 import type { FriendRequestsData, FriendUser } from '../types/friends'
-import type { AchievementItem } from '../types/achievements'
 import type { PublicPlayerProfile } from '../types/players'
 import AppNavigation from '../components/AppNavigation'
+import AchievementCard from '../components/AchievementCard'
 
 type ApiError = {
   response?: {
@@ -256,20 +256,6 @@ export default function PublicProfilePage() {
     )
   }
 
-  function renderBadgeCard(badge: AchievementItem) {
-    return (
-      <article key={`${badge.code}-${badge.unlockedAt ?? badge.id}`} className="data-card">
-        <div className="panel-header">
-          <div>
-            <p className="muted-text">{badge.icon}</p>
-            <h2>{badge.name}</h2>
-          </div>
-          <div className="pill">{badge.points} pts</div>
-        </div>
-        <p className="section-copy">{badge.description}</p>
-      </article>
-    )
-  }
 
   return (
     <div className="page-shell">
@@ -452,7 +438,7 @@ export default function PublicProfilePage() {
               <div className="section-heading" style={{ marginBottom: '16px' }}>
                 <h2>Badges</h2>
                 <p className="section-copy">
-                  Badges publics visibles sur le profil du joueur.
+                  Badges débloqués publiquement par ce joueur.
                 </p>
               </div>
 
@@ -460,7 +446,9 @@ export default function PublicProfilePage() {
                 <div className="empty-box">Aucun badge débloqué.</div>
               ) : (
                 <div className="stats-grid">
-                  {profile.badges.map((badge) => renderBadgeCard(badge))}
+                  {profile.badges.map((badge) => (
+                    <AchievementCard key={badge.code} achievement={badge} variant="public" />
+                  ))}
                 </div>
               )}
             </section>

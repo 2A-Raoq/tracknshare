@@ -24,10 +24,19 @@ export class Achievement {
   @Column()
   icon: string
 
-  @Column({ default: 0 })
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  iconKey: string | null
+
+  @Column({ type: 'integer', default: 0 })
   points: number
 
-  @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.achievement)
+  @Column({ type: 'integer', default: 1 })
+  targetValue: number
+
+  @Column({ type: 'varchar', length: 50, default: 'GENERAL' })
+  category: string
+
+  @OneToMany(() => UserAchievement, (ua) => ua.achievement)
   userAchievements: UserAchievement[]
 
   @CreateDateColumn()

@@ -3,8 +3,14 @@ export interface AchievementItem {
   code: string
   name: string
   description: string
-  icon: string
+  icon?: string
+  iconKey?: string
   points: number
+  category?: string
+  targetValue?: number
+  currentValue?: number
+  progressPercent?: number
+  unlocked?: boolean
+  unlockedAt?: string | null
   createdAt?: string
-  unlockedAt?: string
 }

@@ -99,8 +99,9 @@ export class PlayersService {
           code: item.achievement.code,
           name: item.achievement.name,
           description: item.achievement.description,
-          icon: item.achievement.icon,
+          iconKey: item.achievement.iconKey ?? 'default',
           points: item.achievement.points,
+          category: item.achievement.category ?? 'GENERAL',
           unlockedAt: item.unlockedAt,
         })),
     }

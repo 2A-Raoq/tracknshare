@@ -101,13 +101,13 @@ const demoDirectMessages = [
 ]
 
 const seedAchievements = [
-  { code: 'FIRST_LOGIN', name: 'First Login', description: "Première connexion au MVP.", icon: 'LOGIN', points: 10 },
-  { code: 'FIRST_STATS_SYNC', name: 'Stat Tracker', description: 'Première synchronisation de statistiques.', icon: 'SYNC', points: 20 },
-  { code: 'TOP_5_LEADERBOARD', name: 'Top 5', description: 'Présent dans le top 5 du leaderboard.', icon: 'TOP5', points: 50 },
-  { code: 'TEAM_FOUNDER', name: 'Team Founder', description: "Créateur ou capitaine d'équipe.", icon: 'TEAM', points: 30 },
-  { code: 'SOCIAL_PLAYER', name: 'Social Player', description: 'Joueur actif dans les interactions sociales.', icon: 'SOCIAL', points: 25 },
-  { code: 'FRIENDLY', name: 'Friendly', description: 'A déjà développé un lien social.', icon: 'FRIEND', points: 15 },
-  { code: 'CHATTER', name: 'Chatter', description: 'A participé au chat de démonstration.', icon: 'CHAT', points: 15 },
+  { code: 'FIRST_LOGIN',        name: 'First Login',    description: 'Connecte-toi pour la première fois.',             icon: 'LOGIN',  iconKey: 'login',   points: 10, targetValue: 1,  category: 'ACCOUNT'     },
+  { code: 'FIRST_STATS_SYNC',   name: 'Stat Tracker',   description: 'Synchronise tes statistiques une première fois.', icon: 'SYNC',   iconKey: 'stats',   points: 20, targetValue: 1,  category: 'STATS'       },
+  { code: 'TOP_5_LEADERBOARD',  name: 'Top 5',          description: 'Atteins le top 5 du leaderboard.',                icon: 'TOP5',   iconKey: 'trophy',  points: 50, targetValue: 1,  category: 'COMPETITION' },
+  { code: 'TEAM_FOUNDER',       name: 'Team Founder',   description: "Crée ou rejoins une équipe.",                     icon: 'TEAM',   iconKey: 'team',    points: 30, targetValue: 1,  category: 'TEAM'        },
+  { code: 'SOCIAL_PLAYER',      name: 'Social Player',  description: 'Envoie 5 messages privés ou d\'équipe.',          icon: 'SOCIAL', iconKey: 'message', points: 25, targetValue: 5,  category: 'SOCIAL'      },
+  { code: 'FRIENDLY',           name: 'Friendly',       description: 'Ajoute 3 amis.',                                  icon: 'FRIEND', iconKey: 'friends', points: 15, targetValue: 3,  category: 'SOCIAL'      },
+  { code: 'CHATTER',            name: 'Chatter',        description: 'Envoie 10 messages.',                             icon: 'CHAT',   iconKey: 'chat',    points: 15, targetValue: 10, category: 'SOCIAL'      },
 ]
 
 const userAchievementMap: Record<string, string[]> = {
@@ -304,13 +304,24 @@ async function seed() {
     }
   }
 
-  // Upsert achievements
+  // Upsert achievements — always update fields so re-running seed stays idempotent
   const achievementMap: Record<string, Achievement> = {}
   for (const item of seedAchievements) {
     let achievement = await achievementRepo.findOne({ where: { code: item.code } })
     if (!achievement) {
       achievement = await achievementRepo.save(achievementRepo.create(item))
       console.log(`Created achievement: ${item.code}`)
+    } else {
+      Object.assign(achievement, {
+        name: item.name,
+        description: item.description,
+        iconKey: item.iconKey,
+        points: item.points,
+        targetValue: item.targetValue,
+        category: item.category,
+      })
+      achievement = await achievementRepo.save(achievement)
+      console.log(`Updated achievement: ${item.code}`)
     }
     achievementMap[item.code] = achievement
   }

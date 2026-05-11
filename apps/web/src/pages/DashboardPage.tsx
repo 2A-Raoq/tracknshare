@@ -7,6 +7,7 @@ import { getMyStats, syncStats } from '../services/stats.api'
 import type { AchievementItem } from '../types/achievements'
 import type { PlayerStatsData } from '../types/stats'
 import AppNavigation from '../components/AppNavigation'
+import AchievementCard from '../components/AchievementCard'
 
 export default function DashboardPage() {
   const { user } = useSnapshot(authStore)
@@ -140,7 +141,7 @@ export default function DashboardPage() {
           <div className="section-heading">
             <h2>Mes badges</h2>
             <p className="section-copy">
-              Badges démo débloqués pour enrichir visuellement le dashboard.
+              Progression et badges débloqués — calculés à partir de ton activité en temps réel.
             </p>
           </div>
 
@@ -148,21 +149,16 @@ export default function DashboardPage() {
           {badgesError && <p className="status-message error">{badgesError}</p>}
 
           {!badgesLoading && !badgesError && badges.length === 0 && (
-            <div className="empty-box">Aucun badge débloqué pour le moment.</div>
+            <div className="empty-box">Aucun badge disponible pour le moment.</div>
           )}
 
           <div className="stats-grid">
             {badges.map((badge) => (
-              <article key={`${badge.code}-${badge.unlockedAt ?? badge.id}`} className="data-card">
-                <div className="panel-header">
-                  <div>
-                    <p className="muted-text">{badge.icon}</p>
-                    <h2>{badge.name}</h2>
-                  </div>
-                  <div className="pill">{badge.points} pts</div>
-                </div>
-                <p className="section-copy">{badge.description}</p>
-              </article>
+              <AchievementCard
+                key={badge.code}
+                achievement={badge}
+                variant="progress"
+              />
             ))}
           </div>
         </section>
