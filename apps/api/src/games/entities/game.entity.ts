@@ -20,6 +20,12 @@ export class Game {
   @Column({ default: 'mock' })
   apiProvider: string
 
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  externalId: string | null
+
+  @Column({ type: 'text', nullable: true })
+  imageUrl: string | null
+
   @CreateDateColumn()
   createdAt: Date
 

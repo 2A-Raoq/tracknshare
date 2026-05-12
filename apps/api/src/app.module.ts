@@ -25,6 +25,7 @@ import { UserAchievement } from './achievements/entities/user-achievement.entity
 import { AchievementsModule } from './achievements/achievements.module'
 import { GameAccount } from './game-accounts/entities/game-account.entity'
 import { GameAccountsModule } from './game-accounts/game-accounts.module'
+import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.entity'
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { GameAccountsModule } from './game-accounts/game-accounts.module'
           Achievement,
           UserAchievement,
           GameAccount,
+          SteamTrackedGame,
         ],
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),

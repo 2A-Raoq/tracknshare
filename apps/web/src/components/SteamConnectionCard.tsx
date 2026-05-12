@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import SteamGameSelectionModal from './SteamGameSelectionModal'
 import SteamLinkModal from './SteamLinkModal'
-import { getMyGameAccounts, linkSteamAccount } from '../services/gameAccounts.api'
+import {
+  getMyGameAccounts,
+  getSteamGames,
+  linkSteamAccount,
+  updateTrackedSteamGames,
+} from '../services/gameAccounts.api'
 import { syncSteamStats } from '../services/stats.api'
-import type { GameAccountItem } from '../types/game-accounts'
+import type { GameAccountItem, SteamGameItem } from '../types/game-accounts'
 import type { PlayerStatsData } from '../types/stats'
 
 type SteamConnectionCardProps = {
@@ -22,8 +28,13 @@ export default function SteamConnectionCard({
   const [steamIdInput, setSteamIdInput] = useState('')
   const [linkingSteam, setLinkingSteam] = useState(false)
   const [syncingSteam, setSyncingSteam] = useState(false)
-  const [latestSteamStats, setLatestSteamStats] = useState<PlayerStatsData | null>(null)
+  const [latestSteamStats, setLatestSteamStats] = useState<PlayerStatsData[]>([])
   const [steamModalOpen, setSteamModalOpen] = useState(false)
+  const [gamesModalOpen, setGamesModalOpen] = useState(false)
+  const [gamesLoading, setGamesLoading] = useState(false)
+  const [gamesSaving, setGamesSaving] = useState(false)
+  const [steamGames, setSteamGames] = useState<SteamGameItem[]>([])
+  const [selectedAppIds, setSelectedAppIds] = useState<string[]>([])
 
   useEffect(() => {
     getMyGameAccounts()
@@ -57,6 +68,8 @@ export default function SteamConnectionCard({
       })
       setSteamIdInput(account.externalId)
       setSteamSuccess('Compte Steam lié avec succès.')
+      setSteamGames([])
+      setSelectedAppIds([])
       setSteamModalOpen(false)
     } catch (error: any) {
       const message = error?.response?.data?.message
@@ -78,7 +91,7 @@ export default function SteamConnectionCard({
       setLatestSteamStats(updated)
       const accounts = await getMyGameAccounts()
       setSteamAccounts(accounts)
-      setSteamSuccess('Synchronisation Steam terminée.')
+      setSteamSuccess(`Synchronisation Steam terminée pour ${updated.length} jeu(x).`)
     } catch (error: any) {
       const message = error?.response?.data?.message
         ?? error?.response?.data?.error?.message
@@ -89,7 +102,83 @@ export default function SteamConnectionCard({
     }
   }
 
+  async function handleLoadSteamGames() {
+    setGamesLoading(true)
+    setSteamError('')
+    setSteamSuccess('')
+
+    try {
+      const games = await getSteamGames()
+      setSteamGames(games)
+      setSelectedAppIds(games.filter((game) => game.isTracked).map((game) => game.appId))
+      if (games.length === 0) {
+        setSteamSuccess('Aucun jeu Steam jouable détecté.')
+      }
+    } catch (error: any) {
+      const apiMessage = error?.response?.data?.message
+        ?? error?.response?.data?.error?.message
+      if (apiMessage === 'STEAM_NO_GAMES_FOUND') {
+        setSteamGames([])
+        setSelectedAppIds([])
+        setSteamSuccess('Aucun jeu Steam jouable détecté.')
+        setGamesLoading(false)
+        return
+      }
+      const message = error?.response?.data?.message
+        ?? error?.response?.data?.error?.message
+        ?? 'Impossible de charger les jeux Steam.'
+      setSteamError(message)
+    } finally {
+      setGamesLoading(false)
+    }
+  }
+
+  async function handleOpenGamesModal() {
+    setGamesModalOpen(true)
+    if (steamGames.length > 0) {
+      setSelectedAppIds(steamGames.filter((game) => game.isTracked).map((game) => game.appId))
+      return
+    }
+    if (!gamesLoading) {
+      await handleLoadSteamGames()
+    }
+  }
+
+  async function handleSaveTrackedGames() {
+    setGamesSaving(true)
+    setSteamError('')
+    setSteamSuccess('')
+
+    try {
+      const updatedGames = await updateTrackedSteamGames(selectedAppIds)
+      setSteamGames(updatedGames)
+      setSelectedAppIds(updatedGames.filter((game) => game.isTracked).map((game) => game.appId))
+      setSteamSuccess('Sélection Steam enregistrée.')
+      setGamesModalOpen(false)
+    } catch (error: any) {
+      const message = error?.response?.data?.message
+        ?? error?.response?.data?.error?.message
+        ?? 'Impossible d’enregistrer la sélection Steam.'
+      setSteamError(message)
+    } finally {
+      setGamesSaving(false)
+    }
+  }
+
+  function toggleTrackedGame(appId: string) {
+    setSelectedAppIds((prev) =>
+      prev.includes(appId)
+        ? prev.filter((item) => item !== appId)
+        : [...prev, appId],
+    )
+  }
+
   const steamAccount = steamAccounts.find((account) => account.platform === 'STEAM') ?? null
+  const selectedCount = selectedAppIds.length
+  const trackedSummary = useMemo(
+    () => `${selectedCount} jeu(x) suivi(s)`,
+    [selectedCount],
+  )
 
   return (
     <section className="section-stack">
@@ -128,10 +217,10 @@ export default function SteamConnectionCard({
               {steamAccount && (
                 <button
                   className="ghost-button"
-                  onClick={handleSteamSync}
-                  disabled={syncingSteam}
+                  onClick={handleOpenGamesModal}
+                  disabled={gamesLoading}
                 >
-                  {syncingSteam ? 'Synchronisation...' : 'Synchroniser Steam'}
+                  {gamesLoading ? 'Chargement...' : 'Sélectionner mes jeux Steam'}
                 </button>
               )}
             </div>
@@ -149,31 +238,56 @@ export default function SteamConnectionCard({
                 ? new Date(steamAccount.lastSyncAt).toLocaleString()
                 : 'Jamais'}
             </li>
+            <li className="metric-row">Jeux suivis : {trackedSummary}</li>
           </ul>
+        )}
+        {steamAccount && (
+          <div className="button-row">
+            <button
+              className="primary-button"
+              onClick={handleSteamSync}
+              disabled={syncingSteam || selectedCount === 0}
+            >
+              {syncingSteam ? 'Synchronisation...' : 'Synchroniser les jeux sélectionnés'}
+            </button>
+          </div>
         )}
       </div>
 
-      {latestSteamStats && (
-        <div className="data-card">
-          <div className="panel-header">
-            <div>
-              <p className="muted-text">Dernier import</p>
-              <h2>{latestSteamStats.game?.name ?? 'Steam Profile'}</h2>
-            </div>
-            <div className="pill">
-              {latestSteamStats.provider} • Score <strong>{latestSteamStats.score}</strong>
-            </div>
+      {latestSteamStats.length > 0 && (
+        <div className="section-stack">
+          <div className="section-heading">
+            <h2>Dernier import Steam</h2>
+            <p className="section-copy">
+              Une carte par jeu sélectionné synchronisé.
+            </p>
           </div>
-          <ul className="metric-list">
-            <li className="metric-row">
-              K/D : {latestSteamStats.kdRatio.toFixed(2)} ({latestSteamStats.kills} K / {latestSteamStats.deaths} D)
-            </li>
-            <li className="metric-row">
-              Win rate : {latestSteamStats.winrate}% ({latestSteamStats.wins}W / {latestSteamStats.losses}L)
-            </li>
-            <li className="metric-row">Parties jouées : {latestSteamStats.matchesPlayed}</li>
-            <li className="metric-row">Temps de jeu : {Math.round(latestSteamStats.playtimeMinutes / 60)}h</li>
-          </ul>
+
+          <div className="stats-grid">
+            {latestSteamStats.map((item) => (
+              <div key={item.id} className="data-card">
+                <div className="panel-header">
+                  <div>
+                    <p className="muted-text">{item.season?.name ?? 'Saison'}</p>
+                    <h2>{item.game?.name ?? 'Jeu Steam'}</h2>
+                  </div>
+                  <div className="pill">
+                    {item.provider} • Score <strong>{item.score}</strong>
+                  </div>
+                </div>
+                <ul className="metric-list">
+                  <li className="metric-row">
+                    K/D : {item.kdRatio.toFixed(2)} ({item.kills} K / {item.deaths} D)
+                  </li>
+                  <li className="metric-row">
+                    Win rate : {item.winrate}% ({item.wins}W / {item.losses}L)
+                  </li>
+                  <li className="metric-row">Parties jouées : {item.matchesPlayed}</li>
+                  <li className="metric-row">Temps de jeu : {Math.round(item.playtimeMinutes / 60)}h</li>
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -193,6 +307,22 @@ export default function SteamConnectionCard({
         onSteamIdChange={setSteamIdInput}
         onSubmitLink={handleLinkSteam}
         onSyncSteam={handleSteamSync}
+      />
+      <SteamGameSelectionModal
+        isOpen={gamesModalOpen}
+        games={steamGames}
+        loading={gamesLoading}
+        saving={gamesSaving}
+        error={steamError}
+        selectedAppIds={selectedAppIds}
+        onClose={() => {
+          setGamesModalOpen(false)
+          setSteamError('')
+          setSelectedAppIds(steamGames.filter((game) => game.isTracked).map((game) => game.appId))
+        }}
+        onReload={handleLoadSteamGames}
+        onToggleGame={toggleTrackedGame}
+        onSave={handleSaveTrackedGames}
       />
     </section>
   )

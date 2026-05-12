@@ -37,7 +37,7 @@ export default function AchievementCard({ achievement, variant = 'public' }: Ach
     <article className={cardClass}>
       <div className="achievement-card__header">
         <div className={`achievement-card__icon${unlocked ? ' achievement-card__icon--unlocked' : ''}`}>
-          <AchievementIcon iconKey={iconKey} size={28} />
+          <AchievementIcon iconKey={iconKey ?? 'default'} size={28} />
         </div>
         <div className="achievement-card__body">
           <h3 className="achievement-card__name">{name}</h3>

@@ -2,6 +2,7 @@ export interface GameInfo {
   id: string
   name: string
   slug: string
+  imageUrl?: string | null
 }
 
 export interface SeasonInfo {

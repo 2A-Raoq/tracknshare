@@ -11,8 +11,7 @@ import { MockStatsProvider } from '../providers/mock/mock-stats.provider'
 import { calculateKdRatio, calculateWinrate, calculateScore } from './utils/score.calculator'
 import { SteamStatsProvider } from '../providers/steam/steam-stats.provider'
 import { GameAccountsService } from '../game-accounts/game-accounts.service'
-
-const STEAM_GAME_SLUG = 'steam-profile'
+import { SteamTrackedGame } from '../game-accounts/entities/steam-tracked-game.entity'
 
 @Injectable()
 export class StatsService {
@@ -56,31 +55,40 @@ export class StatsService {
     })
   }
 
-  async syncSteamStats(userId: string): Promise<PlayerStats> {
+  async syncSteamStats(userId: string): Promise<PlayerStats[]> {
     const season = await this.getActiveSeason()
-    const account = await this.gameAccountsService.getSteamAccountOrThrow(userId)
-    const game = await this.resolveSteamGame()
+    const { account, trackedGames } = await this.gameAccountsService.getTrackedSteamGamesOrThrow(userId)
+    const syncedItems: PlayerStats[] = []
 
-    const raw = await this.steamStatsProvider.fetchStats({
-      userId,
-      gameSlug: game.slug,
-      externalId: account.externalId,
-    })
+    for (const trackedGame of trackedGames) {
+      const game = await this.resolveSteamGame(trackedGame)
+      const raw = await this.steamStatsProvider.fetchStats({
+        userId,
+        gameSlug: game.slug,
+        externalId: account.externalId,
+        externalGameId: trackedGame.externalGameId,
+        playtimeForever: trackedGame.playtimeForever,
+        playtime2Weeks: trackedGame.playtime2Weeks,
+      })
 
-    await this.gameAccountsService.markSteamSync(account.id, raw.externalUsername ?? null)
+      const stats = await this.upsertStats({
+        userId,
+        game,
+        season,
+        provider: raw.provider,
+        kills: raw.kills,
+        deaths: raw.deaths,
+        wins: raw.wins,
+        losses: raw.losses,
+        matchesPlayed: raw.matchesPlayed,
+        playtimeMinutes: raw.playtimeMinutes,
+      })
 
-    return this.upsertStats({
-      userId,
-      game,
-      season,
-      provider: raw.provider,
-      kills: raw.kills,
-      deaths: raw.deaths,
-      wins: raw.wins,
-      losses: raw.losses,
-      matchesPlayed: raw.matchesPlayed,
-      playtimeMinutes: raw.playtimeMinutes,
-    })
+      syncedItems.push(stats)
+    }
+
+    await this.gameAccountsService.markSteamSync(account.id, account.externalUsername)
+    return syncedItems
   }
 
   private async upsertStats(input: {
@@ -154,23 +162,30 @@ export class StatsService {
     return game
   }
 
-  private async resolveSteamGame() {
+  private async resolveSteamGame(trackedGame: SteamTrackedGame) {
+    const slug = `steam-${trackedGame.externalGameId}`
+
     let game = await this.gameRepo.findOne({
-      where: { slug: STEAM_GAME_SLUG },
+      where: { slug },
     })
 
     if (!game) {
-      game = await this.gameRepo.save(
-        this.gameRepo.create({
-          name: 'Steam Profile',
-          slug: STEAM_GAME_SLUG,
-          platform: 'PC',
-          isTeamBased: false,
-          apiProvider: 'steam',
-        }),
-      )
+      game = this.gameRepo.create({
+        name: trackedGame.name,
+        slug,
+        platform: 'PC',
+        isTeamBased: false,
+        apiProvider: 'steam',
+        externalId: trackedGame.externalGameId,
+        imageUrl: trackedGame.imageUrl,
+      })
+    } else {
+      game.name = trackedGame.name
+      game.apiProvider = 'steam'
+      game.externalId = trackedGame.externalGameId
+      game.imageUrl = trackedGame.imageUrl
     }
 
-    return game
+    return this.gameRepo.save(game)
   }
 }

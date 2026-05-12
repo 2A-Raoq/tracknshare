@@ -6,3 +6,13 @@ export interface GameAccountItem {
   linkedAt: string
   lastSyncAt: string | null
 }
+
+export interface SteamGameItem {
+  appId: string
+  name: string
+  playtimeForever: number
+  playtime2Weeks: number | null
+  imageUrl: string | null
+  provider: 'STEAM'
+  isTracked: boolean
+}

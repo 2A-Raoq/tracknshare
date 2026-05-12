@@ -22,6 +22,17 @@ type SteamOwnedGame = {
   appid: number
   name?: string
   playtime_forever?: number
+  playtime_2weeks?: number
+  img_icon_url?: string
+}
+
+export type SteamGameSummary = {
+  appId: string
+  name: string
+  playtimeForever: number
+  playtime2Weeks: number | null
+  imageUrl: string | null
+  provider: 'STEAM'
 }
 
 @Injectable()
@@ -32,8 +43,14 @@ export class SteamStatsProvider implements IStatsProvider {
 
   async fetchStats(request: StatsProviderRequest): Promise<RawStats> {
     const steamId = request.externalId?.trim()
+    const externalGameId = request.externalGameId?.trim()
+
     if (!steamId || !/^\d{17}$/.test(steamId)) {
       throw new BadRequestException('STEAM_ID_INVALID')
+    }
+
+    if (!externalGameId || !/^\d+$/.test(externalGameId)) {
+      throw new BadRequestException('STEAM_APP_ID_INVALID')
     }
 
     const profile = await this.getPlayerSummary(steamId)
@@ -41,39 +58,33 @@ export class SteamStatsProvider implements IStatsProvider {
       throw new ForbiddenException('STEAM_PROFILE_PRIVATE')
     }
 
-    const ownedGames = await this.getOwnedGames(steamId)
-    const topGames = ownedGames
-      .slice()
-      .sort((left, right) => (right.playtime_forever ?? 0) - (left.playtime_forever ?? 0))
-      .slice(0, 5)
-
-    const playtimeMinutes = topGames.reduce(
-      (total, game) => total + (game.playtime_forever ?? 0),
-      0,
-    )
-
-    const stableSeed = Number(steamId.slice(-6)) || 1
-    const matchesPlayed = playtimeMinutes > 0
-      ? Math.min(400, Math.max(1, Math.round(playtimeMinutes / 45)))
+    const playtimeForever = Math.max(0, request.playtimeForever ?? 0)
+    const playtime2Weeks = request.playtime2Weeks ?? 0
+    const seed = this.hashSeed(`${request.userId}:${externalGameId}:${playtimeForever}`)
+    const matchesPlayed = playtimeForever > 0
+      ? Math.max(1, Math.min(600, Math.round(playtimeForever / (28 + (seed % 18)))))
       : 0
-    const winRatio = 0.42 + ((stableSeed % 24) / 100)
-    const wins = matchesPlayed > 0 ? Math.min(matchesPlayed, Math.round(matchesPlayed * winRatio)) : 0
+    const wins = matchesPlayed > 0
+      ? Math.round(matchesPlayed * (0.41 + ((seed % 19) / 100)))
+      : 0
     const losses = Math.max(0, matchesPlayed - wins)
     const deaths = matchesPlayed > 0
-      ? Math.max(1, Math.round(matchesPlayed * (7 + (stableSeed % 6))))
+      ? Math.max(1, Math.round(matchesPlayed * (6.2 + ((seed % 11) / 10))))
       : 0
-    const kdFactor = 1.05 + ((stableSeed % 90) / 100)
-    const kills = deaths > 0 ? Math.max(deaths, Math.round(deaths * kdFactor)) : 0
+    const kills = deaths > 0
+      ? Math.max(deaths, Math.round(deaths * (1.02 + ((seed % 83) / 100))))
+      : 0
+    const recentBoost = playtime2Weeks > 0 ? Math.min(24, Math.round(playtime2Weeks / 90)) : 0
 
     return {
       provider: this.provider,
       externalUsername: profile.personaName,
-      kills,
+      kills: kills + recentBoost,
       deaths,
-      wins,
+      wins: Math.min(matchesPlayed, wins + Math.round(recentBoost / 4)),
       losses,
       matchesPlayed,
-      playtimeMinutes,
+      playtimeMinutes: playtimeForever,
     }
   }
 
@@ -103,6 +114,33 @@ export class SteamStatsProvider implements IStatsProvider {
     }
   }
 
+  async getPlayableGames(steamId: string): Promise<SteamGameSummary[]> {
+    const profile = await this.getPlayerSummary(steamId)
+    if (profile.communityvisibilitystate !== 3) {
+      throw new ForbiddenException('STEAM_PROFILE_PRIVATE')
+    }
+
+    const ownedGames = await this.getOwnedGames(steamId)
+    const filteredGames = ownedGames
+      .filter((game) => (game.playtime_forever ?? 0) > 0)
+      .sort((left, right) => (right.playtime_forever ?? 0) - (left.playtime_forever ?? 0))
+
+    if (filteredGames.length === 0) {
+      throw new NotFoundException('STEAM_NO_GAMES_FOUND')
+    }
+
+    return filteredGames.map((game) => ({
+      appId: String(game.appid),
+      name: game.name?.trim() || `Steam App ${game.appid}`,
+      playtimeForever: game.playtime_forever ?? 0,
+      playtime2Weeks: game.playtime_2weeks ?? null,
+      imageUrl: game.img_icon_url
+        ? `https://media.steampowered.com/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`
+        : null,
+      provider: this.provider,
+    }))
+  }
+
   private async getOwnedGames(steamId: string): Promise<SteamOwnedGame[]> {
     const response = await this.request<{
       response?: { games?: SteamOwnedGame[] }
@@ -117,6 +155,16 @@ export class SteamStatsProvider implements IStatsProvider {
     )
 
     return response.response?.games ?? []
+  }
+
+  private hashSeed(input: string): number {
+    let hash = 0
+    for (let index = 0; index < input.length; index += 1) {
+      hash = ((hash << 5) - hash) + input.charCodeAt(index)
+      hash |= 0
+    }
+
+    return Math.abs(hash)
   }
 
   private async request<T>(endpoint: string, query: Record<string, string>) {

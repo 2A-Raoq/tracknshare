@@ -938,6 +938,208 @@ button {
   gap: 12px;
 }
 
+.steam-games-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
+}
+
+.steam-games-modal__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 14px;
+}
+
+.steam-games-modal__intro {
+  display: grid;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+
+.steam-games-modal__toolbar {
+  margin-bottom: 0;
+}
+
+.steam-games-modal__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.steam-games-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.steam-games-modal__list {
+  display: grid;
+  flex: 1;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+.steam-game-card {
+  display: grid;
+  grid-template-columns: 28px 64px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.steam-game-card--compact {
+  grid-template-columns: 24px 48px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+}
+
+.steam-game-card__select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.steam-game-card__select input {
+  width: 18px;
+  height: 18px;
+}
+
+.steam-game-card__image {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.steam-game-card--compact .steam-game-card__image {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.steam-game-card__image--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124, 140, 255, 0.12);
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+}
+
+.steam-game-card__content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.steam-game-card--compact .steam-game-card__content {
+  gap: 2px;
+}
+
+.steam-game-card--compact .steam-game-card__content strong {
+  font-size: 0.96rem;
+  line-height: 1.2;
+}
+
+.steam-game-card--compact .steam-game-card__content .muted-text {
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+
+.steam-games-modal__footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(11, 15, 28, 0), rgba(11, 15, 28, 0.92) 22%);
+}
+
+.stats-tabs__bar {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.stats-tab {
+  display: inline-grid;
+  grid-template-columns: 48px minmax(140px, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  text-align: left;
+}
+
+.stats-tab--active {
+  border-color: rgba(124, 140, 255, 0.5);
+  background: rgba(124, 140, 255, 0.12);
+}
+
+.stats-tab__image {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stats-tab__image--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124, 140, 255, 0.12);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.stats-tab__content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.stats-tab__content strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-tab__provider {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stats-tab-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.steam-game-card__content strong {
+  overflow-wrap: anywhere;
+}
+
 /* ── Achievement cards ─────────────────────────────── */
 
 .achievement-card {
@@ -1246,6 +1448,41 @@ button {
   .modal-body {
     padding-left: 18px;
     padding-right: 18px;
+  }
+
+  .steam-games-modal {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .steam-games-modal__toolbar {
+    gap: 10px;
+  }
+
+  .steam-game-card,
+  .steam-game-card--compact {
+    grid-template-columns: 22px 48px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .steam-game-card__image,
+  .steam-game-card--compact .steam-game-card__image {
+    width: 48px;
+    height: 48px;
+  }
+
+  .steam-games-modal__footer {
+    padding-top: 12px;
+  }
+
+  .stats-tab {
+    min-width: 200px;
+    grid-template-columns: 44px minmax(120px, 1fr);
+  }
+
+  .stats-tab__image {
+    width: 44px;
+    height: 44px;
   }
 }
 

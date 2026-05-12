@@ -19,6 +19,7 @@ import * as bcrypt from 'bcrypt'
 import { calculateKdRatio, calculateWinrate, calculateScore } from '../stats/utils/score.calculator'
 import { decodeMessageEncryptionKey, encryptWithKey } from '../security/encryption.util'
 import { GameAccount } from '../game-accounts/entities/game-account.entity'
+import { SteamTrackedGame } from '../game-accounts/entities/steam-tracked-game.entity'
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -42,6 +43,7 @@ const dataSource = new DataSource({
     Achievement,
     UserAchievement,
     GameAccount,
+    SteamTrackedGame,
   ],
   synchronize: true,
 })

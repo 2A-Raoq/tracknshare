@@ -8,6 +8,7 @@ import type { AchievementItem } from '../types/achievements'
 import type { PlayerStatsData } from '../types/stats'
 import AppNavigation from '../components/AppNavigation'
 import AchievementCard from '../components/AchievementCard'
+import GameStatsTabs from '../components/GameStatsTabs'
 
 export default function DashboardPage() {
   const { user } = useSnapshot(authStore)
@@ -97,9 +98,9 @@ export default function DashboardPage() {
 
         <section className="section-stack">
           <div className="section-heading">
-            <h2>Mes statistiques</h2>
+            <h2>Stats principales</h2>
             <p className="section-copy">
-              Les données mockées restent démontrables, et le score est calculé côté back.
+              Passez d’un jeu à l’autre pour comparer vos stats mockées et Steam dans une seule vue.
             </p>
           </div>
 
@@ -113,28 +114,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="stats-grid">
-            {stats.map((item) => (
-              <article key={item.id} className="data-card">
-                <div className="panel-header">
-                  <div>
-                    <p className="muted-text">{item.season?.name ?? 'Saison'}</p>
-                    <h2>{item.game?.name ?? 'Jeu'}</h2>
-                  </div>
-                  <div className="pill">
-                    {item.provider} • Score <strong>{item.score}</strong>
-                  </div>
-                </div>
-
-                <ul className="metric-list">
-                  <li className="metric-row">K/D : {item.kdRatio.toFixed(2)} ({item.kills} K / {item.deaths} D)</li>
-                  <li className="metric-row">Win rate : {item.winrate}% ({item.wins}W / {item.losses}L)</li>
-                  <li className="metric-row">Parties jouées : {item.matchesPlayed}</li>
-                  <li className="metric-row">Temps de jeu : {Math.round(item.playtimeMinutes / 60)}h</li>
-                </ul>
-              </article>
-            ))}
-          </div>
+          {!statsLoading && !statsError && stats.length > 0 && <GameStatsTabs stats={stats} />}
         </section>
 
         <section className="section-stack">

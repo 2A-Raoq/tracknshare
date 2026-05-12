@@ -6,12 +6,11 @@ import { Season } from '../seasons/entities/season.entity'
 import { StatsService } from './stats.service'
 import { StatsController } from './stats.controller'
 import { MockStatsProvider } from '../providers/mock/mock-stats.provider'
-import { GameAccount } from '../game-accounts/entities/game-account.entity'
 import { GameAccountsModule } from '../game-accounts/game-accounts.module'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PlayerStats, Game, Season, GameAccount]),
+    TypeOrmModule.forFeature([PlayerStats, Game, Season]),
     GameAccountsModule,
   ],
   providers: [StatsService, MockStatsProvider],

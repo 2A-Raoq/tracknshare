@@ -4,6 +4,9 @@ export interface StatsProviderRequest {
   userId: string
   gameSlug: string
   externalId?: string
+  externalGameId?: string
+  playtimeForever?: number
+  playtime2Weeks?: number | null
 }
 
 export interface RawStats {
