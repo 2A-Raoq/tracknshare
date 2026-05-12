@@ -67,7 +67,7 @@ export class SteamStatsProvider implements IStatsProvider {
 
     return {
       provider: this.provider,
-      externalUsername: profile.personaname,
+      externalUsername: profile.personaName,
       kills,
       deaths,
       wins,

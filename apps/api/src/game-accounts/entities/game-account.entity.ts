@@ -23,13 +23,13 @@ export class GameAccount {
   @Column()
   externalId: string
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 120, nullable: true })
   externalUsername: string | null
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   linkedAt: Date
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   lastSyncAt: Date | null
 
   @CreateDateColumn()

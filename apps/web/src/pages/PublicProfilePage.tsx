@@ -9,6 +9,7 @@ import type { FriendRequestsData, FriendUser } from '../types/friends'
 import type { PublicPlayerProfile } from '../types/players'
 import AppNavigation from '../components/AppNavigation'
 import AchievementCard from '../components/AchievementCard'
+import SteamConnectionCard from '../components/SteamConnectionCard'
 
 type ApiError = {
   response?: {
@@ -374,6 +375,15 @@ export default function PublicProfilePage() {
             </section>
 
             <section className="split-grid">
+              {isOwnProfile && (
+                <article className="panel">
+                  <SteamConnectionCard
+                    title="Gestion du profil"
+                    description="Gérez votre connexion Steam depuis votre profil joueur principal."
+                  />
+                </article>
+              )}
+
               <article className="panel">
                 <div className="section-heading" style={{ marginBottom: '16px' }}>
                   <h2>Stats principales</h2>

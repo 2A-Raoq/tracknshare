@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
 import { useSnapshot } from 'valtio'
 import { useLocation } from 'wouter'
 import { authStore } from '../store/auth.store'
 import { achievementsApi } from '../services/achievements.api'
-import { getMyStats, syncStats, syncSteamStats } from '../services/stats.api'
-import { getMyGameAccounts, linkSteamAccount } from '../services/gameAccounts.api'
+import { getMyStats, syncStats } from '../services/stats.api'
 import type { AchievementItem } from '../types/achievements'
 import type { PlayerStatsData } from '../types/stats'
-import type { GameAccountItem } from '../types/game-accounts'
 import AppNavigation from '../components/AppNavigation'
 import AchievementCard from '../components/AchievementCard'
 
@@ -23,13 +20,6 @@ export default function DashboardPage() {
   const [badgesLoading, setBadgesLoading] = useState(true)
   const [badgesError, setBadgesError] = useState('')
   const [syncing, setSyncing] = useState(false)
-  const [steamAccounts, setSteamAccounts] = useState<GameAccountItem[]>([])
-  const [steamLoading, setSteamLoading] = useState(true)
-  const [steamError, setSteamError] = useState('')
-  const [steamSuccess, setSteamSuccess] = useState('')
-  const [steamIdInput, setSteamIdInput] = useState('')
-  const [linkingSteam, setLinkingSteam] = useState(false)
-  const [syncingSteam, setSyncingSteam] = useState(false)
 
   useEffect(() => {
     getMyStats()
@@ -44,24 +34,6 @@ export default function DashboardPage() {
       .then(setBadges)
       .catch(() => setBadgesError('Impossible de charger vos badges.'))
       .finally(() => setBadgesLoading(false))
-  }, [])
-
-  useEffect(() => {
-    getMyGameAccounts()
-      .then((accounts) => {
-        setSteamAccounts(accounts)
-        const steamAccount = accounts.find((account) => account.platform === 'STEAM')
-        if (steamAccount) {
-          setSteamIdInput(steamAccount.externalId)
-        }
-      })
-      .catch((error: any) => {
-        const message = error?.response?.data?.message
-          ?? error?.response?.data?.error?.message
-          ?? 'Impossible de charger votre liaison Steam.'
-        setSteamError(message)
-      })
-      .finally(() => setSteamLoading(false))
   }, [])
 
   async function handleSync() {
@@ -84,62 +56,6 @@ export default function DashboardPage() {
       setSyncing(false)
     }
   }
-
-  async function handleLinkSteam(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setLinkingSteam(true)
-    setSteamError('')
-    setSteamSuccess('')
-
-    try {
-      const account = await linkSteamAccount(steamIdInput.trim())
-      setSteamAccounts((prev) => {
-        const others = prev.filter((item) => item.platform !== 'STEAM')
-        return [...others, account]
-      })
-      setSteamIdInput(account.externalId)
-      setSteamSuccess('Compte Steam lié avec succès.')
-    } catch (error: any) {
-      const message = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
-        ?? 'Impossible de lier ce compte Steam.'
-      setSteamError(message)
-    } finally {
-      setLinkingSteam(false)
-    }
-  }
-
-  async function handleSteamSync() {
-    setSyncingSteam(true)
-    setSteamError('')
-    setSteamSuccess('')
-
-    try {
-      const updated = await syncSteamStats()
-      setStats((prev) => {
-        const index = prev.findIndex((item) => item.id === updated.id)
-        if (index >= 0) {
-          const next = [...prev]
-          next[index] = updated
-          return next
-        }
-        return [updated, ...prev]
-      })
-
-      const accounts = await getMyGameAccounts()
-      setSteamAccounts(accounts)
-      setSteamSuccess('Synchronisation Steam terminée.')
-    } catch (error: any) {
-      const message = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
-        ?? 'Impossible de synchroniser Steam.'
-      setSteamError(message)
-    } finally {
-      setSyncingSteam(false)
-    }
-  }
-
-  const steamAccount = steamAccounts.find((account) => account.platform === 'STEAM') ?? null
 
   return (
     <div className="page-shell">
@@ -177,69 +93,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-        </section>
-
-        <section className="section-stack">
-          <div className="section-heading">
-            <h2>Connecter Steam</h2>
-            <p className="section-copy">
-              Liez un SteamID64 public pour synchroniser des données réelles côté back sans
-              exposer la clé API.
-            </p>
-          </div>
-
-          {steamLoading && <p className="status-message">Chargement de la liaison Steam...</p>}
-          {steamError && <p className="status-message error">{steamError}</p>}
-          {steamSuccess && <p className="status-message success">{steamSuccess}</p>}
-
-          <div className="info-grid">
-            <div className="status-card">
-              <p className="muted-text">Statut Steam</p>
-              <h2 style={{ marginTop: '6px' }}>{steamAccount ? 'Connecté' : 'Non connecté'}</h2>
-              <p className="muted-text">
-                {steamAccount
-                  ? `${steamAccount.externalUsername ?? steamAccount.externalId}`
-                  : 'Aucun compte Steam lié pour le moment.'}
-              </p>
-              {steamAccount?.lastSyncAt && (
-                <p className="muted-text">
-                  Dernière synchronisation : {new Date(steamAccount.lastSyncAt).toLocaleString()}
-                </p>
-              )}
-            </div>
-
-            <div className="status-card">
-              <form onSubmit={handleLinkSteam} className="form-stack">
-                <div className="field">
-                  <label htmlFor="steamId">SteamID64</label>
-                  <input
-                    id="steamId"
-                    type="text"
-                    value={steamIdInput}
-                    onChange={(event) => setSteamIdInput(event.target.value)}
-                    placeholder="7656119..."
-                  />
-                </div>
-                <div className="button-row">
-                  <button
-                    type="submit"
-                    className="primary-button"
-                    disabled={linkingSteam || syncingSteam || !steamIdInput.trim()}
-                  >
-                    {linkingSteam ? 'Liaison...' : 'Lier Steam'}
-                  </button>
-                  <button
-                    type="button"
-                    className="ghost-button"
-                    onClick={handleSteamSync}
-                    disabled={syncingSteam || linkingSteam || !steamAccount}
-                  >
-                    {syncingSteam ? 'Synchronisation...' : 'Synchroniser Steam'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
         </section>
 
         <section className="section-stack">
@@ -329,6 +182,9 @@ export default function DashboardPage() {
             </button>
             <button onClick={() => navigate('/messages')} className="ghost-button">
               Ouvrir mes messages
+            </button>
+            <button onClick={() => navigate('/profile')} className="ghost-button">
+              Ouvrir mon compte
             </button>
           </div>
         </section>

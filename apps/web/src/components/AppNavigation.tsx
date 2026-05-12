@@ -73,6 +73,10 @@ export default function AppNavigation() {
                     <IconMessage />
                     Messages
                   </Link>
+                  <Link href="/profile" className={linkClass('/profile')}>
+                    <IconUser />
+                    Compte
+                  </Link>
                   <Link href={`/players/${user.username}`} className={linkClass(`/players/${user.username}`)}>
                     <IconUser />
                     {user.username}
@@ -172,6 +176,10 @@ export default function AppNavigation() {
                   <Link href="/messages" className={mobileLinkClass('/messages')}>
                     <IconMessage size={18} />
                     Messages
+                  </Link>
+                  <Link href="/profile" className={mobileLinkClass('/profile')}>
+                    <IconUser size={18} />
+                    Compte
                   </Link>
                   <Link
                     href={`/players/${user.username}`}
