@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import GameProviderBadge from './GameProviderBadge'
 import SteamGameSelectionModal from './SteamGameSelectionModal'
 import SteamLinkModal from './SteamLinkModal'
 import {
@@ -259,7 +260,7 @@ export default function SteamConnectionCard({
           <div className="section-heading">
             <h2>Dernier import Steam</h2>
             <p className="section-copy">
-              Une carte par jeu sélectionné synchronisé.
+              Aperçu des jeux Steam synchronisés lors du dernier import.
             </p>
           </div>
 
@@ -271,9 +272,7 @@ export default function SteamConnectionCard({
                     <p className="muted-text">{item.season?.name ?? 'Saison'}</p>
                     <h2>{item.game?.name ?? 'Jeu Steam'}</h2>
                   </div>
-                  <div className="pill">
-                    {item.provider} • Score <strong>{item.score}</strong>
-                  </div>
+                  <GameProviderBadge provider={item.provider} score={item.score} />
                 </div>
                 <ul className="metric-list">
                   <li className="metric-row">

@@ -54,7 +54,7 @@ export default function PublicProfilePage() {
         setError(
           err.response?.status === 404
             ? 'Joueur introuvable.'
-            : 'Impossible de charger ce profil public.',
+            : 'Impossible de charger ce profil.',
         )
       })
       .finally(() => setLoading(false))
@@ -266,7 +266,7 @@ export default function PublicProfilePage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <p className="hero-kicker">Public player profile</p>
+              <p className="hero-kicker">Profil public</p>
               <h1 className="page-title">Profil joueur</h1>
               <p className="section-copy">
                 Vue publique du joueur, de ses stats principales, de son rang et de ses équipes.
@@ -274,10 +274,7 @@ export default function PublicProfilePage() {
             </div>
             <div className="button-row">
               <button onClick={() => navigate('/leaderboard')} className="ghost-button">
-                Voir leaderboard
-              </button>
-              <button onClick={() => navigate('/leaderboard')} className="secondary-button">
-                Retour
+                Retour au leaderboard
               </button>
             </div>
           </div>
@@ -299,13 +296,13 @@ export default function PublicProfilePage() {
                     <p className="muted-text">Pseudo public</p>
                     <h2>{profile.username}</h2>
                   </div>
-                  <div className="status-card" style={{ minWidth: '88px', textAlign: 'center' }}>
+                  <div className="status-card profile-avatar-card">
                     <strong>AV</strong>
                   </div>
                 </div>
-                <p className="section-copy" style={{ marginTop: '16px' }}>{bio}</p>
+                <p className="section-copy section-copy--spaced">{bio}</p>
 
-                <div className="mobile-stack" style={{ marginTop: '20px' }}>
+                <div className="mobile-stack mobile-stack--spaced">
                   <div className="status-card">
                     <p className="muted-text">Score</p>
                     <h2 style={{ marginTop: '6px' }}>{profile.stats?.score ?? 'N/A'}</h2>
@@ -318,7 +315,7 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
 
-                <div className="button-row" style={{ marginTop: '20px' }}>
+                <div className="button-row button-row--spaced">
                   {renderRelationshipActions()}
                   <Link href="/leaderboard" className="ghost-button">Voir leaderboard</Link>
                 </div>
@@ -357,7 +354,7 @@ export default function PublicProfilePage() {
                 <div className="section-heading" style={{ marginBottom: '16px' }}>
                   <h2>Infos publiques</h2>
                   <p className="section-copy">
-                    Données visibles côté MVP, sans email ni donnée privée.
+                    Données publiques visibles sans information privée.
                   </p>
                 </div>
                 <ul className="metric-list">
@@ -378,8 +375,8 @@ export default function PublicProfilePage() {
               {isOwnProfile && (
                 <article className="panel">
                   <SteamConnectionCard
-                    title="Gestion du profil"
-                    description="Gérez votre connexion Steam depuis votre profil joueur principal."
+                    title="Synchronisation"
+                    description="Gérez votre connexion Steam et vos jeux suivis depuis votre profil joueur."
                   />
                 </article>
               )}
@@ -393,7 +390,7 @@ export default function PublicProfilePage() {
                 </div>
 
                 {!profile.stats && (
-                  <div className="empty-box">Aucune statistique publique disponible.</div>
+                  <div className="empty-box">Aucune statistique disponible.</div>
                 )}
 
                 {profile.stats && (
@@ -411,12 +408,12 @@ export default function PublicProfilePage() {
                 <div className="section-heading" style={{ marginBottom: '16px' }}>
                   <h2>Équipes</h2>
                   <p className="section-copy">
-                    Les équipes associées au joueur dans le seed ou le parcours MVP.
+                    Équipes actuellement associées à ce joueur.
                   </p>
                 </div>
 
                 {profile.teams.length === 0 && (
-                  <div className="empty-box">Aucune équipe publique à afficher.</div>
+                  <div className="empty-box">Aucune équipe.</div>
                 )}
 
                 <div className="section-stack">

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { useLocation } from 'wouter'
 import { authStore } from '../store/auth.store'
 import { achievementsApi } from '../services/achievements.api'
 import { getMyStats, syncStats } from '../services/stats.api'
@@ -12,8 +11,6 @@ import GameStatsTabs from '../components/GameStatsTabs'
 
 export default function DashboardPage() {
   const { user } = useSnapshot(authStore)
-  const [, navigate] = useLocation()
-  // navigate kept for quick-nav buttons below
   const [stats, setStats] = useState<PlayerStatsData[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
   const [statsError, setStatsError] = useState('')
@@ -25,7 +22,7 @@ export default function DashboardPage() {
   useEffect(() => {
     getMyStats()
       .then(setStats)
-      .catch(() => setStatsError('Impossible de charger les stats.'))
+      .catch(() => setStatsError('Impossible de charger vos statistiques.'))
       .finally(() => setStatsLoading(false))
   }, [])
 
@@ -66,11 +63,10 @@ export default function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <p className="hero-kicker">Private route</p>
+              <p className="hero-kicker">Espace joueur</p>
               <h1 className="page-title">Dashboard</h1>
               <p className="section-copy">
-                Suivez votre score, vos ratios et vos routes de démonstration depuis un seul
-                écran.
+                Suivez vos jeux, vos scores et votre progression depuis une seule interface.
               </p>
             </div>
             <div className="page-actions">
@@ -109,8 +105,7 @@ export default function DashboardPage() {
 
           {!statsLoading && !statsError && stats.length === 0 && (
             <div className="empty-box">
-              Aucune stats pour le moment. Cliquez sur &quot;Synchroniser mes stats&quot; pour
-              initialiser la démonstration.
+              Aucune statistique disponible. Lancez une synchronisation pour afficher vos jeux.
             </div>
           )}
 
@@ -119,9 +114,9 @@ export default function DashboardPage() {
 
         <section className="section-stack">
           <div className="section-heading">
-            <h2>Mes badges</h2>
+            <h2>Badges</h2>
             <p className="section-copy">
-              Progression et badges débloqués — calculés à partir de ton activité en temps réel.
+              Badges débloqués et progression visible sur votre profil joueur.
             </p>
           </div>
 
@@ -129,7 +124,7 @@ export default function DashboardPage() {
           {badgesError && <p className="status-message error">{badgesError}</p>}
 
           {!badgesLoading && !badgesError && badges.length === 0 && (
-            <div className="empty-box">Aucun badge disponible pour le moment.</div>
+            <div className="empty-box">Aucun badge débloqué.</div>
           )}
 
           <div className="stats-grid">
@@ -143,31 +138,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="panel">
-          <div className="section-heading" style={{ marginBottom: '16px' }}>
-            <h2>Navigation rapide</h2>
-            <p className="section-copy">
-              Gardez le parcours de soutenance clair : dashboard, leaderboard, équipe, chat.
-            </p>
-          </div>
-          <div className="button-row">
-            <button onClick={() => navigate('/leaderboard')} className="ghost-button">
-              Voir le leaderboard
-            </button>
-            <button onClick={() => navigate('/teams')} className="ghost-button">
-              Ouvrir mes équipes
-            </button>
-            <button onClick={() => navigate('/friends')} className="ghost-button">
-              Ouvrir mes amis
-            </button>
-            <button onClick={() => navigate('/messages')} className="ghost-button">
-              Ouvrir mes messages
-            </button>
-            <button onClick={() => navigate('/profile')} className="ghost-button">
-              Ouvrir mon compte
-            </button>
-          </div>
-        </section>
       </main>
     </div>
   )

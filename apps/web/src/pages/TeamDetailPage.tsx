@@ -90,7 +90,7 @@ export default function TeamDetailPage() {
         <section className="panel">
           <div className="section-heading" style={{ marginBottom: '16px' }}>
             <h2>Roster</h2>
-            <p className="section-copy">Les membres d&apos;équipe et leurs rôles MVP.</p>
+            <p className="section-copy">Les membres de l&apos;équipe et leurs rôles.</p>
           </div>
 
           {team.members.length === 0 && (

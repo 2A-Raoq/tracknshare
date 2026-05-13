@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="section-heading" style={{ marginBottom: '18px' }}>
             <h1>Connexion</h1>
             <p className="section-copy">
-              Compte démo prérempli pour accélérer la démonstration.
+              Connectez-vous pour accéder à votre dashboard, vos équipes et vos messages.
             </p>
           </div>
 

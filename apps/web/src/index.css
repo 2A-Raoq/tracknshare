@@ -458,14 +458,17 @@ button {
   word-break: break-word;
 }
 
-.landing-footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 16px;
-  width: min(1180px, calc(100% - 32px));
-  margin: 28px auto 0;
-  padding: 24px 0 48px;
+.home-hero-grid {
+  padding: 36px 24px;
+}
+
+.hero-lead {
+  font-size: 1.08rem;
+  color: var(--text);
+}
+
+.hero-actions {
+  margin-top: 24px;
 }
 
 .hero-copy h1 {
@@ -811,6 +814,40 @@ button {
   font-size: 0.85rem;
 }
 
+.provider-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.provider-badge--steam {
+  border-color: rgba(124, 140, 255, 0.34);
+  background: rgba(124, 140, 255, 0.12);
+}
+
+.provider-badge--mock {
+  border-color: rgba(245, 158, 11, 0.34);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.provider-badge__label {
+  text-transform: uppercase;
+}
+
+.provider-badge__score {
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .pill-dot {
   width: 8px;
   height: 8px;
@@ -1124,13 +1161,6 @@ button {
   text-overflow: ellipsis;
 }
 
-.stats-tab__provider {
-  color: var(--muted);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .stats-tab-panel {
   display: grid;
   gap: 18px;
@@ -1146,10 +1176,11 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
+  padding: 18px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 22px;
   background: var(--bg-soft);
+  box-shadow: var(--shadow);
   transition: border-color 0.2s, opacity 0.2s;
 }
 
@@ -1247,6 +1278,23 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.mobile-stack--spaced {
+  margin-top: 20px;
+}
+
+.button-row--spaced {
+  margin-top: 20px;
+}
+
+.section-copy--spaced {
+  margin-top: 16px;
+}
+
+.profile-avatar-card {
+  min-width: 88px;
+  text-align: center;
 }
 
 .mobile-stack > * {

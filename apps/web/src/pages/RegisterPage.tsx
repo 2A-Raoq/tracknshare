@@ -48,8 +48,8 @@ export default function RegisterPage() {
           <span className="hero-kicker">Join the board</span>
           <h1>Create a player profile and jump straight into the seeded ecosystem.</h1>
           <p className="section-copy">
-            Registration stays simple for the MVP: email, username, password, then direct access
-            to the dashboard and protected routes.
+            Inscription rapide avec email, pseudo et mot de passe, puis accès direct au
+            dashboard et aux routes protégées.
           </p>
         </aside>
 

@@ -14,6 +14,10 @@ export class UsersService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { email } })
+  }
+
+  async findByEmailWithPasswordHash(email: string): Promise<User | null> {
     return this.userRepo
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')

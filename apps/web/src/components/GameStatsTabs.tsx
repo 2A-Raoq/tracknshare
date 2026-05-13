@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { PlayerStatsData } from '../types/stats'
+import GameProviderBadge from './GameProviderBadge'
 
 type GameStatsTabsProps = {
   stats: PlayerStatsData[]
@@ -64,7 +65,7 @@ export default function GameStatsTabs({ stats }: GameStatsTabsProps) {
               )}
               <div className="stats-tab__content">
                 <strong>{item.game?.name ?? 'Jeu'}</strong>
-                <span className="stats-tab__provider">{item.provider}</span>
+                <GameProviderBadge provider={item.provider} />
               </div>
             </button>
           )
@@ -77,9 +78,7 @@ export default function GameStatsTabs({ stats }: GameStatsTabsProps) {
             <p className="muted-text">{activeStat.season?.name ?? 'Saison'}</p>
             <h2>{activeStat.game?.name ?? 'Jeu'}</h2>
           </div>
-          <div className="pill">
-            {activeStat.provider} • Score <strong>{activeStat.score}</strong>
-          </div>
+          <GameProviderBadge provider={activeStat.provider} score={activeStat.score} />
         </div>
 
         <div className="info-grid">

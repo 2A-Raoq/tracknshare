@@ -220,10 +220,10 @@ export default function FriendsPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <p className="hero-kicker">Social MVP</p>
+              <p className="hero-kicker">Social</p>
               <h1 className="page-title">Amis</h1>
               <p className="section-copy">
-                Gérez vos amis, vos demandes reçues et vos demandes envoyées sans quitter le MVP.
+                Gérez vos amis, vos demandes reçues et vos demandes envoyées au même endroit.
               </p>
             </div>
           </div>

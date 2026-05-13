@@ -35,8 +35,6 @@ export default function HomePage() {
   const primaryLabel = isAuthenticated ? 'Ouvrir le dashboard' : 'Commencer'
   const secondaryHref = isAuthenticated ? '/leaderboard' : '/login'
   const secondaryLabel = isAuthenticated ? 'Voir le leaderboard' : 'Se connecter'
-  const footerSecondaryHref = isAuthenticated ? '/dashboard' : '/login'
-  const footerSecondaryLabel = isAuthenticated ? 'Dashboard' : 'Connexion'
 
   return (
     <div className="app-shell">
@@ -44,11 +42,11 @@ export default function HomePage() {
 
       <main className="section-stack">
         <section className="hero">
-          <div className="hero-grid" style={{ padding: '36px 24px' }}>
+          <div className="hero-grid home-hero-grid">
             <div className="hero-copy">
               <span className="hero-kicker">Gaming performance platform</span>
               <h1>Track&apos;N Share</h1>
-              <p style={{ fontSize: '1.08rem', color: 'var(--text)' }}>
+              <p className="hero-lead">
                 Suivez vos performances, comparez vos stats et progressez avec votre équipe.
               </p>
               <p>
@@ -57,7 +55,7 @@ export default function HomePage() {
               </p>
 
               {!loading && (
-                <div className="page-actions" style={{ marginTop: '24px' }}>
+                <div className="page-actions hero-actions">
                   <Link href={primaryHref} className="primary-button">
                     {primaryLabel}
                   </Link>
@@ -105,22 +103,6 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-
-      <footer className="landing-footer">
-        <div>
-          <strong>Track&apos;N Share</strong>
-          <p className="muted-text">Gaming performance platform</p>
-        </div>
-        <div className="button-row">
-          <Link href="/leaderboard" className="ghost-button">Leaderboard</Link>
-          <Link href={footerSecondaryHref} className="ghost-button">
-            {footerSecondaryLabel}
-          </Link>
-          {!isAuthenticated && (
-            <Link href="/register" className="ghost-button">Inscription</Link>
-          )}
-        </div>
-      </footer>
     </div>
   )
 }
