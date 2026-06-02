@@ -1,5 +1,6 @@
 import {
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
@@ -14,6 +15,7 @@ export class User {
   @Column({ unique: true })
   email: string
 
+  @Index('idx_user_username')
   @Column({ unique: true })
   username: string
 

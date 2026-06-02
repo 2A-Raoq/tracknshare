@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import { Season } from '../../seasons/entities/season.entity'
 
 @Entity('player_stats')
 @Unique(['userId', 'gameId', 'seasonId'])
+@Index('idx_leaderboard_query', ['gameId', 'seasonId', 'score'])
 export class PlayerStats {
   @PrimaryGeneratedColumn('uuid')
   id: string

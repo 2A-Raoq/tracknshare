@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { RedisModule } from './redis/redis.module'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
 import { StatsModule } from './stats/stats.module'
@@ -60,6 +61,7 @@ import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.en
       }),
       inject: [ConfigService],
     }),
+    RedisModule,
     AuthModule,
     UsersModule,
     StatsModule,
