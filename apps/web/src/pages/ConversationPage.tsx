@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'wouter'
 import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
@@ -6,9 +6,13 @@ import { authStore } from '../store/auth.store'
 import { messagesApi } from '../services/messages.api'
 import { createPrivateSocket } from '../lib/socket'
 import type { ConversationSummary, PrivateMessageItem } from '../types/messages'
+import { searchEmojis } from '../data/emojis'
+import type { EmojiItem } from '../data/emojis'
 import AppNavigation from '../components/AppNavigation'
 import MessagesSidebar from '../components/MessagesSidebar'
 import AvatarInitial from '../components/AvatarInitial'
+import EmojiPicker from '../components/EmojiPicker'
+import EmojiSuggestion from '../components/EmojiSuggestion'
 
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
@@ -24,9 +28,14 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
   const [socketReady, setSocketReady] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [emojiSuggestions, setEmojiSuggestions] = useState<EmojiItem[]>([])
+  const [suggestionIndex, setSuggestionIndex] = useState(0)
 
   const socketRef = useRef<Socket | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const pendingCursorRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!conversationId) {
@@ -91,6 +100,77 @@ export default function ConversationPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Restore cursor position after React re-render
+  useEffect(() => {
+    if (pendingCursorRef.current !== null && inputRef.current) {
+      inputRef.current.setSelectionRange(pendingCursorRef.current, pendingCursorRef.current)
+      pendingCursorRef.current = null
+    }
+  })
+
+  // Insert emoji at current cursor position
+  const insertEmoji = useCallback((emoji: string) => {
+    const el = inputRef.current
+    const pos = el?.selectionStart ?? input.length
+    const next = input.slice(0, pos) + emoji + input.slice(pos)
+    setInput(next)
+    pendingCursorRef.current = pos + emoji.length
+    setPickerOpen(false)
+    el?.focus()
+  }, [input])
+
+  // Detect :query pattern before cursor and update suggestions
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    setInput(value)
+
+    const cursor = e.target.selectionStart ?? value.length
+    const textBefore = value.slice(0, cursor)
+    const match = textBefore.match(/:([a-z_]{1,20})$/)
+
+    if (match) {
+      const results = searchEmojis(match[1])
+      setEmojiSuggestions(results)
+      setSuggestionIndex(0)
+    } else {
+      setEmojiSuggestions([])
+    }
+  }
+
+  // Replace :query with selected emoji
+  const selectSuggestion = useCallback((emoji: string) => {
+    const el = inputRef.current
+    const cursor = el?.selectionStart ?? input.length
+    const textBefore = input.slice(0, cursor)
+    const match = textBefore.match(/:([a-z_]{1,20})$/)
+    if (!match) return
+
+    const start = cursor - match[0].length
+    const next = input.slice(0, start) + emoji + input.slice(cursor)
+    setInput(next)
+    pendingCursorRef.current = start + emoji.length
+    setEmojiSuggestions([])
+    el?.focus()
+  }, [input])
+
+  // Keyboard navigation for suggestions
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (emojiSuggestions.length === 0) return
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSuggestionIndex((i) => Math.min(i + 1, emojiSuggestions.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSuggestionIndex((i) => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      selectSuggestion(emojiSuggestions[suggestionIndex].emoji)
+    } else if (e.key === 'Escape') {
+      setEmojiSuggestions([])
+    }
+  }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -186,24 +266,50 @@ export default function ConversationPage() {
 
           <form className="dc-chat__form" onSubmit={handleSend}>
             {sendError && <p className="dc-chat__send-error">{sendError}</p>}
-            <div className="dc-chat__input-row">
-              <input
-                className="dc-chat__input"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={`Message ${peer ? `@${peer}` : 'privé'}…`}
-                maxLength={1000}
-                disabled={sending}
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                className="dc-chat__send-btn"
-                disabled={sending || !input.trim()}
-                aria-label="Envoyer"
-              >
-                {sending ? '…' : '↵'}
-              </button>
+            <div className="dc-chat__input-wrapper">
+              {emojiSuggestions.length > 0 && (
+                <EmojiSuggestion
+                  suggestions={emojiSuggestions}
+                  selectedIndex={suggestionIndex}
+                  onSelect={selectSuggestion}
+                />
+              )}
+              {pickerOpen && (
+                <EmojiPicker
+                  onSelect={insertEmoji}
+                  onClose={() => setPickerOpen(false)}
+                />
+              )}
+              <div className="dc-chat__input-row">
+                <button
+                  type="button"
+                  className="dc-emoji-btn"
+                  onClick={() => setPickerOpen((o) => !o)}
+                  aria-label="Ouvrir le sélecteur d'émojis"
+                  tabIndex={-1}
+                >
+                  😊
+                </button>
+                <input
+                  ref={inputRef}
+                  className="dc-chat__input"
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder={`Message ${peer ? `@${peer}` : 'privé'}…`}
+                  maxLength={1000}
+                  disabled={sending}
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  className="dc-chat__send-btn"
+                  disabled={sending || !input.trim()}
+                  aria-label="Envoyer"
+                >
+                  {sending ? '…' : '↵'}
+                </button>
+              </div>
             </div>
           </form>
         </div>
