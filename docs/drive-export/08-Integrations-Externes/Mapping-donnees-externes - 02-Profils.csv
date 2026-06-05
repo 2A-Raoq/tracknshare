@@ -1,0 +1,8 @@
+Provider,Donnée externe,Champ externe,Champ interne Track'N Share,Table interne,Transformation,Obligatoire ?,Fallback,Commentaires
+STEAM,SteamID,steamid,externalId,game_accounts,string,Oui,Saisie manuelle ou ResolveVanityURL,Identifiant Steam 64 bits stocké côté compte lié.
+STEAM,Pseudo Steam,personaname,externalUsername,game_accounts,direct,Oui,Pseudo Track'N Share,Provient de GetPlayerSummaries.
+STEAM,Avatar,avatarfull,metadata.avatarUrl,game_accounts,URL,Non,Avatar par défaut,Ne remplace pas obligatoirement l'avatar Track'N Share.
+STEAM,URL profil,profileurl,metadata.profileUrl,game_accounts,URL,Non,null,Information publique de profil Steam.
+EPIC / EOS,Display name,displayName,externalUsername,game_accounts,direct,Non,Pseudo Track'N Share,Dépend du service et des permissions disponibles.
+EPIC / EOS,Identifiant Epic/EOS,Epic Account ID / Product User ID,externalId,game_accounts,string,Oui si Epic activé,Provider désactivé,Ne pas confondre Epic Account ID et Product User ID.
+MOCK,Pseudo fictif,username,externalUsername,game_accounts,direct,Oui,Donnée seedée,Utilisé pour le compte démo et les tests.

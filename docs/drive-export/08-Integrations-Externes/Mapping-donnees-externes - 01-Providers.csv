@@ -1,0 +1,4 @@
+Provider,Type,Priorité,Statut MVP,Usage prévu,Fiabilité,Commentaires
+MOCK,API interne fictive,P0,Obligatoire,"Données de démo, statistiques, leaderboards, saisons, équipes et chat",Très fiable,Source principale pour sécuriser le MVP et la soutenance.
+STEAM,API externe réelle,P1,Optionnel,"Profil Steam, SteamID, avatar, jeux possédés, temps de jeu, statistiques si disponibles",Moyenne,"Dépend de la clé API, de la visibilité du profil et des stats exposées par chaque jeu."
+EPIC / EOS,Services externes futurs,P2,Non bloquant,"Identité Epic/EOS, display name, stats ou leaderboards si produit compatible",Incertaine,Ne pas présenter comme API universelle équivalente à Steam.

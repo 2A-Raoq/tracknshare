@@ -1,0 +1,7 @@
+Cas,Provider,Cause possible,Action système,Message utilisateur,Fallback
+Profil privé,STEAM,Visibilité Steam restreinte,Garder anciennes données et marquer l'accès comme limité,Profil Steam inaccessible ou privé.,Anciennes données / mock
+Stats absentes,STEAM,Jeu sans stats publiques ou mapping inconnu,mappingStatus = UNAVAILABLE,Les statistiques de ce jeu ne sont pas disponibles via Steam.,Mock / anciennes données
+Provider non configuré,EPIC / EOS,Clés ou configuration absentes,Désactiver provider EPIC,Intégration Epic non disponible pour le moment.,MOCK
+Timeout API,Tous,API lente ou réseau indisponible,"Annuler l'appel, logger l'échec, conserver stats existantes",Synchronisation impossible pour le moment.,Cache / anciennes données
+Rate limit,Tous,Trop d'appels sur une période courte,Bloquer temporairement et utiliser cache,Trop de requêtes. Réessayez plus tard.,Cache
+Mapping impossible,Tous,Champs inconnus ou format inattendu,"mappingStatus = FAILED, ne pas écraser les stats",Les données externes sont incompatibles.,Anciennes données / mock

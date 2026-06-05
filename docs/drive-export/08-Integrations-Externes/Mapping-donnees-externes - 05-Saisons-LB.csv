@@ -1,0 +1,7 @@
+Donnée,Source externe,Champ interne,Table interne,Règle Track'N Share,Remarque
+Saison active,Interne,seasonId,player_stats,Toute stat synchronisée est liée à la saison active,Jamais fourni directement par Steam ou Epic.
+Rang joueur,Interne,rank,leaderboard_entries ou snapshot,Calculé depuis le score Track'N Share,Ne pas reprendre directement un classement externe.
+Leaderboard solo,Interne,leaderboard_entries,player_stats / snapshots,"Tri par score décroissant, joueurs éligibles uniquement",Source de vérité interne.
+Leaderboard équipe,Interne,team_season_stats,team_season_stats,"Score moyen recommandé, score total en secondaire",Calculé par Track'N Share.
+Snapshot archive,Interne,leaderboard_snapshot_entries,leaderboard_snapshot_entries,Figé à la fin de saison,Non modifié par les synchronisations futures.
+Dernière synchronisation,Externe ou mock,lastSyncAt,game_accounts / player_stats,Mettre à jour uniquement si la synchronisation réussit,Utile pour afficher les données anciennes.

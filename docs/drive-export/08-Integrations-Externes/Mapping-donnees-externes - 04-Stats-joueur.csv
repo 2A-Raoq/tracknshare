@@ -1,0 +1,14 @@
+Provider,Jeu,Stat externe,Champ externe,Champ interne,Table interne,Transformation,Obligatoire score ?,Fallback,Disponibilité / Priorité
+MOCK,Tous,Victoires,wins,wins,player_stats,direct,Oui,Valeur seedée,Garantie / P0
+MOCK,Tous,Défaites,losses,losses,player_stats,direct,Oui,Valeur seedée,Garantie / P0
+MOCK,Tous,Kills,kills,kills,player_stats,direct,Oui,Valeur seedée,Garantie / P0
+MOCK,Tous,Deaths,deaths,deaths,player_stats,direct,Oui,Valeur seedée,Garantie / P0
+STEAM,Selon AppID,Kills,variable selon jeu,kills,player_stats,mapping spécifique,Oui si disponible,Mock ou anciennes données,Partielle / P2
+STEAM,Selon AppID,Deaths,variable selon jeu,deaths,player_stats,mapping spécifique,Oui si disponible,Mock ou anciennes données,Partielle / P2
+STEAM,Selon AppID,Wins / Losses,variable selon jeu,wins / losses,player_stats,mapping spécifique,Oui si disponible,Mock ou anciennes données,Partielle / P2
+EPIC / EOS,Produit compatible,Kills,stat_kills hypothétique,kills,player_stats,mapping spécifique,Oui si disponible,Mock ou anciennes données,Incertaine / P2
+INTERNE,Tous,K/D ratio,kills + deaths,kdRatio,player_stats,"kills / deaths, gérer deaths = 0",Oui,0 ou règle spéciale,Garantie / P0
+INTERNE,Tous,Winrate,wins + matchesPlayed,winrate,player_stats,wins / matchesPlayed * 100,Oui,0 si aucune partie,Garantie / P0
+INTERNE,Tous,Parties jouées,wins + losses,matchesPlayed,player_stats,wins + losses ou champ source,Oui,0,Garantie / P0
+INTERNE,Tous,Score,kdRatio + winrate + matchesPlayed,score,player_stats,"(K/D x 50) + (Winrate x 40) + (matches x 0,5)",Oui,Recalcul interne,Garantie / P0
+INTERNE,Tous,Éligibilité leaderboard,matchesPlayed,isEligible,player_stats,matchesPlayed >= 10,Oui,false,Garantie / P0

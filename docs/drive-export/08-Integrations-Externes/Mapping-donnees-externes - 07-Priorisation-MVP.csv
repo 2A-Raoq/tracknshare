@@ -1,0 +1,9 @@
+Élément,Provider,Priorité,MVP ?,Statut d'implémentation,Commentaire / justification
+Mock stats complètes,MOCK,P0,Oui,À implémenter en premier,Obligatoire pour sécuriser la soutenance.
+Compte démo,MOCK,P0,Oui,À seed,"Doit contenir profil, stats, équipe, saison et chat."
+SteamID,STEAM,P1,Optionnel,Après MVP,Simple à stocker dans game_accounts.externalId.
+Pseudo Steam,STEAM,P1,Optionnel,Après MVP,Récupérable via GetPlayerSummaries si API configurée.
+Jeux Steam,STEAM,P1,Optionnel,Après MVP,Dépend de la visibilité du profil et de GetOwnedGames.
+Stats Steam réelles,STEAM,P2,Non,Future intégration,"Mapping spécifique par AppID, non garanti pour tous les jeux."
+Epic identité,EPIC / EOS,P2,Non,Future intégration,Nécessite configuration Epic/EOS.
+Epic stats,EPIC / EOS,P2,Non,Future intégration,Dépend fortement du produit et des stats configurées.

@@ -1,0 +1,7 @@
+Provider,Donnée externe,Champ externe,Champ interne,Table interne,Exemple,Transformation,Remarque
+STEAM,AppID,appid,externalAppId,games,440,number -> string ou number selon modèle,Identifiant unique Steam du jeu.
+STEAM,Nom du jeu,name,name,games,Team Fortress 2,direct,Disponible avec include_appinfo dans GetOwnedGames.
+STEAM,Temps de jeu,playtime_forever,metadata.playtimeForever,game_accounts ou player_stats,1500 minutes,minutes,"Indicateur d'activité, pas une stat compétitive."
+STEAM,Icône jeu,img_icon_url,metadata.iconUrl,games,hash image,construction URL si nécessaire,"Bonus UX, non obligatoire MVP."
+EPIC / EOS,Product ID,productId,externalAppId,games,variable,direct,Dépend de la configuration Epic Developer / EOS.
+MOCK,Jeu fictif,gameName,name,games,Valorant Mock,direct,"À utiliser pour démo, seed et tests."

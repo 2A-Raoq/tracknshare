@@ -1,0 +1,33 @@
+SYNTHÈSE — RÉPARTITION DES TÂCHES,,
+Ce tableau sert de support de planification. La feuille Taches-Kanban peut être utilisée pour créer les cartes GitHub Project.,,
+Responsable,Nombre de tâches,Rôle principal
+Ioanes,39.0,"Back-end, architecture, BDD, sécurité, données, API"
+Clément,26.0,"Front-end, UX/UI, PWA, responsive, pages, démonstration"
+Binôme,8.0,"Cadrage, intégration, tests, stabilisation"
+Priorité,Nombre de tâches,Signification
+P0,57.0,Indispensable pour le MVP ou la soutenance
+P1,15.0,Important mais peut être traité après le socle MVP
+P2,1.0,Bonus ou amélioration non bloquante
+Phase / Sprint,Nombre de tâches,Objectif principal
+S0,6.0,Cadrage et gestion de projet
+S1,8.0,Initialisation technique et environnement
+S2,15.0,"Fondations front, back, BDD et PWA"
+S3,6.0,Authentification
+S4,8.0,"Profils, jeux et statistiques"
+S5,7.0,"Scoring, saisons et leaderboards solo"
+S6,7.0,Équipes et leaderboard équipe
+S7,5.0,Chat temps réel
+S8,11.0,"Sécurité, tests, démo et polish"
+Statuts conseillés GitHub Project,,
+Backlog,Tâche listée mais pas encore lancée,
+À faire,Tâche priorisée pour le sprint courant,
+En cours,Développement en cours,
+Review,"À relire, tester ou fusionner",
+Terminé,Validée et livrée,
+Conseil d'utilisation,,
+1.0,Créer une issue GitHub par ligne importante du tableau Taches-Kanban.,
+2.0,Mettre le titre de l'issue avec la colonne Titre GitHub Issue.,
+3.0,"Copier la description, les dépendances et les critères d'acceptation dans le corps de l'issue.",
+4.0,Assigner la personne indiquée dans Responsable.,
+5.0,Ajouter les labels GitHub proposés.,
+6.0,Déplacer progressivement les cartes dans le Kanban selon le statut réel.,
