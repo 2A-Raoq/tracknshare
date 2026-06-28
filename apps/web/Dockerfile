@@ -22,9 +22,11 @@ COPY apps/web/package.json apps/web/package.json
 
 RUN pnpm install --frozen-lockfile
 
-# Permet de surcharger les URLs au build si besoin
-ARG VITE_API_URL
-ARG VITE_SOCKET_URL
+# URLs injectées au build (valeur par défaut = API publiée sur l'hôte).
+# Surchargeables via --build-arg. Ne PAS laisser vide : '' écraserait le
+# fallback du code (?? ne rattrape pas la chaîne vide).
+ARG VITE_API_URL=http://localhost:3000/api
+ARG VITE_SOCKET_URL=http://localhost:3000
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_SOCKET_URL=${VITE_SOCKET_URL}
 

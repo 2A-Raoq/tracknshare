@@ -17,8 +17,21 @@ async function bootstrap() {
     }),
   )
 
+  // Origines explicitement autorisées (prod) via CORS_ORIGIN (séparées par des virgules).
+  const explicitOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Pas d'Origin (curl, Postman, same-origin) -> autorisé.
+      if (!origin) return callback(null, true)
+      // En dev, toute origine localhost / 127.0.0.1 (n'importe quel port) est acceptée.
+      const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      callback(null, isLocalhost || explicitOrigins.includes(origin))
+    },
+    credentials: true,
   })
 
   const swaggerConfig = new DocumentBuilder()
