@@ -1,0 +1,60 @@
+name: CI
+
+# Pipeline d'intégration continue Track'N Share.
+# Gates bloquants : build API + build Web + tests API.
+# Le lint est exécuté en mode informatif (non bloquant) tant que le
+# formatage Prettier n'a pas été appliqué sur l'ensemble du dépôt.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Annule les exécutions précédentes encore en cours sur une même réf.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint · Build · Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # --- Lint (informatif, non bloquant) ---
+      - name: Lint API
+        run: pnpm --filter api lint:ci
+        continue-on-error: true
+
+      - name: Lint Web
+        run: pnpm --filter web lint
+        continue-on-error: true
+
+      # --- Build (bloquant) ---
+      - name: Build API
+        run: pnpm --filter api build
+
+      - name: Build Web
+        run: pnpm --filter web build
+
+      # --- Tests (bloquant) ---
+      - name: Test API
+        run: pnpm --filter api test:ci
