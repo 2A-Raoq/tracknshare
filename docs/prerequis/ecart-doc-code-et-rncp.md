@@ -85,7 +85,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **Validation config au démarrage** | ✅ | **`config/env.validation.ts` (2026-06-28)** : rejette JWT_SECRET vide/court et MESSAGE_ENCRYPTION_KEY ≠ 32 octets (fail-fast). 5 tests. |
 | **RGPD — droit à l'oubli** (suppression compte) | ✅ | **`DELETE /users/me` (2026-06-28)** : transaction purgeant toutes les données liées. 204 → relogin 401 vérifié. |
 | **RGPD — export de données** | ✅ | **`GET /users/me/export` (2026-06-28)** : profil + stats + équipes + comptes de jeu + succès en JSON. |
-| **RGPD — consentement / page confidentialité** | 🔴 | Aucun bandeau, aucune page `/privacy` |
+| **RGPD — consentement / page confidentialité** | ✅ | **Front (2026-06-28)** : bandeau de consentement (`ConsentBanner`, choix mémorisé) + page `/privacy` (synthèse art. 13 RGPD) avec boutons export/suppression branchés sur l'API. 3 tests. |
 | Logs structurés + redaction | 🔴 | Aucun logger structuré |
 
 ## A.5 — Tests, DevOps, déploiement
@@ -137,7 +137,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **BC03-7** Préparer des jeux d'essai / logiciel déverminé | « Les jeux de tests utilisés ne révèlent plus aucun défaut » | **Tests placeholders** = critère non prouvé | 🔴 **Priorité n°1** : écrire de vrais jeux de tests + plan de tests exécuté |
 | **BC03-8** Rendre compte de son travail | « compte-rendu d'activité, taux de disponibilité » | Suivi Git, pas de CRA formel | Produire un **compte-rendu d'activité** + état de disponibilité |
 | **BC04-1** Analyse organique / rétro-doc | « rétro-documentation disponible, fiable » | Doc technique riche, à cadrer | Cadrer une **rétro-documentation** d'un module existant |
-| **BC04-3** Produire des données agrégées (RGPD) | « conformes à la réglementation en vigueur » | ✅ Agrégats OK + **export + suppression RGPD livrés (2026-06-28)** | Reste : page confidentialité / consentement front |
+| **BC04-3** Produire des données agrégées (RGPD) | « conformes à la réglementation en vigueur » | ✅ Agrégats OK + **export + suppression RGPD + page confidentialité + consentement (2026-06-28)** | Volet RGPD complet (front + back) |
 | **BC04-5** Scripts système / environnement de tests | « machines virtuelles, serveurs d'applications, Web et BDD… environnement multi-tiers » | docker-compose partiel, pas de Dockerfile | **Dockeriser api+web** + compose complet = environnement multi-tiers démontrable |
 
 ## B.3 — Ce qui « reste à faire » mais **n'impacte PAS** la validation RNCP

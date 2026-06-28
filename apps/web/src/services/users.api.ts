@@ -38,4 +38,15 @@ export const usersApi = {
 
     return ensureSearchResults(res.data?.data)
   },
+
+  // RGPD — portabilité : récupère l'ensemble des données personnelles.
+  exportMyData: async (): Promise<unknown> => {
+    const res = await api.get<{ success: boolean; data: unknown }>('/users/me/export')
+    return res.data?.data
+  },
+
+  // RGPD — droit à l'oubli : supprime le compte et toutes les données liées.
+  deleteMyAccount: async (): Promise<void> => {
+    await api.delete('/users/me')
+  },
 }
