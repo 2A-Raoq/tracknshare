@@ -30,6 +30,7 @@ import { AchievementsModule } from './achievements/achievements.module'
 import { GameAccount } from './game-accounts/entities/game-account.entity'
 import { GameAccountsModule } from './game-accounts/game-accounts.module'
 import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.entity'
+import { HealthModule } from './health/health.module'
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.en
     FriendsModule,
     AchievementsModule,
     GameAccountsModule,
+    HealthModule,
   ],
   providers: [
     // Applique la limitation de débit à toutes les routes.

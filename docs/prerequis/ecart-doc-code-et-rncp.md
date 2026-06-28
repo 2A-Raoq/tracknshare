@@ -42,7 +42,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **Saisons** (module, `/seasons`, archives) | 🔴 | Entité seule ; pas de module/controller |
 | **Leaderboard d'équipe** | 🔴 | Pas d'endpoint `/leaderboards/teams` |
 | **Liste des jeux** (`/games`, GamesModule) | 🔴 | Entité seule, pas d'API |
-| **Endpoint santé** `/health` | 🔴 | Seul `GET /` « hello » existe |
+| **Endpoint santé** `/health` | ✅ | **2026-06-28** : `GET /api/health` (HealthModule) vérifie BDD + Redis, `@SkipThrottle`. Healthcheck Docker pointé dessus. 3 tests. |
 | **PWA installable** | 🔴 | `vite-plugin-pwa` installé mais non configuré ; pas de manifest/SW |
 | Gestion d'équipe avancée (promote, exclude, update, delete) | 🔴 | Aucun endpoint ; `TeamRoleGuard` codé mais **jamais branché** |
 
@@ -99,7 +99,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **Pipeline CI/CD** | ✅ | `.github/workflows/ci.yml` : lint (non bloquant) + build api/web + tests api (bloquants) |
 | **Dockerfile api / web** | ✅ | `apps/api/Dockerfile` + `apps/web/Dockerfile` multi-stage (+ `.dockerignore`, `nginx.conf`) |
 | docker-compose app complète | ✅ | api + web + postgres + redis, healthchecks + `depends_on` conditionnels |
-| Healthcheck / HealthModule | 🟡 | Healthchecks Docker (HTTP/TCP) en place ; `HealthModule` NestJS dédié encore absent |
+| Healthcheck / HealthModule | ✅ | **2026-06-28** : HealthModule (`GET /api/health`, BDD+Redis) + healthchecks Docker pointés dessus |
 | Monitoring / logs (Sentry, winston/pino) | 🔴 | Absent |
 | Variables d'env documentées | 🟡 | `.env.example` minimal vs `Variables-environnement.md` |
 

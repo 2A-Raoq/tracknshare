@@ -39,8 +39,9 @@ COPY --from=builder /app/apps/api/dist ./dist
 
 EXPOSE 3000
 
-# Healthcheck HTTP sans dépendance externe (le serveur répond = sain)
+# Healthcheck HTTP via l'endpoint /api/health (vérifie le serveur ; renvoie
+# 200 si l'app répond — le détail DB/Redis est dans le corps de la réponse).
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
-  CMD node -e "require('http').get('http://127.0.0.1:'+(process.env.PORT||3000)+'/api',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
+  CMD node -e "require('http').get('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
 
 CMD ["node", "dist/main.js"]
