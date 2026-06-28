@@ -58,7 +58,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **Archivage trimestriel des saisons** | 🔴 | **Non codé du tout** : pas de `@nestjs/schedule`, pas de cron, pas de tables d'archive/snapshot, pas de transitions de statut. C'est l'écart le plus lourd vs la doc. |
 | **Tables du modèle UML** (TeamSeasonStats, Notification, LeaderboardSnapshot[+Entry], Profile) | 🔴 | Absentes du code |
 | **Index PG documentés** (15 « P0 ») | 🟡 | ~3/15 réellement conformes ; aucun index sur les tables de messages ; `idx_leaderboard_query` sans `DESC` ni filtre partiel |
-| **Migrations versionnées** | 🔴 | `synchronize: true`, aucun dossier `migrations/` |
+| **Migrations versionnées** | ✅ | **2026-06-28** : `data-source.ts` + migration initiale (tout le schéma + FK + extension uuid-ossp), scripts `migration:generate/run/revert`, `synchronize` rendu configurable via `DB_SYNCHRONIZE`. Migration vérifiée sur base vierge. |
 
 ## A.3 — API & intégrations externes
 
@@ -127,7 +127,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **BC01-5** Livrer un logiciel déverminé | « Des outils de contrôle automatique du code sont utilisés. Aucun défaut visible ne persiste. » | Tests placeholders, pas d'analyse statique formalisée | Écrire de **vrais tests** (score, guards, auth) + montrer ESLint/TS en CI |
 | **BC01-6** Estimer charge / utilisateurs simultanés | « L'exécution est répartie… tests de performance, calcul de robustesse » | Pas de test de charge ni estimation chiffrée | Produire une **note d'estimation de charge** + un test simple (k6/autocannon) comme preuve |
 | **BC01-7** Accessibilité handicap (RGAA) | « Une norme de présentation… RGAA » | ARIA partiel, pas d'audit | **Audit RGAA** documenté (Lighthouse/axe) + corrections |
-| **BC01-10** Accès sécurisé aux données | « contraintes d'intégrité et déclencheurs » | Contraintes OK, pas de déclencheurs, `synchronize:true` | Ajouter **migrations** + au moins 1 contrainte/déclencheur documenté |
+| **BC01-10** Accès sécurisé aux données | « contraintes d'intégrité et déclencheurs » | ✅ Contraintes OK + **migrations versionnées (2026-06-28)** ; reste éventuellement un déclencheur documenté | Optionnel : 1 déclencheur SQL pour l'illustration |
 | **BC02-8** Coordonner en Agile | backlog par sprint, outil de synchro | ✅ Couvert par la doc sprints/backlog | RAS — valoriser la doc `13-Sprints-Milestones/` |
 | **BC02-11** Intégrabilité (ITIL) | « bon à intégrer signé, SLA, points de contrôle positifs » | Pas de CI/CD, pas de procédure réelle | **Pipeline CI** (lint+build+test) = preuve de l'intégrabilité automatisée + checklist de mise en exploitation |
 | **BC02-4** Modéliser une BDD | MCD, méthode | ✅ Modèle + diagrammes UML | RAS — valoriser `06-Diagrammes-UML/` + entités |

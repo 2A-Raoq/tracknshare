@@ -32,6 +32,12 @@ import { GameAccountsModule } from './game-accounts/game-accounts.module'
 import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.entity'
 import { HealthModule } from './health/health.module'
 
+function resolveSynchronize(config: ConfigService): boolean {
+  const explicit = config.get<string>('DB_SYNCHRONIZE')
+  if (explicit !== undefined) return explicit === 'true'
+  return config.get<string>('NODE_ENV') !== 'production'
+}
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
@@ -63,7 +69,10 @@ import { HealthModule } from './health/health.module'
           GameAccount,
           SteamTrackedGame,
         ],
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
+        // Par défaut : synchronize actif hors production. Surchargeable via
+        // DB_SYNCHRONIZE (true/false) — mettre à false pour piloter le schéma
+        // par migrations versionnées (voir src/database/migrations).
+        synchronize: resolveSynchronize(config),
       }),
       inject: [ConfigService],
     }),

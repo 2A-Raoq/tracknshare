@@ -14,7 +14,11 @@
     "test:ci": "jest --ci --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
+    "typeorm": "typeorm-ts-node-commonjs -d src/database/data-source.ts",
+    "migration:generate": "pnpm typeorm migration:generate",
+    "migration:run": "pnpm typeorm migration:run",
+    "migration:revert": "pnpm typeorm migration:revert"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
