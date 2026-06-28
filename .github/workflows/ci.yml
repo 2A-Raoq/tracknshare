@@ -58,3 +58,6 @@ jobs:
       # --- Tests (bloquant) ---
       - name: Test API
         run: pnpm --filter api test:ci
+
+      - name: Test Web
+        run: pnpm --filter web test:ci

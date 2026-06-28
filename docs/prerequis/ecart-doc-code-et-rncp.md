@@ -95,7 +95,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | Tests unitaires back | ✅ | 31 tests réels : `score.calculator`, `team-member.guard`, `team-role.guard`, `auth.service`, `users.service`. Commande CI `test:ci`. |
 | Tests API / e2e | 🔴 | `app.e2e-spec.ts` existe mais hors `testRegex` → jamais exécuté |
 | Tests sécurité (accès chat non-membre…) | 🟡 | Couvert indirectement via les tests de guards d'équipe ; reste l'accès chat/conversation à tester |
-| Tests front-end | 🔴 | Aucun outil installé (ni vitest ni testing-library) |
+| Tests front-end | ✅ | **Vitest + Testing Library (2026-06-28)** : 19 tests (searchEmojis, AvatarInitial, EmojiSuggestion, intercepteur axios token/401). Exécutés en CI via `test:ci`. |
 | **Pipeline CI/CD** | ✅ | `.github/workflows/ci.yml` : lint (non bloquant) + build api/web + tests api (bloquants) |
 | **Dockerfile api / web** | ✅ | `apps/api/Dockerfile` + `apps/web/Dockerfile` multi-stage (+ `.dockerignore`, `nginx.conf`) |
 | docker-compose app complète | ✅ | api + web + postgres + redis, healthchecks + `depends_on` conditionnels |
