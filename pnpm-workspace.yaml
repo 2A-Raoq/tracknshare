@@ -1,5 +1,8 @@
 packages:
   - apps/*
+  # apps/mobile est une app Expo/React Native autonome (npm), volontairement
+  # hors du workspace pnpm pour éviter les soucis de symlinks avec Metro.
+  - '!apps/mobile'
 
 ignoredBuiltDependencies:
   - '@nestjs/core'
