@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { APP_GUARD } from '@nestjs/core'
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
+import { validateEnv } from './config/env.validation'
 import { RedisModule } from './redis/redis.module'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
@@ -30,7 +33,9 @@ import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.en
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
+    // Limitation de débit globale : 100 requêtes / minute / IP (anti-abus).
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -72,6 +77,10 @@ import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.en
     FriendsModule,
     AchievementsModule,
     GameAccountsModule,
+  ],
+  providers: [
+    // Applique la limitation de débit à toutes les routes.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

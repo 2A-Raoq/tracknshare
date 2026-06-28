@@ -70,7 +70,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | Steam | 🟡 | Provider réel **mais génère des stats pseudo-aléatoires déterministes** (pas de vraies stats Steam) ; pas de ResolveVanityURL ; pas de fallback « conserver anciennes données » |
 | Epic / EOS | 🔴 | Totalement absent (cohérent P2) |
 | Mock déterministe (seed) | 🔴 | Utilise `Math.random()`, non déterministe |
-| **Rate limiting** (doc dédiée complète) | 🔴 | **Rien** : pas de `@nestjs/throttler`, aucune limite |
+| **Rate limiting** (doc dédiée complète) | ✅ | **@nestjs/throttler (2026-06-28)** : global 100/min + renforcé sur /auth |
 
 ## A.4 — Sécurité & RGPD
 
@@ -80,11 +80,11 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | Chiffrement messages AES-256-GCM | ✅ | Réel (chat + privé) |
 | Validation DTO (ValidationPipe) | ✅ | whitelist+transform (`forbidNonWhitelisted` off) |
 | Secrets en `.env` non commités | ✅ | `.gitignore` correct, `.env.example` sans valeurs |
-| **Helmet** | 🔴 | Dépendance installée mais **jamais branchée** dans `main.ts` |
-| **Rate limiting / anti-brute-force** | 🔴 | Absent |
-| **Validation config au démarrage** (Joi/Zod) | 🔴 | Aucune ; `JWT_SECRET` vide non rejeté |
-| **RGPD — droit à l'oubli** (suppression compte) | 🔴 | Aucun endpoint |
-| **RGPD — export de données** | 🔴 | Aucun endpoint |
+| **Helmet** | ✅ | **Branché (2026-06-28)** dans `main.ts` (`app.use(helmet())`, CSP off pour Swagger). En-têtes vérifiés : X-Frame-Options, HSTS, nosniff… |
+| **Rate limiting / anti-brute-force** | ✅ | **@nestjs/throttler (2026-06-28)** : 100 req/min global + 10/min sur login, 5/min sur register. 429 vérifié. |
+| **Validation config au démarrage** | ✅ | **`config/env.validation.ts` (2026-06-28)** : rejette JWT_SECRET vide/court et MESSAGE_ENCRYPTION_KEY ≠ 32 octets (fail-fast). 5 tests. |
+| **RGPD — droit à l'oubli** (suppression compte) | ✅ | **`DELETE /users/me` (2026-06-28)** : transaction purgeant toutes les données liées. 204 → relogin 401 vérifié. |
+| **RGPD — export de données** | ✅ | **`GET /users/me/export` (2026-06-28)** : profil + stats + équipes + comptes de jeu + succès en JSON. |
 | **RGPD — consentement / page confidentialité** | 🔴 | Aucun bandeau, aucune page `/privacy` |
 | Logs structurés + redaction | 🔴 | Aucun logger structuré |
 
@@ -137,7 +137,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **BC03-7** Préparer des jeux d'essai / logiciel déverminé | « Les jeux de tests utilisés ne révèlent plus aucun défaut » | **Tests placeholders** = critère non prouvé | 🔴 **Priorité n°1** : écrire de vrais jeux de tests + plan de tests exécuté |
 | **BC03-8** Rendre compte de son travail | « compte-rendu d'activité, taux de disponibilité » | Suivi Git, pas de CRA formel | Produire un **compte-rendu d'activité** + état de disponibilité |
 | **BC04-1** Analyse organique / rétro-doc | « rétro-documentation disponible, fiable » | Doc technique riche, à cadrer | Cadrer une **rétro-documentation** d'un module existant |
-| **BC04-3** Produire des données agrégées (RGPD) | « conformes à la réglementation en vigueur » | Agrégats OK ; RGPD export/oubli absents | Ajouter **export + suppression RGPD** (renforce aussi BC01) |
+| **BC04-3** Produire des données agrégées (RGPD) | « conformes à la réglementation en vigueur » | ✅ Agrégats OK + **export + suppression RGPD livrés (2026-06-28)** | Reste : page confidentialité / consentement front |
 | **BC04-5** Scripts système / environnement de tests | « machines virtuelles, serveurs d'applications, Web et BDD… environnement multi-tiers » | docker-compose partiel, pas de Dockerfile | **Dockeriser api+web** + compose complet = environnement multi-tiers démontrable |
 
 ## B.3 — Ce qui « reste à faire » mais **n'impacte PAS** la validation RNCP
