@@ -12,6 +12,12 @@ export interface TeamMemberInfo {
   joinedAt: string
 }
 
+export interface TeamStats {
+  memberCount: number
+  averageScore: number
+  bestPlayer: { username: string; score: number } | null
+}
+
 export interface TeamDetail {
   id: string
   name: string
@@ -19,6 +25,7 @@ export interface TeamDetail {
   description: string | null
   inviteCode: string
   members: TeamMemberInfo[]
+  stats?: TeamStats
 }
 
 export interface ChatMessage {

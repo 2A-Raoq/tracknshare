@@ -39,6 +39,12 @@ export const usersApi = {
     return ensureSearchResults(res.data?.data)
   },
 
+  // Met à jour le profil (pseudo) de l'utilisateur connecté.
+  updateProfile: async (data: { username: string }) => {
+    const res = await api.patch('/users/me', data)
+    return res.data?.data
+  },
+
   // RGPD — portabilité : récupère l'ensemble des données personnelles.
   exportMyData: async (): Promise<unknown> => {
     const res = await api.get<{ success: boolean; data: unknown }>('/users/me/export')

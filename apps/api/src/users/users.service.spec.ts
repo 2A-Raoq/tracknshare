@@ -75,6 +75,44 @@ describe('UsersService', () => {
     });
   });
 
+  describe('updateProfile', () => {
+    it('met à jour le pseudo et masque le hash', async () => {
+      repo.findOne
+        .mockResolvedValueOnce({ id: 'user-1', username: 'Old', passwordHash: 'h' }) // findById
+        .mockResolvedValueOnce(null); // unicité du nouveau pseudo
+
+      const result = await service.updateProfile('user-1', { username: 'NewName' });
+
+      expect(repo.save).toHaveBeenCalled();
+      expect(result.username).toBe('NewName');
+      expect(result).not.toHaveProperty('passwordHash');
+    });
+
+    it('rejette si le pseudo est déjà pris par un autre', async () => {
+      repo.findOne
+        .mockResolvedValueOnce({ id: 'user-1', username: 'Old', passwordHash: 'h' })
+        .mockResolvedValueOnce({ id: 'user-2', username: 'Taken' });
+
+      await expect(
+        service.updateProfile('user-1', { username: 'Taken' }),
+      ).rejects.toThrow(ConflictException);
+      expect(repo.save).not.toHaveBeenCalled();
+    });
+
+    it('n’effectue aucune écriture si le pseudo est inchangé', async () => {
+      repo.findOne.mockResolvedValueOnce({
+        id: 'user-1',
+        username: 'Same',
+        passwordHash: 'h',
+      });
+
+      const result = await service.updateProfile('user-1', { username: 'Same' });
+
+      expect(repo.save).not.toHaveBeenCalled();
+      expect(result.username).toBe('Same');
+    });
+  });
+
   describe('toPublic', () => {
     it('retire le passwordHash de l’objet utilisateur', () => {
       const user = {

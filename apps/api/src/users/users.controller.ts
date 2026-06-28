@@ -1,7 +1,9 @@
 import {
   Controller,
   Get,
+  Patch,
   Delete,
+  Body,
   UseGuards,
   Req,
   Query,
@@ -11,6 +13,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { UsersService } from './users.service'
+import { UpdateUserDto } from './dto/update-user.dto'
 
 @ApiTags('users')
 @Controller('users')
@@ -32,6 +35,15 @@ export class UsersController {
   async search(@Req() req: any, @Query('q') query = '') {
     const users = await this.usersService.searchByUsername(query, req.user.userId)
     return { success: true, data: users }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mettre à jour mon profil (pseudo)' })
+  @Patch('me')
+  async updateMe(@Req() req: any, @Body() dto: UpdateUserDto) {
+    const user = await this.usersService.updateProfile(req.user.userId, dto)
+    return { success: true, data: user }
   }
 
   @UseGuards(JwtAuthGuard)

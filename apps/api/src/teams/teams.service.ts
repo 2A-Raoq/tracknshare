@@ -89,7 +89,39 @@ export class TeamsService {
         role: m.role,
         joinedAt: m.joinedAt,
       })),
+      stats: await this.computeTeamStats(teamId),
     }
+  }
+
+  /**
+   * Statistiques collectives d'une équipe : nombre de membres, score moyen
+   * (somme des scores de chaque membre) et meilleur joueur.
+   */
+  private async computeTeamStats(teamId: string) {
+    const rows: Array<{ userId: string; username: string; totalScore: string }> =
+      await this.memberRepo.manager.query(
+        `SELECT tm."userId", u.username, COALESCE(SUM(ps.score), 0)::int AS "totalScore"
+           FROM team_members tm
+           JOIN users u ON u.id = tm."userId"
+           LEFT JOIN player_stats ps ON ps."userId" = tm."userId"
+          WHERE tm."teamId" = $1
+          GROUP BY tm."userId", u.username
+          ORDER BY "totalScore" DESC`,
+        [teamId],
+      )
+
+    const memberCount = rows.length
+    const scores = rows.map((r) => Number(r.totalScore))
+    const averageScore =
+      memberCount > 0
+        ? Math.round(scores.reduce((a, b) => a + b, 0) / memberCount)
+        : 0
+    const bestPlayer =
+      memberCount > 0
+        ? { username: rows[0].username, score: Number(rows[0].totalScore) }
+        : null
+
+    return { memberCount, averageScore, bestPlayer }
   }
 
   async join(userId: string, dto: JoinTeamDto) {
@@ -104,6 +136,36 @@ export class TeamsService {
     )
 
     return { teamId: team.id, role: 'MEMBER' }
+  }
+
+  async leave(teamId: string, userId: string) {
+    const membership = await this.memberRepo.findOne({ where: { teamId, userId } })
+    if (!membership) throw new NotFoundException('TEAM_NOT_MEMBER')
+
+    const team = await this.teamRepo.findOne({ where: { id: teamId } })
+    if (!team) throw new NotFoundException('TEAM_NOT_FOUND')
+
+    // Si le capitaine/propriétaire part : promotion du plus ancien membre
+    // restant, ou dissolution de l'équipe s'il était le dernier.
+    if (team.ownerId === userId) {
+      const remaining = (
+        await this.memberRepo.find({ where: { teamId }, order: { joinedAt: 'ASC' } })
+      ).filter((m) => m.userId !== userId)
+
+      if (remaining.length === 0) {
+        await this.teamRepo.delete({ id: teamId }) // cascade membres + messages
+        return { teamId, disbanded: true }
+      }
+
+      const next = remaining[0]
+      next.role = 'CAPTAIN'
+      await this.memberRepo.save(next)
+      team.ownerId = next.userId
+      await this.teamRepo.save(team)
+    }
+
+    await this.memberRepo.delete({ teamId, userId })
+    return { teamId, disbanded: false }
   }
 
   async getMessages(teamId: string, limit = 50): Promise<TeamMessagePayload[]> {

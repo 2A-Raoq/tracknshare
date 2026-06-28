@@ -11,6 +11,20 @@ export default function TeamDetailPage() {
   const [team, setTeam] = useState<TeamDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [leaving, setLeaving] = useState(false)
+
+  async function handleLeave() {
+    if (!team) return
+    if (!window.confirm(`Quitter l'équipe ${team.name} ?`)) return
+    setLeaving(true)
+    try {
+      await teamsApi.leaveTeam(team.id)
+      navigate('/teams')
+    } catch {
+      setError("Impossible de quitter l'équipe pour le moment.")
+      setLeaving(false)
+    }
+  }
 
   useEffect(() => {
     if (!teamId) {
@@ -82,7 +96,21 @@ export default function TeamDetailPage() {
             </div>
             <div className="status-card">
               <p className="muted-text">Membres</p>
-              <h2 style={{ marginTop: '6px' }}>{team.members.length}</h2>
+              <h2 style={{ marginTop: '6px' }}>
+                {team.stats?.memberCount ?? team.members.length}
+              </h2>
+            </div>
+            <div className="status-card">
+              <p className="muted-text">Score moyen</p>
+              <h2 style={{ marginTop: '6px' }}>{team.stats?.averageScore ?? 0}</h2>
+            </div>
+            <div className="status-card">
+              <p className="muted-text">Meilleur joueur</p>
+              <h2 style={{ marginTop: '6px' }}>
+                {team.stats?.bestPlayer
+                  ? `${team.stats.bestPlayer.username} (${team.stats.bestPlayer.score})`
+                  : '—'}
+              </h2>
             </div>
           </div>
         </section>
@@ -119,9 +147,18 @@ export default function TeamDetailPage() {
             <button onClick={() => navigate('/teams')} className="ghost-button">
               Retour aux équipes
             </button>
+            <button
+              onClick={handleLeave}
+              className="ghost-button"
+              disabled={leaving}
+              style={{ color: '#F04747', borderColor: '#F04747' }}
+            >
+              {leaving ? 'Sortie…' : "Quitter l'équipe"}
+            </button>
           </div>
           <p className="muted-text" style={{ marginTop: '10px', fontSize: '0.8125rem' }}>
-            Le chat d&apos;équipe est disponible dans l&apos;espace Messages.
+            Le chat d&apos;équipe est disponible dans l&apos;espace Messages. Si le
+            capitaine quitte, le membre le plus ancien devient capitaine.
           </p>
         </section>
       </main>

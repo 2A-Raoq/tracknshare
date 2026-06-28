@@ -34,9 +34,9 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | Équipes (créer/rejoindre/voir) | ✅ | create/join/detail + code d'invitation |
 | Chat d'équipe temps réel | ✅ | Socket.io authentifié + fallback REST + chiffrement |
 | Données de démo / seed | ✅ | 14 users, 3 jeux, équipe, messages chiffrés, achievements |
-| **Modifier son profil** (`PATCH /users/me`) | 🔴 | Aucun endpoint ni éditeur ; `ProfilePage` = simple redirect |
-| **Quitter une équipe** | 🔴 | Aucun endpoint `leave` |
-| **Stats d'équipe** (moyennes, meilleur joueur) | 🔴 | `getTeam` ne calcule aucune stat collective |
+| **Modifier son profil** (`PATCH /users/me`) | ✅ | **2026-06-28** : endpoint (contrôle d'unicité du pseudo) + `ProfilePage` éditable. Tests. |
+| **Quitter une équipe** | ✅ | **2026-06-28** : `DELETE /teams/:id/leave` (promotion auto du plus ancien ou dissolution) + bouton front. 4 tests. |
+| **Stats d'équipe** (moyennes, meilleur joueur) | ✅ | **2026-06-28** : `getTeam` renvoie memberCount / averageScore / bestPlayer (agrégation SQL) + cartes front. |
 | **Règle des 10 parties min.** (éligibilité leaderboard) | 🔴 | `leaderboards.service.ts` ne filtre pas `matchesPlayed >= 10` |
 | **Filtres leaderboard** (jeu / saison) | 🟡 | Back prêt, front sans sélecteur |
 | **Saisons** (module, `/seasons`, archives) | 🔴 | Entité seule ; pas de module/controller |

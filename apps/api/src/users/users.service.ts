@@ -45,6 +45,24 @@ export class UsersService {
     return this.toPublic(user)
   }
 
+  async updateProfile(
+    id: string,
+    data: { username: string },
+  ): Promise<PublicUser> {
+    const user = await this.findById(id)
+    if (!user) throw new NotFoundException()
+
+    const username = data.username.trim()
+    if (username !== user.username) {
+      const existing = await this.userRepo.findOne({ where: { username } })
+      if (existing) throw new ConflictException('USER_USERNAME_ALREADY_EXISTS')
+      user.username = username
+      await this.userRepo.save(user)
+    }
+
+    return this.toPublic(user)
+  }
+
   async searchByUsername(query: string, excludeUserId?: string) {
     const trimmed = query.trim()
     if (!trimmed) {
