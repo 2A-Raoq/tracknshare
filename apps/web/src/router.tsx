@@ -13,6 +13,7 @@ import ConversationPage from './pages/ConversationPage'
 import TeamChatPage from './pages/TeamChatPage'
 import PublicProfilePage from './pages/PublicProfilePage'
 import FriendsPage from './pages/FriendsPage'
+import PrivacyPage from './pages/PrivacyPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function AppRouter() {
@@ -69,6 +70,9 @@ export default function AppRouter() {
         <ProtectedRoute>
           <FriendsPage />
         </ProtectedRoute>
+      </Route>
+      <Route path="/privacy">
+        <PrivacyPage />
       </Route>
       <Route path="/">
         <HomePage />

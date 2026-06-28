@@ -1,0 +1,24 @@
+# Dépendances et artefacts de build (réinstallés/rebuild dans l'image)
+# node_modules listé explicitement (racine + tous niveaux) pour que le
+# walker BuildKit ne descende pas dans le store pnpm (liens cassés Windows).
+node_modules
+**/node_modules
+**/node_modules/**
+.pnpm-store
+**/.pnpm-store
+**/dist
+**/build
+**/.turbo
+**/coverage
+
+# Secrets et environnement local (fournis via docker-compose)
+**/.env
+**/.env.*
+!**/.env.example
+
+# Git / IDE / divers
+.git
+.gitignore
+**/*.log
+.vscode
+.idea

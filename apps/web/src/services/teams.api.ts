@@ -43,6 +43,11 @@ export const teamsApi = {
     return res.data.data
   },
 
+  leaveTeam: async (teamId: string): Promise<{ teamId: string; disbanded: boolean }> => {
+    const res = await api.delete(`/teams/${teamId}/leave`)
+    return res.data.data
+  },
+
   getMessages: async (teamId: string): Promise<ChatMessage[]> => {
     const res = await api.get<{ success: boolean; data: ChatMessage[] }>(
       `/teams/${teamId}/messages`,

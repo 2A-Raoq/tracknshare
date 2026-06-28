@@ -1,3 +1,20 @@
+# ============================================================
+#  Track'N Share — stack complète (web + api + postgres + redis)
+#
+#  Linux / macOS :
+#    docker compose up --build
+#
+#  Windows : BuildKit échoue à parcourir le store pnpm (chemins longs).
+#  Construire les images avec le builder classique, puis lancer :
+#    DOCKER_BUILDKIT=0 docker build -f apps/api/Dockerfile -t tracknshare-api:latest .
+#    DOCKER_BUILDKIT=0 docker build -f apps/web/Dockerfile -t tracknshare-web:latest .
+#    docker compose up            # réutilise les images taguées
+#
+#  Web exposé sur 8081 par défaut (8080 est souvent pris par wslrelay sous
+#  Docker Desktop/Windows). Surcharge possible : WEB_PORT=9000 docker compose up
+#  Accès : web http://localhost:8081 · API http://localhost:3000 · Swagger /docs
+#  (PowerShell pour surcharger : $env:WEB_PORT=9000 ; docker compose up)
+# ============================================================
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,11 +26,64 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tracknshare -d tracknshare']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     ports:
       - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: tracknshare-api:latest
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      # NODE_ENV != production active TypeORM synchronize : le schéma est
+      # créé automatiquement au démarrage (pas encore de migrations).
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: tracknshare
+      DB_PASSWORD: tracknshare
+      DB_NAME: tracknshare
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-change-me
+      JWT_EXPIRES_IN: 1d
+      # Clé de dev (base64, 32 octets). À remplacer hors démo locale.
+      MESSAGE_ENCRYPTION_KEY: enJdZ2SpRGYSNitgujTU3tTHSSVqN6NCpnI8owYZb9s=
+      STEAM_API_KEY: ''
+      # Doit correspondre au port d'exposition du web (WEB_PORT, défaut 8080)
+      CORS_ORIGIN: http://localhost:${WEB_PORT:-8081}
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    image: tracknshare-web:latest
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      # Surchargeable : WEB_PORT=8081 docker compose up (si 8080 est occupé)
+      - '${WEB_PORT:-8081}:80'
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

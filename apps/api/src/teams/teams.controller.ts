@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -61,6 +62,14 @@ export class TeamsController {
   async getTeam(@Param('teamId') teamId: string) {
     const team = await this.teamsService.getTeam(teamId)
     return { success: true, data: team }
+  }
+
+  @Delete(':teamId/leave')
+  @UseGuards(TeamMemberGuard)
+  @ApiOperation({ summary: 'Quitter une équipe (membre requis)' })
+  async leave(@Param('teamId') teamId: string, @Request() req: any) {
+    const result = await this.teamsService.leave(teamId, req.user.userId)
+    return { success: true, data: result }
   }
 
   @Get(':teamId/messages')

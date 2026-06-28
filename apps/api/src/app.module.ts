@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { APP_GUARD } from '@nestjs/core'
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
+import { validateEnv } from './config/env.validation'
 import { RedisModule } from './redis/redis.module'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
@@ -27,10 +30,19 @@ import { AchievementsModule } from './achievements/achievements.module'
 import { GameAccount } from './game-accounts/entities/game-account.entity'
 import { GameAccountsModule } from './game-accounts/game-accounts.module'
 import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.entity'
+import { HealthModule } from './health/health.module'
+
+function resolveSynchronize(config: ConfigService): boolean {
+  const explicit = config.get<string>('DB_SYNCHRONIZE')
+  if (explicit !== undefined) return explicit === 'true'
+  return config.get<string>('NODE_ENV') !== 'production'
+}
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
+    // Limitation de débit globale : 100 requêtes / minute / IP (anti-abus).
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -57,7 +69,10 @@ import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.en
           GameAccount,
           SteamTrackedGame,
         ],
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
+        // Par défaut : synchronize actif hors production. Surchargeable via
+        // DB_SYNCHRONIZE (true/false) — mettre à false pour piloter le schéma
+        // par migrations versionnées (voir src/database/migrations).
+        synchronize: resolveSynchronize(config),
       }),
       inject: [ConfigService],
     }),
@@ -72,6 +87,11 @@ import { SteamTrackedGame } from './game-accounts/entities/steam-tracked-game.en
     FriendsModule,
     AchievementsModule,
     GameAccountsModule,
+    HealthModule,
+  ],
+  providers: [
+    // Applique la limitation de débit à toutes les routes.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}
