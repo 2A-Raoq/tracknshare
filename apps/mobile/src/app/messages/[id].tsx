@@ -95,7 +95,7 @@ export default function ConversationScreen() {
       <View
         style={[
           styles.inputRow,
-          { paddingBottom: keyboardHeight > 0 ? keyboardHeight + spacing.sm : insets.bottom + spacing.sm },
+          { paddingBottom: keyboardHeight > 0 ? keyboardHeight : insets.bottom + spacing.sm },
         ]}
       >
         <TextInput

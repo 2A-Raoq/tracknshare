@@ -8,8 +8,11 @@ import { teamsApi } from '@/services/teams.api'
 import type { ConversationPeer, ConversationSummary, TeamSummary } from '@/types'
 import { colors, radius, spacing } from '@/theme'
 
+type Tab = 'private' | 'teams'
+
 export default function MessagesScreen() {
   const router = useRouter()
+  const [tab, setTab] = useState<Tab>('private')
   const [teams, setTeams] = useState<TeamSummary[]>([])
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [query, setQuery] = useState('')
@@ -57,77 +60,106 @@ export default function MessagesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.section}>Discussions d&apos;équipe</Text>
-      {teams.length === 0 && <Muted>Tu n&apos;as rejoint aucune équipe.</Muted>}
-      {teams.map((team) => (
-        <Pressable
-          key={team.id}
-          onPress={() => router.push(`/teams/${team.id}/chat`)}
-          style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
-        >
-          <Ionicons name="people" size={22} color={colors.accent} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>
-              [{team.tag}] {team.name}
-            </Text>
-            <Text style={styles.preview}>Chat d&apos;équipe</Text>
-          </View>
-          <Text style={styles.chevron}>›</Text>
+      <View style={styles.tabsRow}>
+        <Pressable onPress={() => setTab('private')} style={styles.tabBtn}>
+          <Text style={[styles.tabText, tab === 'private' && styles.tabTextActive]}>
+            Messages privés
+          </Text>
+          {tab === 'private' && <View style={styles.tabUnderline} />}
         </Pressable>
-      ))}
-
-      <Text style={styles.section}>Messages privés</Text>
-
-      <Card>
-        <Text style={styles.cardTitle}>Nouvelle conversation</Text>
-        <TextField
-          label="Rechercher un joueur"
-          value={query}
-          onChangeText={search}
-          autoCapitalize="none"
-          placeholder="pseudo…"
-        />
-        {results.map((peer) => (
-          <Pressable
-            key={peer.id}
-            onPress={() => startConversation(peer)}
-            style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.8 }]}
-          >
-            <Text style={styles.name}>{peer.username}</Text>
-            <Text style={{ color: colors.primary }}>Discuter ›</Text>
-          </Pressable>
-        ))}
-      </Card>
-
-      {conversations.length === 0 && <Muted>Aucune conversation privée.</Muted>}
-      {conversations.map((conv) => (
-        <Pressable
-          key={conv.id}
-          onPress={() => router.push(`/messages/${conv.id}`)}
-          style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
-        >
-          <Ionicons name="person-circle-outline" size={24} color={colors.textMuted} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>
-              {conv.participant?.username ?? 'Conversation'}
-            </Text>
-            <Text style={styles.preview} numberOfLines={1}>
-              {conv.lastMessage?.content ?? 'Démarrez la discussion'}
-            </Text>
-          </View>
-          <Text style={styles.chevron}>›</Text>
+        <Pressable onPress={() => setTab('teams')} style={styles.tabBtn}>
+          <Text style={[styles.tabText, tab === 'teams' && styles.tabTextActive]}>
+            Équipes
+          </Text>
+          {tab === 'teams' && <View style={styles.tabUnderline} />}
         </Pressable>
-      ))}
+      </View>
+
+      {tab === 'teams' ? (
+        <>
+          {teams.length === 0 && <Muted>Tu n&apos;as rejoint aucune équipe.</Muted>}
+          {teams.map((team) => (
+            <Pressable
+              key={team.id}
+              onPress={() => router.push(`/teams/${team.id}/chat`)}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
+            >
+              <Ionicons name="people" size={22} color={colors.accent} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>
+                  [{team.tag}] {team.name}
+                </Text>
+                <Text style={styles.preview}>Chat d&apos;équipe</Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Pressable>
+          ))}
+        </>
+      ) : (
+        <>
+          <Card>
+            <Text style={styles.cardTitle}>Nouvelle conversation</Text>
+            <TextField
+              label="Rechercher un joueur"
+              value={query}
+              onChangeText={search}
+              autoCapitalize="none"
+              placeholder="pseudo…"
+            />
+            {results.map((peer) => (
+              <Pressable
+                key={peer.id}
+                onPress={() => startConversation(peer)}
+                style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.8 }]}
+              >
+                <Text style={styles.name}>{peer.username}</Text>
+                <Text style={{ color: colors.primary }}>Discuter ›</Text>
+              </Pressable>
+            ))}
+          </Card>
+
+          {conversations.length === 0 && <Muted>Aucune conversation privée.</Muted>}
+          {conversations.map((conv) => (
+            <Pressable
+              key={conv.id}
+              onPress={() => router.push(`/messages/${conv.id}`)}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
+            >
+              <Ionicons name="person-circle-outline" size={24} color={colors.textMuted} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>
+                  {conv.participant?.username ?? 'Conversation'}
+                </Text>
+                <Text style={styles.preview} numberOfLines={1}>
+                  {conv.lastMessage?.content ?? 'Démarrez la discussion'}
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Pressable>
+          ))}
+        </>
+      )}
     </Screen>
   )
 }
 
 const styles = StyleSheet.create({
-  section: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
+  tabsRow: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: spacing.sm,
+  },
+  tabBtn: { paddingBottom: spacing.sm, alignItems: 'center' },
+  tabText: { color: colors.textMuted, fontSize: 16, fontWeight: '600' },
+  tabTextActive: { color: colors.text },
+  tabUnderline: {
+    height: 2,
+    backgroundColor: colors.primary,
+    alignSelf: 'stretch',
     marginTop: spacing.sm,
+    borderRadius: 2,
   },
   row: {
     flexDirection: 'row',
