@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { useLocalSearchParams } from 'expo-router'
 import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
@@ -27,6 +28,7 @@ export default function TeamChatScreen() {
   const [sending, setSending] = useState(false)
   const listRef = useRef<FlatList<ChatMessage>>(null)
   const socketRef = useRef<Socket | null>(null)
+  const headerHeight = useHeaderHeight()
 
   useEffect(() => {
     if (!id) return
@@ -79,7 +81,8 @@ export default function TeamChatScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={headerHeight}
       >
         <FlatList
           ref={listRef}

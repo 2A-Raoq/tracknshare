@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
@@ -28,6 +29,7 @@ export default function ConversationScreen() {
   const [sending, setSending] = useState(false)
   const listRef = useRef<FlatList<PrivateMessageItem>>(null)
   const socketRef = useRef<Socket | null>(null)
+  const headerHeight = useHeaderHeight()
 
   useEffect(() => {
     if (!id) return
@@ -84,7 +86,8 @@ export default function ConversationScreen() {
       <Stack.Screen options={{ title: peer }} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={headerHeight}
       >
         <FlatList
           ref={listRef}
