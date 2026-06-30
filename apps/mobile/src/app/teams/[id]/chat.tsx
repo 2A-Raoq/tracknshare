@@ -1,21 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams } from 'expo-router'
 import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
 import { Button } from '@/components/ui'
 import { teamsApi } from '@/services/teams.api'
 import { createAuthenticatedSocket } from '@/lib/socket'
+import { useKeyboardHeight } from '@/lib/useKeyboardHeight'
 import { authStore } from '@/store/auth'
 import type { ChatMessage } from '@/types'
 import { colors, radius, spacing } from '@/theme'
@@ -28,7 +20,8 @@ export default function TeamChatScreen() {
   const [sending, setSending] = useState(false)
   const listRef = useRef<FlatList<ChatMessage>>(null)
   const socketRef = useRef<Socket | null>(null)
-  const headerHeight = useHeaderHeight()
+  const insets = useSafeAreaInsets()
+  const keyboardHeight = useKeyboardHeight()
 
   useEffect(() => {
     if (!id) return
@@ -61,12 +54,10 @@ export default function TeamChatScreen() {
     setSending(true)
     const socket = socketRef.current
     if (socket?.connected) {
-      // Le message revient via team:message:new pour tous (dont l'émetteur).
       socket.emit('team:message:send', { teamId: id, content })
       setText('')
       setSending(false)
     } else {
-      // Repli REST si le socket n'est pas connecté.
       teamsApi
         .sendMessage(id, content)
         .then((msg) => {
@@ -78,47 +69,47 @@ export default function TeamChatScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom']}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={headerHeight}
+    <View style={styles.root}>
+      <FlatList
+        ref={listRef}
+        data={messages}
+        keyExtractor={(m) => m.id}
+        contentContainerStyle={{ padding: spacing.md, gap: spacing.sm }}
+        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+        renderItem={({ item }) => {
+          const mine = item.sender.id === user?.id
+          return (
+            <View style={[styles.bubble, mine ? styles.mine : styles.other]}>
+              {!mine && (
+                <Text style={styles.author}>{item.sender.username ?? 'Joueur'}</Text>
+              )}
+              <Text style={styles.content}>{item.content}</Text>
+            </View>
+          )
+        }}
+      />
+      <View
+        style={[
+          styles.inputRow,
+          { paddingBottom: keyboardHeight > 0 ? keyboardHeight + spacing.sm : insets.bottom + spacing.sm },
+        ]}
       >
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(m) => m.id}
-          contentContainerStyle={{ padding: spacing.md, gap: spacing.sm }}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-          renderItem={({ item }) => {
-            const mine = item.sender.id === user?.id
-            return (
-              <View style={[styles.bubble, mine ? styles.mine : styles.other]}>
-                {!mine && (
-                  <Text style={styles.author}>{item.sender.username ?? 'Joueur'}</Text>
-                )}
-                <Text style={styles.content}>{item.content}</Text>
-              </View>
-            )
-          }}
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="Message…"
+          placeholderTextColor={colors.textMuted}
+          style={styles.input}
+          multiline
         />
-        <View style={styles.inputRow}>
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            placeholder="Message…"
-            placeholderTextColor={colors.textMuted}
-            style={styles.input}
-            multiline
-          />
-          <Button label="Envoyer" onPress={send} loading={sending} />
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <Button label="Envoyer" onPress={send} loading={sending} />
+      </View>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.bg },
   bubble: {
     maxWidth: '80%',
     borderRadius: radius.md,
@@ -132,10 +123,12 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     alignItems: 'flex-end',
+    backgroundColor: colors.bg,
   },
   input: {
     flex: 1,
