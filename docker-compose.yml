@@ -67,7 +67,9 @@ services:
       # Doit correspondre au port d'exposition du web (WEB_PORT, défaut 8080)
       CORS_ORIGIN: http://localhost:${WEB_PORT:-8081}
     ports:
-      - '3000:3000'
+      # 0.0.0.0 force la publication en IPv4 (sinon Docker Desktop peut ne
+      # binder qu'en IPv6 -> injoignable depuis un device sur le LAN).
+      - '0.0.0.0:3000:3000'
     depends_on:
       postgres:
         condition: service_healthy
