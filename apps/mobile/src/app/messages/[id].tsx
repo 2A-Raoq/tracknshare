@@ -9,40 +9,46 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useLocalSearchParams } from 'expo-router'
+import { Stack, useLocalSearchParams } from 'expo-router'
 import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
 import { Button } from '@/components/ui'
-import { teamsApi } from '@/services/teams.api'
+import { messagesApi } from '@/services/messages.api'
 import { createAuthenticatedSocket } from '@/lib/socket'
 import { authStore } from '@/store/auth'
-import type { ChatMessage } from '@/types'
+import type { PrivateMessageItem } from '@/types'
 import { colors, radius, spacing } from '@/theme'
 
-export default function TeamChatScreen() {
+export default function ConversationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { user, token } = useSnapshot(authStore)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<PrivateMessageItem[]>([])
+  const [peer, setPeer] = useState<string>('Conversation')
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
-  const listRef = useRef<FlatList<ChatMessage>>(null)
+  const listRef = useRef<FlatList<PrivateMessageItem>>(null)
   const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
     if (!id) return
     let active = true
 
-    teamsApi
+    messagesApi
       .getMessages(id)
-      .then((m) => active && setMessages(m))
+      .then((detail) => {
+        if (!active) return
+        setMessages(detail.items)
+        if (detail.participant?.username) setPeer(detail.participant.username)
+      })
       .catch(() => {})
+    messagesApi.markAsRead(id).catch(() => {})
 
     if (token) {
       const socket = createAuthenticatedSocket(token)
       socketRef.current = socket
-      socket.emit('team:join', { teamId: id })
-      socket.on('team:message:new', (msg: ChatMessage) => {
-        if (msg.teamId === id) setMessages((prev) => [...prev, msg])
+      socket.emit('conversation:join', { conversationId: id })
+      socket.on('private:message:new', (msg: PrivateMessageItem) => {
+        if (msg.conversationId === id) setMessages((prev) => [...prev, msg])
       })
     }
 
@@ -59,13 +65,11 @@ export default function TeamChatScreen() {
     setSending(true)
     const socket = socketRef.current
     if (socket?.connected) {
-      // Le message revient via team:message:new pour tous (dont l'émetteur).
-      socket.emit('team:message:send', { teamId: id, content })
+      socket.emit('private:message:send', { conversationId: id, content })
       setText('')
       setSending(false)
     } else {
-      // Repli REST si le socket n'est pas connecté.
-      teamsApi
+      messagesApi
         .sendMessage(id, content)
         .then((msg) => {
           setMessages((prev) => [...prev, msg])
@@ -77,6 +81,7 @@ export default function TeamChatScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom']}>
+      <Stack.Screen options={{ title: peer }} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -91,9 +96,6 @@ export default function TeamChatScreen() {
             const mine = item.sender.id === user?.id
             return (
               <View style={[styles.bubble, mine ? styles.mine : styles.other]}>
-                {!mine && (
-                  <Text style={styles.author}>{item.sender.username ?? 'Joueur'}</Text>
-                )}
                 <Text style={styles.content}>{item.content}</Text>
               </View>
             )
@@ -124,7 +126,6 @@ const styles = StyleSheet.create({
   },
   mine: { alignSelf: 'flex-end', backgroundColor: colors.primary },
   other: { alignSelf: 'flex-start', backgroundColor: colors.surfaceAlt },
-  author: { color: colors.textMuted, fontSize: 11, marginBottom: 2 },
   content: { color: colors.text, fontSize: 14 },
   inputRow: {
     flexDirection: 'row',

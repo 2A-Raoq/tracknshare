@@ -57,6 +57,9 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="teams/[id]/index" options={{ title: 'Équipe' }} />
             <Stack.Screen name="teams/[id]/chat" options={{ title: "Chat d'équipe" }} />
+            <Stack.Screen name="messages/[id]" options={{ title: 'Conversation' }} />
+            <Stack.Screen name="friends" options={{ title: 'Amis' }} />
+            <Stack.Screen name="achievements" options={{ title: 'Succès' }} />
           </Stack>
         )}
       </SafeAreaProvider>

@@ -82,6 +82,19 @@ export default function ProfileScreen() {
       </Card>
 
       <Card>
+        <Text style={{ color: colors.text, fontWeight: '700' }}>Navigation</Text>
+        <Button label="Mes amis" variant="ghost" onPress={() => router.push('/friends')} />
+        <Button label="Mes succès" variant="ghost" onPress={() => router.push('/achievements')} />
+        {user?.username && (
+          <Button
+            label="Voir mon profil public"
+            variant="ghost"
+            onPress={() => router.push(`/players/${user.username}`)}
+          />
+        )}
+      </Card>
+
+      <Card>
         <Text style={{ color: colors.text, fontWeight: '700' }}>RGPD</Text>
         <Muted>Tu peux exporter ou supprimer tes données personnelles.</Muted>
         <Button
