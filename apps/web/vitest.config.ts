@@ -9,5 +9,9 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
+    // Exécute les fichiers de test séquentiellement (un worker à la fois).
+    // Évite les crashs intermittents du pool de forks Vitest sous Node 24 /
+    // Windows ("Worker exited unexpectedly"). Suite courte → coût négligeable.
+    fileParallelism: false,
   },
 })
