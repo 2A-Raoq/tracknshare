@@ -42,7 +42,14 @@ function resolveSynchronize(config: ConfigService): boolean {
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     // Limitation de débit globale : 100 requêtes / minute / IP (anti-abus).
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    // Surchargeable via THROTTLE_LIMIT / THROTTLE_TTL (ms) — utile pour les
+    // tests de charge « capacité brute » (voir apps/api/perf/).
+    ThrottlerModule.forRoot([
+      {
+        ttl: parseInt(process.env.THROTTLE_TTL ?? '60000', 10),
+        limit: parseInt(process.env.THROTTLE_LIMIT ?? '100', 10),
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
