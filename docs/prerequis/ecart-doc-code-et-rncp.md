@@ -4,8 +4,12 @@
 > 1. **Partie A** — Ce qui est fait vs ce qui reste à faire (écart entre la doc `drive-export` et le code réel).
 > 2. **Partie B** — Croisement de « ce qui reste » avec les exigences de validation du **titre RNCP CDAN (36462/36463)**.
 >
-> Basé sur un re-scan complet du code (`apps/api`, `apps/web`, infra) confronté aux ~55 fichiers `.md` de `docs/drive-export/` et aux 3 PDF du référentiel (`docs/prerequis/`).
-> Date : 2026-06-26. Légende : ✅ fait · 🟡 partiel · 🔴 absent.
+> Basé sur un re-scan complet du code (`apps/api`, `apps/web`, `apps/mobile`, infra) confronté aux ~55 fichiers `.md` de `docs/drive-export/` et aux 3 PDF du référentiel (`docs/prerequis/`).
+> Date : 2026-06-26, **mis à jour le 2026-07-01**. Légende : ✅ fait · 🟡 partiel · 🔴 absent.
+
+> **MàJ 2026-07-01** — deux évolutions majeures depuis le scan initial :
+> 1. **App mobile native** (`apps/mobile`, Expo + React Native + expo-router, 18 écrans) consommant l'API NestJS : l'évaluateur ayant **refusé la PWA**, elle est remplacée par cette application native. → renforce BC03 (dev multi-plateforme), BC04-4 (2ᵉ client REST/Socket.io) et BC01-7 (accessibilité native).
+> 2. **Tests e2e réels et exécutés en CI** (`apps/api/test/app.e2e-spec.ts`, 8 tests : auth nominal, accès chat interdit à un non-membre 403/401, RGPD suppression→relogin 401), contre PostgreSQL + Redis (conteneurs de service GitHub Actions). → lève le dernier critère obligatoire non prouvé (BC03-7 / BC01-5).
 
 ---
 
@@ -43,7 +47,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **Leaderboard d'équipe** | 🔴 | Pas d'endpoint `/leaderboards/teams` |
 | **Liste des jeux** (`/games`, GamesModule) | 🔴 | Entité seule, pas d'API |
 | **Endpoint santé** `/health` | ✅ | **2026-06-28** : `GET /api/health` (HealthModule) vérifie BDD + Redis, `@SkipThrottle`. Healthcheck Docker pointé dessus. 3 tests. |
-| **PWA installable** | 🔴 | `vite-plugin-pwa` installé mais non configuré ; pas de manifest/SW |
+| ~~**PWA installable**~~ → **App mobile native** | ✅ | **2026-07-01** : PWA refusée par l'évaluateur → remplacée par `apps/mobile` (Expo/React Native, 18 écrans : dashboard, leaderboard, teams, chat temps réel, DM, friends, achievements, profils publics, auth) consommant l'API |
 | Gestion d'équipe avancée (promote, exclude, update, delete) | 🔴 | Aucun endpoint ; `TeamRoleGuard` codé mais **jamais branché** |
 
 **Bonus livrés (hors scope MVP)** : messagerie privée + emoji picker, amis, profils publics, achievements, intégration Steam, chiffrement AES-256-GCM. → utiles pour le dossier, mais développés alors que des P0 manquent.
@@ -93,7 +97,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | Élément documenté | Statut | Constat |
 |-------------------|--------|---------|
 | Tests unitaires back | ✅ | 31 tests réels : `score.calculator`, `team-member.guard`, `team-role.guard`, `auth.service`, `users.service`. Commande CI `test:ci`. |
-| Tests API / e2e | 🔴 | `app.e2e-spec.ts` existe mais hors `testRegex` → jamais exécuté |
+| Tests API / e2e | ✅ | **2026-07-01** : `test/app.e2e-spec.ts` (8 tests : auth register→login→route protégée, non-membre chat 403, anonyme 401, RGPD delete→relogin 401). Script `test:e2e`, exécuté en CI contre PostgreSQL + Redis (services GitHub Actions) |
 | Tests sécurité (accès chat non-membre…) | 🟡 | Couvert indirectement via les tests de guards d'équipe ; reste l'accès chat/conversation à tester |
 | Tests front-end | ✅ | **Vitest + Testing Library (2026-06-28)** : 19 tests (searchEmojis, AvatarInitial, EmojiSuggestion, intercepteur axios token/401). Exécutés en CI via `test:ci`. |
 | **Pipeline CI/CD** | ✅ | `.github/workflows/ci.yml` : lint (non bloquant) + build api/web + tests api (bloquants) |
@@ -124,7 +128,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 
 | Bloc · Compétence | Critère du référentiel non prouvé | Ce qui manque | Action minimale pour valider |
 |-------------------|-----------------------------------|---------------|------------------------------|
-| **BC01-5** Livrer un logiciel déverminé | « Des outils de contrôle automatique du code sont utilisés. Aucun défaut visible ne persiste. » | Tests placeholders, pas d'analyse statique formalisée | Écrire de **vrais tests** (score, guards, auth) + montrer ESLint/TS en CI |
+| **BC01-5** Livrer un logiciel déverminé | « Des outils de contrôle automatique du code sont utilisés. Aucun défaut visible ne persiste. » | ✅ **Résolu** : 36 tests unitaires + 8 tests e2e + 19 tests front, ESLint/TS + build en CI GitHub Actions | ✅ Fait — valoriser la CI comme outil de contrôle automatique |
 | **BC01-6** Estimer charge / utilisateurs simultanés | « L'exécution est répartie… tests de performance, calcul de robustesse » | Pas de test de charge ni estimation chiffrée | Produire une **note d'estimation de charge** + un test simple (k6/autocannon) comme preuve |
 | **BC01-7** Accessibilité handicap (RGAA) | « Une norme de présentation… RGAA » | ARIA partiel, pas d'audit | **Audit RGAA** documenté (Lighthouse/axe) + corrections |
 | **BC01-10** Accès sécurisé aux données | « contraintes d'intégrité et déclencheurs » | ✅ Contraintes OK + **migrations versionnées (2026-06-28)** ; reste éventuellement un déclencheur documenté | Optionnel : 1 déclencheur SQL pour l'illustration |
@@ -134,7 +138,7 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 | **BC02-9** Clôturer une mission (CFTL) | « PV de réception » | Recette doc, pas de PV signé | Produire un **PV de réception** formel |
 | **BC03-2/3/4/5** Algorithmique, codage, modif, débogage | Algorithmes → code, débogage | ✅ Largement prouvé (score, pagination, commits `fix:`) | RAS — sélectionner extraits de code comme preuves |
 | **BC03-6** Intégrer des services externes (RSE) | « réutilisant des services logiciels externes… politique RSE » | Steam OK ; volet écoresponsabilité non documenté | Documenter le **volet RSE/écoresponsabilité** (ex. choix techniques sobres) |
-| **BC03-7** Préparer des jeux d'essai / logiciel déverminé | « Les jeux de tests utilisés ne révèlent plus aucun défaut » | **Tests placeholders** = critère non prouvé | 🔴 **Priorité n°1** : écrire de vrais jeux de tests + plan de tests exécuté |
+| **BC03-7** Préparer des jeux d'essai / logiciel déverminé | « Les jeux de tests utilisés ne révèlent plus aucun défaut » | ✅ **Résolu (2026-07-01)** : 36 tests unit + 8 tests e2e (parcours critique) + 19 tests front, verts en CI | ✅ Fait — reste à formaliser un **plan de tests** écrit pour le dossier |
 | **BC03-8** Rendre compte de son travail | « compte-rendu d'activité, taux de disponibilité » | Suivi Git, pas de CRA formel | Produire un **compte-rendu d'activité** + état de disponibilité |
 | **BC04-1** Analyse organique / rétro-doc | « rétro-documentation disponible, fiable » | Doc technique riche, à cadrer | Cadrer une **rétro-documentation** d'un module existant |
 | **BC04-3** Produire des données agrégées (RGPD) | « conformes à la réglementation en vigueur » | ✅ Agrégats OK + **export + suppression RGPD + page confidentialité + consentement (2026-06-28)** | Volet RGPD complet (front + back) |
@@ -154,28 +158,30 @@ Le scan approfondi a invalidé 3 points qui paraissaient acquis :
 
 Classé par **impact sur la validation du titre** (≠ complétude produit) :
 
-| # | Action | Débloque (RNCP) | Effort | Priorité |
-|---|--------|-----------------|--------|----------|
-| 1 | **Écrire de vrais tests** (score, guards, auth, stats) + plan de tests exécuté | BC03-7, BC01-5 | 🟠 Moyen | 🔴 Critique |
-| 2 | **Pipeline CI** GitHub Actions (lint + build + test) | BC02-11, BC01-5 | 🟢 Faible | 🔴 Critique |
-| 3 | **Dockeriser api+web** + compose complet | BC04-5, BC02-11 | 🟠 Moyen | 🔴 Critique |
-| 4 | **Brancher Helmet + rate limiting** | BC01-8/10 | 🟢 Faible | 🟠 Haute |
-| 5 | **RGPD** : endpoints suppression + export de compte | BC04-3, BC01 | 🟠 Moyen | 🟠 Haute |
-| 6 | **Migrations** TypeORM (sortir de `synchronize:true`) | BC01-10, BC02-4 | 🟢 Faible | 🟠 Haute |
-| 7 | **Audit RGAA** (Lighthouse/axe) + corrections | BC01-7 | 🟢 Faible | 🟡 Moyenne |
-| 8 | **Note d'estimation de charge** + 1 test perf | BC01-6 | 🟢 Faible | 🟡 Moyenne |
-| 9 | **Endpoint `/health`** + HealthModule | BC02-11 | 🟢 Faible | 🟡 Moyenne |
-| 10 | **Livrables formels** : PV de réception, PAQ, compte-rendu d'activité, rétro-doc | BC02-9, BC03-8, BC04-1 | 🟢 Faible | 🟡 Moyenne |
-| 11 | **PWA** (manifest + SW) | confort démo, BC01-7 | 🟢 Faible | 🟢 Basse |
-| 12 | Débloquer la démo (compose, mot de passe démo) | parcours oral | 🟢 Faible | 🟢 Basse |
+| # | Action | Débloque (RNCP) | Effort | Priorité | Statut |
+|---|--------|-----------------|--------|----------|--------|
+| 1 | **Écrire de vrais tests** (score, guards, auth, stats) + tests e2e | BC03-7, BC01-5 | 🟠 Moyen | 🔴 Critique | ✅ Fait (unit + e2e) |
+| 2 | **Pipeline CI** GitHub Actions (lint + build + test) | BC02-11, BC01-5 | 🟢 Faible | 🔴 Critique | ✅ Fait |
+| 3 | **Dockeriser api+web** + compose complet | BC04-5, BC02-11 | 🟠 Moyen | 🔴 Critique | ✅ Fait |
+| 4 | **Brancher Helmet + rate limiting** | BC01-8/10 | 🟢 Faible | 🟠 Haute | ✅ Fait |
+| 5 | **RGPD** : endpoints suppression + export de compte | BC04-3, BC01 | 🟠 Moyen | 🟠 Haute | ✅ Fait |
+| 6 | **Migrations** TypeORM (sortir de `synchronize:true`) | BC01-10, BC02-4 | 🟢 Faible | 🟠 Haute | ✅ Fait |
+| 7 | **Audit RGAA** (Lighthouse/axe) + corrections | BC01-7 | 🟢 Faible | 🟡 Moyenne | 🟡 Guide produit, exécution à mener |
+| 8 | **Note d'estimation de charge** + 1 test perf | BC01-6 | 🟢 Faible | 🟡 Moyenne | ✅ Note + script livrés |
+| 9 | **Endpoint `/health`** + HealthModule | BC02-11 | 🟢 Faible | 🟡 Moyenne | ✅ Fait |
+| 10 | **Livrables formels** : PV de réception, PAQ, compte-rendu d'activité, rétro-doc | BC02-9, BC03-8, BC04-1 | 🟢 Faible | 🟡 Moyenne | ✅ Rédigés (à signer/dater) |
+| 11 | ~~**PWA** (manifest + SW)~~ → **App mobile native** (Expo/RN) | BC03, BC04-4, BC01-7 | 🟠 Moyen | 🟢 Basse | ✅ Fait (`apps/mobile`) |
+| 12 | Débloquer la démo (compose, mot de passe démo) | parcours oral | 🟢 Faible | 🟢 Basse | 🟡 Checklist livrée |
 
-> **Lecture rapide** : si tu ne devais faire que **3 choses** pour sécuriser le titre → **#1 (tests réels)**, **#2 (CI)**, **#3 (Docker complet)**. Ce sont les seuls écarts qui touchent un **critère obligatoire** de plusieurs blocs.
+> **Lecture rapide (MàJ 2026-07-01)** : les 3 écarts critiques (#1 tests, #2 CI, #3 Docker) sont **résolus**, ainsi que la sécurité (#4), le RGPD (#5) et les migrations (#6). Il ne reste que des **livrables documentaires** et l'**exécution de l'audit RGAA** — aucun ne bloque un critère obligatoire.
 
 ---
 
 # Synthèse en une phrase
 
-Le **produit** est mûr et riche (souvent au-delà du MVP), mais 3 piliers d'une **démarche d'ingénierie professionnelle** — **tests réels, CI/CD, conteneurisation** — sont absents alors qu'ils sont exigés par des critères des blocs **BC03, BC02 et BC04** ; les combler (≈ 1-2 jours de travail ciblé) transforme un produit démontrable en un **dossier de validation couvrant les 4 blocs**.
+~~Le **produit** est mûr et riche (souvent au-delà du MVP), mais 3 piliers d'une **démarche d'ingénierie professionnelle** — **tests réels, CI/CD, conteneurisation** — sont absents…~~
+
+**MàJ 2026-07-01** : les 3 piliers d'ingénierie (tests unitaires **+ e2e**, CI/CD, conteneurisation), la sécurité, le RGPD et les migrations sont désormais **livrés et vérifiés**, et la PWA a laissé place à une **app mobile native**. Le dossier couvre les 4 blocs sur le plan technique ; **il ne reste plus que des livrables documentaires** (plan de tests écrit, PV de réception, PAQ, CRA, rétro-doc, note RSE) et l'**exécution de l'audit RGAA** — tous rédigés ou amorcés dans `docs/prerequis/livrables/`.
 
 ---
 
