@@ -21,6 +21,32 @@ jobs:
     name: Lint · Build · Test
     runs-on: ubuntu-latest
 
+    # Environnement de tests multi-tiers (BC04-5) : conteneurs de service
+    # PostgreSQL + Redis provisionnés pour les tests e2e.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tracknshare
+          POSTGRES_PASSWORD: tracknshare
+          POSTGRES_DB: tracknshare_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tracknshare"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,8 +82,25 @@ jobs:
         run: pnpm --filter web build
 
       # --- Tests (bloquant) ---
-      - name: Test API
+      - name: Test API (unitaires)
         run: pnpm --filter api test:ci
 
       - name: Test Web
         run: pnpm --filter web test:ci
+
+      # --- Tests end-to-end API (bloquant) : parcours critique contre
+      #     PostgreSQL + Redis réels (auth, sécurité chat, RGPD). ---
+      - name: Test API (e2e)
+        run: pnpm --filter api test:e2e
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: tracknshare
+          DB_PASSWORD: tracknshare
+          DB_NAME: tracknshare_test
+          DB_SYNCHRONIZE: 'true'
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_SECRET: e2e-ci-jwt-secret-please-change
+          MESSAGE_ENCRYPTION_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=

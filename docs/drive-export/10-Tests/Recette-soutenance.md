@@ -296,7 +296,7 @@ Compte démo :
 
 - email : demo@tracknshare.local ;
 
-- mot de passe : DemoPassword123! ;
+- mot de passe : Demo1234! ;
 
 - rôle : PLAYER ;
 
