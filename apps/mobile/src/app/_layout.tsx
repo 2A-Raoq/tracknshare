@@ -8,10 +8,13 @@ import { useSnapshot } from 'valtio'
 import { authStore } from '@/store/auth'
 import { tokenStorage } from '@/lib/storage'
 import { authApi } from '@/services/auth.api'
+import { useGlobalNotifications } from '@/lib/useGlobalNotifications'
+import { NotificationBanner } from '@/components/NotificationBanner'
 import { colors } from '@/theme'
 
 export default function RootLayout() {
   const snap = useSnapshot(authStore)
+  useGlobalNotifications()
 
   useEffect(() => {
     ;(async () => {
@@ -62,6 +65,7 @@ export default function RootLayout() {
             <Stack.Screen name="achievements" options={{ title: 'Succès' }} />
           </Stack>
         )}
+        <NotificationBanner />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Stack, useLocalSearchParams } from 'expo-router'
+import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
 import { Button } from '@/components/ui'
@@ -9,6 +9,7 @@ import { messagesApi } from '@/services/messages.api'
 import { createAuthenticatedSocket } from '@/lib/socket'
 import { useKeyboardHeight } from '@/lib/useKeyboardHeight'
 import { authStore } from '@/store/auth'
+import { setActiveThread } from '@/store/notifications'
 import type { PrivateMessageItem } from '@/types'
 import { colors, radius, spacing } from '@/theme'
 
@@ -23,6 +24,14 @@ export default function ConversationScreen() {
   const socketRef = useRef<Socket | null>(null)
   const insets = useSafeAreaInsets()
   const keyboardHeight = useKeyboardHeight()
+
+  // Ne pas afficher de bannière pour la conversation ouverte à l'écran.
+  useFocusEffect(
+    useCallback(() => {
+      setActiveThread(id ?? null)
+      return () => setActiveThread(null)
+    }, [id]),
+  )
 
   useEffect(() => {
     if (!id) return
