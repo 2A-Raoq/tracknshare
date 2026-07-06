@@ -1,7 +1,10 @@
 packages:
   - apps/*
+  - packages/*
   # apps/mobile est une app Expo/React Native autonome (npm), volontairement
   # hors du workspace pnpm pour éviter les soucis de symlinks avec Metro.
+  # (elle consomme packages/shared-types via un alias tsconfig `paths`,
+  # jamais via une dépendance npm)
   - '!apps/mobile'
 
 ignoredBuiltDependencies:

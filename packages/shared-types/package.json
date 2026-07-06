@@ -1,0 +1,9 @@
+{
+  "name": "@tracknshare/shared-types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Types TypeScript partagés (réponses API NestJS) entre apps/web et apps/mobile. 100% types : aucun code runtime.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false
+}
