@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common'
-import type { IStatsProvider, RawStats, StatsProviderRequest } from '../external-stats-provider.interface'
+import type {
+  IStatsProvider,
+  RawStats,
+  StatsProviderRequest,
+} from '../external-stats-provider.interface'
 
 @Injectable()
 export class MockStatsProvider implements IStatsProvider {
   readonly provider = 'MOCK' as const
 
-  async fetchStats(_request: StatsProviderRequest): Promise<RawStats> {
+  fetchStats(_request: StatsProviderRequest): Promise<RawStats> {
     const matchesPlayed = this.rand(20, 80)
     const wins = this.rand(Math.floor(matchesPlayed * 0.3), Math.floor(matchesPlayed * 0.75))
     const losses = matchesPlayed - wins
@@ -13,7 +17,7 @@ export class MockStatsProvider implements IStatsProvider {
     const deaths = this.rand(matchesPlayed * 5, matchesPlayed * 20)
     const playtimeMinutes = matchesPlayed * this.rand(25, 45)
 
-    return {
+    return Promise.resolve({
       provider: this.provider,
       kills,
       deaths,
@@ -21,7 +25,7 @@ export class MockStatsProvider implements IStatsProvider {
       losses,
       matchesPlayed,
       playtimeMinutes,
-    }
+    })
   }
 
   private rand(min: number, max: number): number {

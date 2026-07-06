@@ -37,9 +37,7 @@ export class PlayersService {
     const primaryStats =
       statsRows.find((row) => row.season?.status === 'ACTIVE') ?? statsRows[0] ?? null
 
-    const leaderboardRank = primaryStats
-      ? await this.getLeaderboardRank(primaryStats)
-      : null
+    const leaderboardRank = primaryStats ? await this.getLeaderboardRank(primaryStats) : null
 
     const memberships = await this.memberRepo.find({
       where: { userId: user.id },

@@ -27,7 +27,7 @@ export class FriendRequest {
   recipientId: string
 
   @Column({ default: FriendRequestStatus.PENDING })
-  status: string
+  status: FriendRequestStatus
 
   @Column({ type: 'timestamptz', nullable: true })
   respondedAt: Date | null

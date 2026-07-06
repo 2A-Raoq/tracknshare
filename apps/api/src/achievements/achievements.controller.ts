@@ -1,11 +1,7 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common'
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import type { AuthenticatedRequest } from '../common/types/authenticated-request'
 import { AchievementsService } from './achievements.service'
 
 @ApiTags('achievements')
@@ -25,7 +21,7 @@ export class AchievementsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List badges unlocked by the current user' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async getMyAchievements(@Req() req: any) {
+  async getMyAchievements(@Req() req: AuthenticatedRequest) {
     const data = await this.achievementsService.getUserAchievements(req.user.userId)
     return { success: true, data }
   }

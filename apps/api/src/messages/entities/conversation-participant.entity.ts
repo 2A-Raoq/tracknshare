@@ -25,7 +25,9 @@ export class ConversationParticipant {
   @Column({ type: 'timestamptz', nullable: true })
   lastReadAt: Date | null
 
-  @ManyToOne(() => Conversation, (conversation) => conversation.participants, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Conversation, (conversation) => conversation.participants, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'conversationId' })
   conversation: Conversation
 

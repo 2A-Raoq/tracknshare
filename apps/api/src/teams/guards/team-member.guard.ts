@@ -9,6 +9,9 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Team } from '../entities/team.entity'
 import { TeamMember } from '../entities/team-member.entity'
+import type { AuthenticatedRequest } from '../../common/types/authenticated-request'
+
+type TeamRequest = AuthenticatedRequest & { teamMember?: TeamMember }
 
 @Injectable()
 export class TeamMemberGuard implements CanActivate {
@@ -20,9 +23,10 @@ export class TeamMemberGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest()
+    const req = context.switchToHttp().getRequest<TeamRequest>()
     const userId: string | undefined = req.user?.userId
-    const teamId: string | undefined = req.params?.teamId
+    const rawTeamId = req.params?.teamId
+    const teamId = typeof rawTeamId === 'string' ? rawTeamId : undefined
 
     if (!userId || !teamId) throw new ForbiddenException('TEAM_MEMBER_REQUIRED')
 

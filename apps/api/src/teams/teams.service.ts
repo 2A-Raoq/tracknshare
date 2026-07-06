@@ -14,6 +14,8 @@ import { CreateTeamDto } from './dto/create-team.dto'
 import { JoinTeamDto } from './dto/join-team.dto'
 import { SendMessageDto } from './dto/send-message.dto'
 import { EncryptionService } from '../security/encryption.service'
+import { isUniqueViolation } from '../common/database/is-unique-violation'
+import { MESSAGE_MAX_LENGTH } from '../common/constants'
 
 const UNAVAILABLE_MESSAGE_CONTENT = 'Message indisponible'
 
@@ -40,19 +42,24 @@ export class TeamsService {
     if (existing) throw new ConflictException('TEAM_NAME_ALREADY_EXISTS')
 
     const inviteCode = randomBytes(4).toString('hex').toUpperCase()
-    const team = await this.teamRepo.save(
-      this.teamRepo.create({
-        name: dto.name,
-        tag: dto.tag,
-        description: dto.description ?? null,
-        ownerId: userId,
-        inviteCode,
-      }),
-    )
+    let team: Team
+    try {
+      team = await this.teamRepo.save(
+        this.teamRepo.create({
+          name: dto.name,
+          tag: dto.tag,
+          description: dto.description ?? null,
+          ownerId: userId,
+          inviteCode,
+        }),
+      )
+    } catch (error) {
+      // Race entre le check préalable et le save : contrainte unique sur name.
+      if (isUniqueViolation(error)) throw new ConflictException('TEAM_NAME_ALREADY_EXISTS')
+      throw error
+    }
 
-    await this.memberRepo.save(
-      this.memberRepo.create({ teamId: team.id, userId, role: 'CAPTAIN' }),
-    )
+    await this.memberRepo.save(this.memberRepo.create({ teamId: team.id, userId, role: 'CAPTAIN' }))
 
     return team
   }
@@ -95,7 +102,7 @@ export class TeamsService {
 
   /**
    * Statistiques collectives d'une équipe : nombre de membres, score moyen
-   * (somme des scores de chaque membre) et meilleur joueur.
+   * (moyenne des scores cumulés de chaque membre) et meilleur joueur.
    */
   private async computeTeamStats(teamId: string) {
     const rows: Array<{ userId: string; username: string; totalScore: string }> =
@@ -113,13 +120,9 @@ export class TeamsService {
     const memberCount = rows.length
     const scores = rows.map((r) => Number(r.totalScore))
     const averageScore =
-      memberCount > 0
-        ? Math.round(scores.reduce((a, b) => a + b, 0) / memberCount)
-        : 0
+      memberCount > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / memberCount) : 0
     const bestPlayer =
-      memberCount > 0
-        ? { username: rows[0].username, score: Number(rows[0].totalScore) }
-        : null
+      memberCount > 0 ? { username: rows[0].username, score: Number(rows[0].totalScore) } : null
 
     return { memberCount, averageScore, bestPlayer }
   }
@@ -131,9 +134,15 @@ export class TeamsService {
     const existing = await this.memberRepo.findOne({ where: { teamId: team.id, userId } })
     if (existing) throw new ConflictException('TEAM_ALREADY_MEMBER')
 
-    await this.memberRepo.save(
-      this.memberRepo.create({ teamId: team.id, userId, role: 'MEMBER' }),
-    )
+    try {
+      await this.memberRepo.save(
+        this.memberRepo.create({ teamId: team.id, userId, role: 'MEMBER' }),
+      )
+    } catch (error) {
+      // Race entre le check préalable et le save : contrainte unique (teamId, userId).
+      if (isUniqueViolation(error)) throw new ConflictException('TEAM_ALREADY_MEMBER')
+      throw error
+    }
 
     return { teamId: team.id, role: 'MEMBER' }
   }
@@ -185,7 +194,7 @@ export class TeamsService {
   ): Promise<TeamMessagePayload> {
     const trimmed = dto.content.trim()
     if (!trimmed) throw new BadRequestException('CHAT_MESSAGE_EMPTY')
-    if (trimmed.length > 1000) throw new BadRequestException('CHAT_MESSAGE_TOO_LONG')
+    if (trimmed.length > MESSAGE_MAX_LENGTH) throw new BadRequestException('CHAT_MESSAGE_TOO_LONG')
 
     const encrypted = this.encryptionService.encrypt(trimmed)
     const msg = await this.messageRepo.save(
@@ -249,12 +258,7 @@ export class TeamsService {
   private createMessageQueryBuilder() {
     return this.messageRepo
       .createQueryBuilder('message')
-      .addSelect([
-        'message.content',
-        'message.encryptedContent',
-        'message.iv',
-        'message.authTag',
-      ])
+      .addSelect(['message.content', 'message.encryptedContent', 'message.iv', 'message.authTag'])
       .leftJoinAndSelect('message.sender', 'sender')
   }
 }

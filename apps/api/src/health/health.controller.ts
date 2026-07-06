@@ -17,10 +17,7 @@ export class HealthController {
   @Get()
   @ApiOperation({ summary: "État de santé de l'API (base de données, cache)" })
   async check() {
-    const [database, redis] = await Promise.all([
-      this.checkDatabase(),
-      this.redis.ping(),
-    ])
+    const [database, redis] = await Promise.all([this.checkDatabase(), this.redis.ping()])
     const ok = database && redis
 
     return {

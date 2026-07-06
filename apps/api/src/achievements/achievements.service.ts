@@ -51,9 +51,7 @@ export class AchievementsService {
     ])
 
     const unlockedMap = new Map(
-      userAchievements
-        .filter((ua) => ua.achievement)
-        .map((ua) => [ua.achievement.code, ua]),
+      userAchievements.filter((ua) => ua.achievement).map((ua) => [ua.achievement.code, ua]),
     )
 
     const [hasStats, isTop5, isTeamMember, messageCount, friendCount] = await Promise.all([
@@ -94,28 +92,6 @@ export class AchievementsService {
         unlockedAt: ua?.unlockedAt ?? null,
       }
     })
-  }
-
-  // Used by PlayersService — only seeded unlocked records for public profiles
-  async getPublicBadges(userId: string) {
-    const items = await this.userAchievementRepo.find({
-      where: { userId },
-      relations: ['achievement'],
-      order: { unlockedAt: 'DESC' },
-    })
-
-    return items
-      .filter((item) => item.achievement)
-      .map((item) => ({
-        id: item.achievement.id,
-        code: item.achievement.code,
-        name: item.achievement.name,
-        description: item.achievement.description,
-        iconKey: item.achievement.iconKey ?? 'default',
-        points: item.achievement.points,
-        category: item.achievement.category ?? 'GENERAL',
-        unlockedAt: item.unlockedAt,
-      }))
   }
 
   private computeCurrentValue(code: string, ctx: ProgressContext): number {

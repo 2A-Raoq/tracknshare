@@ -7,10 +7,19 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets'
-import { Server, Socket } from 'socket.io'
+import { DefaultEventsMap, Server, Socket } from 'socket.io'
 import { ConfigService } from '@nestjs/config'
 import * as jwt from 'jsonwebtoken'
 import { TeamsService } from './teams.service'
+import { getCorsOrigins } from '../common/config/cors'
+import { MESSAGE_MAX_LENGTH } from '../common/constants'
+import { SocketRateLimiter } from '../common/websockets/socket-rate-limiter'
+
+interface SocketData {
+  userId?: string
+}
+
+type AuthenticatedSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, SocketData>
 
 interface JwtPayload {
   sub: string
@@ -19,7 +28,7 @@ interface JwtPayload {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: getCorsOrigins(),
     credentials: true,
   },
 })
@@ -27,12 +36,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server
 
+  // Anti-flood minimal : max 10 messages / 10 s par socket.
+  private readonly rateLimiter = new SocketRateLimiter()
+
   constructor(
     private readonly configService: ConfigService,
     private readonly teamsService: TeamsService,
   ) {}
 
-  handleConnection(client: Socket) {
+  handleConnection(client: AuthenticatedSocket) {
     try {
       const token = client.handshake.auth?.token as string | undefined
       if (!token) {
@@ -47,14 +59,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(_client: Socket) {}
+  handleDisconnect(client: AuthenticatedSocket) {
+    this.rateLimiter.clear(client.id)
+  }
 
   @SubscribeMessage('team:join')
   async handleJoin(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { teamId: string },
   ) {
-    const userId = client.data.userId as string | undefined
+    const userId = client.data.userId
     if (!userId || !data?.teamId) {
       client.emit('error', { code: 'AUTH_UNAUTHORIZED' })
       return
@@ -71,12 +85,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('team:message:send')
   async handleMessage(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { teamId: string; content: string },
   ) {
-    const userId = client.data.userId as string | undefined
+    const userId = client.data.userId
     if (!userId || !data?.teamId) {
       client.emit('error', { code: 'AUTH_UNAUTHORIZED' })
+      return
+    }
+
+    // Vérifié avant tout accès BDD : un socket qui flood est coupé au plus tôt.
+    if (this.rateLimiter.isRateLimited(client.id)) {
+      client.emit('error', { code: 'RATE_LIMITED' })
       return
     }
 
@@ -92,7 +112,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return
     }
 
-    if (content.length > 1000) {
+    if (content.length > MESSAGE_MAX_LENGTH) {
       client.emit('error', { code: 'CHAT_MESSAGE_TOO_LONG' })
       return
     }

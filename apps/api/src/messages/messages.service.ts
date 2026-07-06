@@ -11,6 +11,7 @@ import { ConversationParticipant } from './entities/conversation-participant.ent
 import { PrivateMessage } from './entities/private-message.entity'
 import { UsersService } from '../users/users.service'
 import { EncryptionService } from '../security/encryption.service'
+import { MESSAGE_MAX_LENGTH } from '../common/constants'
 
 const UNAVAILABLE_MESSAGE_CONTENT = 'Message indisponible'
 
@@ -119,7 +120,7 @@ export class MessagesService {
       throw new BadRequestException('PRIVATE_MESSAGE_EMPTY')
     }
 
-    if (trimmed.length > 1000) {
+    if (trimmed.length > MESSAGE_MAX_LENGTH) {
       throw new BadRequestException('PRIVATE_MESSAGE_TOO_LONG')
     }
 
@@ -196,9 +197,9 @@ export class MessagesService {
       .map((participant) => participant.conversation)
       .find(
         (conversation) =>
-          conversation.type === ConversationType.DIRECT
-          && conversation.participants.length === 2
-          && conversation.participants.some((participant) => participant.userId === recipientId),
+          conversation.type === ConversationType.DIRECT &&
+          conversation.participants.length === 2 &&
+          conversation.participants.some((participant) => participant.userId === recipientId),
       )
   }
 
@@ -296,12 +297,7 @@ export class MessagesService {
   private createMessageQueryBuilder() {
     return this.privateMessageRepo
       .createQueryBuilder('message')
-      .addSelect([
-        'message.content',
-        'message.encryptedContent',
-        'message.iv',
-        'message.authTag',
-      ])
+      .addSelect(['message.content', 'message.encryptedContent', 'message.iv', 'message.authTag'])
       .leftJoinAndSelect('message.sender', 'sender')
   }
 }

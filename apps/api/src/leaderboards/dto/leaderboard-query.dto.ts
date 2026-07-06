@@ -27,7 +27,9 @@ export class LeaderboardQueryDto {
   @Min(1)
   limit?: number = 20
 
-  @ApiPropertyOptional({ description: 'Opaque cursor for cursor-based pagination (replaces page when provided)' })
+  @ApiPropertyOptional({
+    description: 'Opaque cursor for cursor-based pagination (replaces page when provided)',
+  })
   @IsOptional()
   @IsString()
   cursor?: string

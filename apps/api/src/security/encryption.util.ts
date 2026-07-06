@@ -19,10 +19,7 @@ export function decodeMessageEncryptionKey(encodedKey: string): Buffer {
 export function encryptWithKey(key: Buffer, plainText: string): EncryptedPayload {
   const iv = randomBytes(12)
   const cipher = createCipheriv('aes-256-gcm', key, iv)
-  const ciphertext = Buffer.concat([
-    cipher.update(plainText, 'utf8'),
-    cipher.final(),
-  ])
+  const ciphertext = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()])
   const authTag = cipher.getAuthTag()
 
   return {
@@ -32,10 +29,7 @@ export function encryptWithKey(key: Buffer, plainText: string): EncryptedPayload
   }
 }
 
-export function decryptWithKey(
-  key: Buffer,
-  payload: EncryptedPayload,
-): string {
+export function decryptWithKey(key: Buffer, payload: EncryptedPayload): string {
   const iv = Buffer.from(payload.iv, 'base64')
   const authTag = Buffer.from(payload.authTag, 'base64')
   const ciphertext = Buffer.from(payload.ciphertext, 'base64')
@@ -43,10 +37,7 @@ export function decryptWithKey(
 
   decipher.setAuthTag(authTag)
 
-  const plainText = Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final(),
-  ])
+  const plainText = Buffer.concat([decipher.update(ciphertext), decipher.final()])
 
   return plainText.toString('utf8')
 }

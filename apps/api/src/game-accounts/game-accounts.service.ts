@@ -1,13 +1,10 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { GameAccount } from './entities/game-account.entity'
 import { SteamStatsProvider } from '../providers/steam/steam-stats.provider'
 import { SteamTrackedGame } from './entities/steam-tracked-game.entity'
+import { isUniqueViolation } from '../common/database/is-unique-violation'
 
 export const STEAM_PLATFORM = 'STEAM'
 
@@ -62,8 +59,17 @@ export class GameAccountsService {
       account.externalUsername = profile.personaName
     }
 
-    const saved = await this.gameAccountRepo.save(account)
-    return this.toPublicAccount(saved)
+    try {
+      const saved = await this.gameAccountRepo.save(account)
+      return this.toPublicAccount(saved)
+    } catch (error) {
+      // Race entre le check préalable et le save : contrainte unique
+      // (platform, externalId) — le steamId vient d'être lié par un autre compte.
+      if (isUniqueViolation(error)) {
+        throw new ConflictException('STEAM_ACCOUNT_ALREADY_LINKED')
+      }
+      throw error
+    }
   }
 
   async getSteamAccountOrThrow(userId: string) {
@@ -87,9 +93,7 @@ export class GameAccountsService {
       }),
     ])
 
-    const trackedByAppId = new Map(
-      trackedGames.map((game) => [game.externalGameId, game]),
-    )
+    const trackedByAppId = new Map(trackedGames.map((game) => [game.externalGameId, game]))
 
     return steamGames.map((game) => {
       const tracked = trackedByAppId.get(game.appId)
@@ -108,9 +112,7 @@ export class GameAccountsService {
     const existingTrackedGames = await this.steamTrackedGameRepo.find({
       where: { userId, provider: STEAM_PLATFORM },
     })
-    const existingByAppId = new Map(
-      existingTrackedGames.map((game) => [game.externalGameId, game]),
-    )
+    const existingByAppId = new Map(existingTrackedGames.map((game) => [game.externalGameId, game]))
     const now = new Date()
 
     const upserts = steamGames.map((game) => {

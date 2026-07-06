@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import type { AuthenticatedRequest } from '../common/types/authenticated-request'
 import { TeamMemberGuard } from './guards/team-member.guard'
 import { TeamsService } from './teams.service'
 import { CreateTeamDto } from './dto/create-team.dto'
@@ -28,7 +29,7 @@ export class TeamsController {
 
   @Post()
   @ApiOperation({ summary: 'Créer une équipe' })
-  async create(@Body() dto: CreateTeamDto, @Request() req: any) {
+  async create(@Body() dto: CreateTeamDto, @Request() req: AuthenticatedRequest) {
     const team = await this.teamsService.create(req.user.userId, dto)
     return {
       success: true,
@@ -44,14 +45,14 @@ export class TeamsController {
 
   @Get('me')
   @ApiOperation({ summary: 'Mes équipes' })
-  async getMyTeams(@Request() req: any) {
+  async getMyTeams(@Request() req: AuthenticatedRequest) {
     const teams = await this.teamsService.getMyTeams(req.user.userId)
     return { success: true, data: teams }
   }
 
   @Post('join')
   @ApiOperation({ summary: "Rejoindre une équipe via code d'invitation" })
-  async join(@Body() dto: JoinTeamDto, @Request() req: any) {
+  async join(@Body() dto: JoinTeamDto, @Request() req: AuthenticatedRequest) {
     const result = await this.teamsService.join(req.user.userId, dto)
     return { success: true, data: result }
   }
@@ -67,7 +68,7 @@ export class TeamsController {
   @Delete(':teamId/leave')
   @UseGuards(TeamMemberGuard)
   @ApiOperation({ summary: 'Quitter une équipe (membre requis)' })
-  async leave(@Param('teamId') teamId: string, @Request() req: any) {
+  async leave(@Param('teamId') teamId: string, @Request() req: AuthenticatedRequest) {
     const result = await this.teamsService.leave(teamId, req.user.userId)
     return { success: true, data: result }
   }
@@ -98,7 +99,7 @@ export class TeamsController {
   async sendMessage(
     @Param('teamId') teamId: string,
     @Body() dto: SendMessageDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ) {
     const msg = await this.teamsService.saveMessage(teamId, req.user.userId, dto)
     return {
