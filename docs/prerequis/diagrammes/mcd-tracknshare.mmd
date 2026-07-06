@@ -1,0 +1,83 @@
+---
+title: "Modèle de données Track'N Share — 15 entités TypeORM / PostgreSQL (C2.4)"
+---
+erDiagram
+  USER ||--o{ PLAYER_STATS : "possède"
+  USER ||--o{ TEAM_MEMBER : "adhère"
+  USER ||--o{ CHAT_MESSAGE : "envoie"
+  USER ||--o{ PRIVATE_MESSAGE : "envoie"
+  USER ||--o{ CONVERSATION_PARTICIPANT : "participe"
+  USER ||--o{ FRIEND_REQUEST : "demande / reçoit"
+  USER ||--o{ USER_ACHIEVEMENT : "débloque"
+  USER ||--o{ GAME_ACCOUNT : "lie"
+  USER ||--o{ TEAM : "est propriétaire"
+
+  GAME ||--o{ PLAYER_STATS : "concerne"
+  SEASON ||--o{ PLAYER_STATS : "cadre"
+  GAME ||--o{ STEAM_TRACKED_GAME : "référence"
+
+  TEAM ||--o{ TEAM_MEMBER : "compte"
+  TEAM ||--o{ CHAT_MESSAGE : "héberge"
+
+  CONVERSATION ||--o{ CONVERSATION_PARTICIPANT : "réunit"
+  CONVERSATION ||--o{ PRIVATE_MESSAGE : "contient"
+
+  ACHIEVEMENT ||--o{ USER_ACHIEVEMENT : "attribué via"
+  GAME_ACCOUNT ||--o{ STEAM_TRACKED_GAME : "suit"
+
+  USER {
+    uuid id PK
+    string email UK
+    string username UK
+    string passwordHash "select:false"
+    string role
+  }
+  PLAYER_STATS {
+    uuid id PK
+    uuid userId FK "UNIQUE(user,game,season)"
+    uuid gameId FK
+    uuid seasonId FK
+    int kills_deaths_wins_losses
+    float kdRatio_winrate
+    int score "calculé côté API"
+  }
+  TEAM {
+    uuid id PK
+    string name UK
+    string inviteCode
+    uuid ownerId FK
+  }
+  TEAM_MEMBER {
+    uuid id PK
+    uuid teamId FK "UNIQUE(team,user), CASCADE"
+    uuid userId FK
+    string role
+  }
+  CHAT_MESSAGE {
+    uuid id PK
+    uuid teamId FK "CASCADE"
+    uuid senderId FK
+    text encryptedContent "AES-256-GCM"
+  }
+  CONVERSATION {
+    uuid id PK
+    string type
+  }
+  PRIVATE_MESSAGE {
+    uuid id PK
+    uuid conversationId FK "CASCADE"
+    uuid senderId FK
+    text encryptedContent "AES-256-GCM"
+  }
+  FRIEND_REQUEST {
+    uuid id PK
+    uuid requesterId FK
+    uuid recipientId FK
+    string status
+  }
+  GAME_ACCOUNT {
+    uuid id PK
+    uuid userId FK
+    string provider
+    string externalId
+  }
