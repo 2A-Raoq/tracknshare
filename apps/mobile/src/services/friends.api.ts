@@ -29,7 +29,4 @@ export const friendsApi = {
 
   cancel: async (requestId: string) =>
     (await api.patch(`/friends/requests/${requestId}/cancel`)).data,
-
-  remove: async (friendId: string) =>
-    (await api.delete(`/friends/${friendId}`)).data,
 }

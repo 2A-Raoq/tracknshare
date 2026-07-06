@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { FlatList, StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect } from 'expo-router'
-import { Muted } from '@/components/ui'
+import { ErrorState, Muted } from '@/components/ui'
 import { leaderboardApi } from '@/services/leaderboard.api'
 import type { LeaderboardEntry } from '@/types'
 import { colors, radius, spacing } from '@/theme'
@@ -9,20 +9,28 @@ import { colors, radius, spacing } from '@/theme'
 export default function LeaderboardScreen() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
-      setEntries(await leaderboardApi.solo())
+      const data = await leaderboardApi.solo()
+      if (!isActive()) return
+      setEntries(data)
+      setError(false)
     } catch {
-      setEntries([])
+      if (isActive()) setError(true)
     } finally {
-      setLoading(false)
+      if (isActive()) setLoading(false)
     }
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -33,7 +41,19 @@ export default function LeaderboardScreen() {
       data={entries}
       keyExtractor={(item) => item.userId + item.rank}
       ListEmptyComponent={
-        <Muted>{loading ? 'Chargement du classement…' : 'Classement vide.'}</Muted>
+        loading ? (
+          <Muted>Chargement du classement…</Muted>
+        ) : error ? (
+          <ErrorState
+            message="Impossible de charger le classement."
+            onRetry={() => {
+              setLoading(true)
+              load()
+            }}
+          />
+        ) : (
+          <Muted>Classement vide.</Muted>
+        )
       }
       renderItem={({ item }) => (
         <View style={styles.row}>

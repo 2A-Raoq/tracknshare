@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect, useRouter } from 'expo-router'
-import { Button, Card, Muted, Screen, TextField, Title } from '@/components/ui'
+import { Button, Card, ErrorState, ErrorText, Muted, Screen, TextField, Title } from '@/components/ui'
 import { friendsApi } from '@/services/friends.api'
 import { messagesApi } from '@/services/messages.api'
 import type { ConversationPeer, FriendRequestsData, FriendUser } from '@/types'
@@ -14,19 +14,29 @@ export default function FriendsScreen() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ConversationPeer[]>([])
 
-  const load = useCallback(async () => {
+  const [loadError, setLoadError] = useState(false)
+  const [messageError, setMessageError] = useState('')
+  const [messagingId, setMessagingId] = useState<string | null>(null)
+
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const [f, r] = await Promise.all([friendsApi.getFriends(), friendsApi.getRequests()])
+      if (!isActive()) return
       setFriends(f)
       setRequests(r)
+      setLoadError(false)
     } catch {
-      // ignore
+      if (isActive()) setLoadError(true)
     }
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -52,6 +62,13 @@ export default function FriendsScreen() {
   return (
     <Screen>
       <Title>Amis</Title>
+
+      {loadError && (
+        <ErrorState
+          message="Impossible de charger tes amis."
+          onRetry={() => load()}
+        />
+      )}
 
       <Card>
         <Text style={styles.cardTitle}>Ajouter un ami</Text>
@@ -106,7 +123,8 @@ export default function FriendsScreen() {
       )}
 
       <Text style={styles.cardTitle}>Mes amis ({friends.length})</Text>
-      {friends.length === 0 && <Muted>Aucun ami pour l&apos;instant.</Muted>}
+      {!loadError && friends.length === 0 && <Muted>Aucun ami pour l&apos;instant.</Muted>}
+      <ErrorText>{messageError}</ErrorText>
       {friends.map((friend) => (
         <View key={friend.id} style={styles.friendRow}>
           <Pressable style={{ flex: 1 }} onPress={() => router.push(`/players/${friend.username}`)}>
@@ -115,9 +133,19 @@ export default function FriendsScreen() {
           <Button
             label="Message"
             variant="ghost"
+            loading={messagingId === friend.id}
+            disabled={messagingId !== null}
             onPress={async () => {
-              const conv = await messagesApi.createConversation(friend.id)
-              router.push(`/messages/${conv.id}`)
+              setMessageError('')
+              setMessagingId(friend.id)
+              try {
+                const conv = await messagesApi.createConversation(friend.id)
+                router.push(`/messages/${conv.id}`)
+              } catch {
+                setMessageError("Impossible d'ouvrir la conversation. Réessaie.")
+              } finally {
+                setMessagingId(null)
+              }
             }}
           />
         </View>

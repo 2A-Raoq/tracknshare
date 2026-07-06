@@ -126,6 +126,22 @@ export function Center({ children }: { children: ReactNode }) {
   return <View style={styles.center}>{children}</View>
 }
 
+/** État d'erreur réseau réutilisable : message + bouton « Réessayer ». */
+export function ErrorState({
+  message = 'Impossible de charger les données. Vérifie ta connexion.',
+  onRetry,
+}: {
+  message?: string
+  onRetry: () => void
+}) {
+  return (
+    <Card>
+      <ErrorText>{message}</ErrorText>
+      <Button label="Réessayer" variant="ghost" onPress={onRetry} />
+    </Card>
+  )
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },

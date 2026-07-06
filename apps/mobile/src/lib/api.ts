@@ -2,6 +2,7 @@ import axios from 'axios'
 import { API_URL } from '@/config'
 import { authStore, clearSession } from '@/store/auth'
 
+// eslint-disable-next-line import/no-named-as-default-member -- `create` n'existe pas en export nommé dans les types d'axios
 export const api = axios.create({ baseURL: API_URL, timeout: 15000 })
 
 // Injecte le jeton JWT sur chaque requête.

@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { Card, Muted, Screen, TextField } from '@/components/ui'
+import { Card, ErrorState, Muted, Screen, TextField } from '@/components/ui'
 import { messagesApi } from '@/services/messages.api'
 import { teamsApi } from '@/services/teams.api'
 import type { ConversationPeer, ConversationSummary, TeamSummary } from '@/types'
@@ -18,22 +18,30 @@ export default function MessagesScreen() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ConversationPeer[]>([])
 
-  const load = useCallback(async () => {
+  const [loadError, setLoadError] = useState(false)
+
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const [t, c] = await Promise.all([
         teamsApi.mine(),
         messagesApi.getConversations(),
       ])
+      if (!isActive()) return
       setTeams(t)
       setConversations(c)
+      setLoadError(false)
     } catch {
-      // ignore
+      if (isActive()) setLoadError(true)
     }
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -75,9 +83,18 @@ export default function MessagesScreen() {
         </Pressable>
       </View>
 
+      {loadError && (
+        <ErrorState
+          message="Impossible de charger les messages."
+          onRetry={() => load()}
+        />
+      )}
+
       {tab === 'teams' ? (
         <>
-          {teams.length === 0 && <Muted>Tu n&apos;as rejoint aucune équipe.</Muted>}
+          {!loadError && teams.length === 0 && (
+            <Muted>Tu n&apos;as rejoint aucune équipe.</Muted>
+          )}
           {teams.map((team) => (
             <Pressable
               key={team.id}
@@ -118,7 +135,9 @@ export default function MessagesScreen() {
             ))}
           </Card>
 
-          {conversations.length === 0 && <Muted>Aucune conversation privée.</Muted>}
+          {!loadError && conversations.length === 0 && (
+            <Muted>Aucune conversation privée.</Muted>
+          )}
           {conversations.map((conv) => (
             <Pressable
               key={conv.id}
