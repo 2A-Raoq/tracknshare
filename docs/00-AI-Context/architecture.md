@@ -4,12 +4,41 @@
 
 Ce fichier donne à Claude Code les règles d'architecture du repository Track'N Share.
 
-Le projet utilise un monorepo avec deux applications :
+Le projet utilise un monorepo avec trois applications :
 
 ```txt
-apps/api
-apps/web
+apps/api               -> back-end NestJS
+apps/web               -> front-end web React / Vite / PWA
+apps/mobile            -> application mobile native Expo / React Native
+packages/shared-types  -> types TypeScript partagés (réponses API) web + mobile
 ```
+
+Note : `apps/mobile` est volontairement hors du workspace pnpm (contraintes
+Expo) ; elle a ses propres dépendances npm et est vérifiée par un job CI
+dédié (typecheck `tsc --noEmit`).
+
+### `packages/shared-types`
+
+Package interne `@tracknshare/shared-types` contenant les types des réponses
+de l'API NestJS (auth, stats, leaderboard, équipes, chat, messages privés,
+amis, achievements, profils publics), mutualisés entre `apps/web` et
+`apps/mobile` pour éviter toute divergence de champs entre les deux clients.
+
+Règles :
+
+- 100% types (interfaces / type aliases) : aucun code runtime, aucun export
+  de valeur. Tous les imports sont des `import type`, effacés à la
+  compilation ; ni Vite ni Metro ne résolvent ce module au runtime.
+- `apps/web` le consomme comme dépendance workspace pnpm
+  (`"@tracknshare/shared-types": "workspace:*"`).
+- `apps/mobile` (hors workspace) le consomme via un alias tsconfig `paths`
+  (`@tracknshare/shared-types` -> `../../packages/shared-types/src`),
+  sans dépendance npm ni symlink, pour ne pas perturber Metro / Expo Go.
+- Les fichiers `apps/web/src/types/*.ts` et `apps/mobile/src/types/index.ts`
+  réexportent ces types (`export type { ... }`) pour la compatibilité des
+  imports existants.
+- Les types spécifiques à un client (props de composants, types d'UI,
+  stores) restent dans l'app concernée.
 
 ## Structure racine actuelle
 
@@ -20,6 +49,9 @@ TRACKNSHARE/
   apps/
     api/
     web/
+    mobile/
+  packages/
+    shared-types/
   docs/
     00-AI-Context/
     01-Gestion-Projet/
@@ -80,6 +112,18 @@ Responsabilités :
 - sécurité ;
 - jobs futurs.
 
+### `apps/mobile`
+
+Application mobile native Expo / React Native (TypeScript), compatible Expo Go.
+
+Responsabilités :
+- mêmes parcours que le web (auth, dashboard, leaderboard, équipes, chat, messages privés, amis, succès) ;
+- consomme la même API NestJS que le web (aucune logique métier locale) ;
+- token stocké via expo-secure-store ;
+- navigation par fichiers avec expo-router (`src/app/`) ;
+- Socket.io client pour le temps réel ;
+- notifications in-app (bannière globale — le push natif n'est pas disponible dans Expo Go).
+
 ## Architecture front-end recommandée
 
 Dans `apps/web/src` :
@@ -124,46 +168,34 @@ src/
 - Ne jamais mettre de secret dans le front.
 - Les variables `VITE_*` sont publiques.
 
-## Architecture back-end recommandée
+## Architecture back-end réelle
 
-Dans `apps/api/src` :
+Dans `apps/api/src`, l'arborescence est plate : un dossier par module de
+domaine directement sous `src/` (pas de wrapper `modules/`).
 
 ```txt
 src/
   app.module.ts
   main.ts
   config/
-  common/
-    decorators/
-    filters/
-    guards/
-    interceptors/
-    pipes/
-    dto/
-    types/
-    constants/
-    utils/
-  modules/
-    auth/
-    users/
-    profiles/
-    games/
-    game-accounts/
-    stats/
-    leaderboards/
-    teams/
-    team-invitations/
-    chat/
-    seasons/
-    notifications/
-    health/
-  database/
-  providers/
-    external-stats-provider.interface.ts
-    mock/
-    steam/
-    epic/
-  jobs/
+  common/          # filtres, helpers, constantes partagées
+  database/        # migrations TypeORM
+  providers/       # MockProvider, SteamProvider (côté back uniquement)
+  auth/
+  users/
+  players/         # profils publics /players/:username
+  games/
+  game-accounts/   # liaison compte Steam
+  stats/
+  leaderboards/
+  seasons/
+  teams/           # équipes + chat d'équipe (gateway Socket.io)
+  messages/        # conversations privées (gateway Socket.io)
+  friends/
+  achievements/
+  security/
+  redis/
+  health/
 ```
 
 ## Structure type d'un module NestJS

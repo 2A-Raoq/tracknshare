@@ -162,15 +162,22 @@ Le parcours de démo complet fonctionne sans bug bloquant.
 Dès que les P0 d'un sprint ne sont pas terminés, ne pas ajouter de P1/P2.
 
 Exemples à reporter :
-- SteamProvider réel ;
 - EpicProvider réel ;
-- amis ;
-- messagerie privée ;
 - tournois ;
 - feed social ;
-- matchmaking ;
-- badges avancés ;
-- E2E complets.
+- matchmaking.
+
+## État réel (mise à jour 2026-07)
+
+Le MVP P0 est terminé et plusieurs éléments initialement « à reporter » ont
+finalement été livrés :
+- amis (module `friends` : demandes, acceptation, suppression) ;
+- messagerie privée (module `messages` : conversations chiffrées au repos, temps réel) ;
+- badges / succès (module `achievements`) ;
+- SteamProvider réel (liaison de compte + sync, clé côté back uniquement) ;
+- tests e2e API (suite critical-path, lancée en CI) ;
+- application mobile native Expo (`apps/mobile`), exigée par l'évaluateur en
+  remplacement de la PWA seule.
 
 ## Démo cible
 

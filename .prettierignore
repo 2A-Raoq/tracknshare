@@ -1,0 +1,16 @@
+# Build outputs
+dist
+build
+coverage
+.turbo
+
+# Dependencies / lockfiles
+node_modules
+pnpm-lock.yaml
+package-lock.json
+
+# Long-form documentation (exported, not maintained by hand)
+docs/drive-export
+
+# Markdown (keep existing manual formatting)
+*.md

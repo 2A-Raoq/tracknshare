@@ -7,6 +7,7 @@ Plateforme gaming compétitive permettant aux joueurs de suivre, partager et com
 | Couche | Technologies |
 |--------|--------------|
 | Front-end | React 18, TypeScript, Vite, PWA, Valtio, wouter |
+| Mobile | Expo (SDK 54), React Native, expo-router, Valtio |
 | Back-end | NestJS 11, TypeScript, Passport JWT |
 | Temps réel | Socket.io |
 | BDD | PostgreSQL 16 |
@@ -99,6 +100,30 @@ pnpm --filter web dev    # Web sur http://localhost:5173
 ```bash
 pnpm build
 ```
+
+### Application mobile (Expo)
+
+`apps/mobile` est hors du workspace pnpm (contraintes Expo) et a ses propres
+dépendances npm :
+
+```bash
+cd apps/mobile
+npm install
+cp .env.example .env   # renseigner EXPO_PUBLIC_API_URL / EXPO_PUBLIC_SOCKET_URL
+                       # avec l'IP LAN de la machine qui héberge l'API
+npm start              # puis scanner le QR code avec Expo Go
+```
+
+L'app consomme la même API NestJS que le web. Le typecheck mobile
+(`npx tsc --noEmit`) est exécuté par un job CI dédié.
+
+### Types partagés (`packages/shared-types`)
+
+Les types des réponses API sont mutualisés entre le web et le mobile dans le
+package interne `@tracknshare/shared-types` (100% types, aucun code runtime).
+Le web le consomme comme dépendance workspace pnpm ; le mobile via un alias
+tsconfig `paths` (les `import type` sont effacés à la compilation, Metro ne
+résout jamais le package).
 
 ## Comptes de démonstration
 
