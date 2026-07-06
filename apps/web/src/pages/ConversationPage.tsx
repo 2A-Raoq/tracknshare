@@ -230,7 +230,8 @@ export default function ConversationPage() {
             </span>
           </div>
 
-          <div className="dc-chat__feed">
+          {/* tabIndex : zone scrollable utilisable au clavier (RGAA 12.x). */}
+          <div className="dc-chat__feed" role="log" aria-label="Messages de la conversation" tabIndex={0}>
             {isLoading && <p className="dc-chat__status">Chargement...</p>}
             {pageError && <p className="dc-chat__status dc-chat__status--error">{pageError}</p>}
             {!isLoading && !pageError && messages.length === 0 && (

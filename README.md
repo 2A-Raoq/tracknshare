@@ -1,5 +1,7 @@
 # Track'N Share
 
+> 🇬🇧 [English version](README.en.md)
+
 Plateforme gaming compétitive permettant aux joueurs de suivre, partager et comparer leurs performances. Dashboard joueur, leaderboard, équipes, chat, messages privés, amis, profils publics et badges.
 
 ## Stack
