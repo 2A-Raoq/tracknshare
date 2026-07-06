@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'wouter'
 import { useSnapshot } from 'valtio'
-import { authStore } from '../store/auth.store'
+import { authStore, clearSession } from '../store/auth.store'
 import { IconTrophy, IconShield, IconUserPlus, IconMessage, IconUser } from './NavIcons'
 
 export default function AppNavigation() {
@@ -17,18 +17,18 @@ export default function AppNavigation() {
   }, [menuOpen])
 
   // Close on route change (handles Link clicks in mobile menu)
-  useEffect(() => {
+  const [prevLocation, setPrevLocation] = useState(location)
+  if (location !== prevLocation) {
+    setPrevLocation(location)
     setMenuOpen(false)
-  }, [location])
+  }
 
   function close() {
     setMenuOpen(false)
   }
 
   function handleLogout() {
-    authStore.user = null
-    authStore.token = null
-    localStorage.removeItem('access_token')
+    clearSession()
     close()
     navigate('/login')
   }
@@ -72,6 +72,10 @@ export default function AppNavigation() {
                   <Link href="/messages" className={linkClass('/messages')}>
                     <IconMessage />
                     Messages
+                  </Link>
+                  <Link href="/profile" className={linkClass('/profile')}>
+                    <IconUser />
+                    Profil
                   </Link>
                   <Link href={`/players/${user.username}`} className={linkClass(`/players/${user.username}`)}>
                     <IconUser />
@@ -172,6 +176,10 @@ export default function AppNavigation() {
                   <Link href="/messages" className={mobileLinkClass('/messages')}>
                     <IconMessage size={18} />
                     Messages
+                  </Link>
+                  <Link href="/profile" className={mobileLinkClass('/profile')}>
+                    <IconUser size={18} />
+                    Profil
                   </Link>
                   <Link
                     href={`/players/${user.username}`}

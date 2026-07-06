@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { PlayerStatsData } from '../types/stats'
 import GameProviderBadge from './GameProviderBadge'
 
@@ -24,19 +24,10 @@ export default function GameStatsTabs({ stats }: GameStatsTabsProps) {
 
   const availableStats = useMemo(() => stats.filter(Boolean), [stats])
 
-  useEffect(() => {
-    if (availableStats.length === 0) {
-      setActiveStatId('')
-      return
-    }
-
-    const hasCurrent = availableStats.some((item) => item.id === activeStatId)
-    if (!hasCurrent) {
-      setActiveStatId(getDefaultStatId(availableStats))
-    }
-  }, [activeStatId, availableStats])
-
-  const activeStat = availableStats.find((item) => item.id === activeStatId) ?? availableStats[0]
+  const defaultStatId = getDefaultStatId(availableStats)
+  const activeStat =
+    availableStats.find((item) => item.id === activeStatId)
+    ?? availableStats.find((item) => item.id === defaultStatId)
 
   if (!activeStat) {
     return <div className="empty-box">Aucune statistique disponible.</div>

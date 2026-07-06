@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'wouter'
+import { z } from 'zod'
 import { api } from '../services/api'
 import { authStore } from '../store/auth.store'
 import AppNavigation from '../components/AppNavigation'
@@ -12,20 +13,58 @@ type RegisterError = {
   }
 }
 
+// Aligné sur RegisterDto côté back (email valide, pseudo 3-30, mot de passe 8-72).
+const registerSchema = z.object({
+  email: z.email('Adresse email invalide.'),
+  username: z
+    .string()
+    .min(3, 'Le pseudo doit contenir au moins 3 caractères.')
+    .max(30, 'Le pseudo doit contenir au plus 30 caractères.'),
+  password: z
+    .string()
+    .min(8, 'Le mot de passe doit contenir au moins 8 caractères.')
+    .max(72, 'Le mot de passe doit contenir au plus 72 caractères.'),
+})
+
+type RegisterFieldErrors = Partial<Record<'email' | 'username' | 'password', string>>
+
+function toFieldErrors(error: z.ZodError): RegisterFieldErrors {
+  const errors: RegisterFieldErrors = {}
+  for (const issue of error.issues) {
+    const field = issue.path[0]
+    if (
+      (field === 'email' || field === 'username' || field === 'password')
+      && !errors[field]
+    ) {
+      errors[field] = issue.message
+    }
+  }
+  return errors
+}
+
 export default function RegisterPage() {
   const [, navigate] = useLocation()
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({})
   const [loading, setLoading] = useState(false)
 
   async function handleRegister(e: FormEvent) {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
+
+    const result = registerSchema.safeParse({ email, username, password })
+    if (!result.success) {
+      setFieldErrors(toFieldErrors(result.error))
+      return
+    }
+
     setLoading(true)
     try {
-      const res = await api.post('/auth/register', { email, username, password })
+      const res = await api.post('/auth/register', result.data)
       const { user, accessToken } = res.data.data
       authStore.user = user
       authStore.token = accessToken
@@ -72,6 +111,9 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {fieldErrors.email && (
+                <p className="status-message error">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="field">
@@ -83,6 +125,9 @@ export default function RegisterPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
+              {fieldErrors.username && (
+                <p className="status-message error">{fieldErrors.username}</p>
+              )}
             </div>
 
             <div className="field">
@@ -95,6 +140,9 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {fieldErrors.password && (
+                <p className="status-message error">{fieldErrors.password}</p>
+              )}
             </div>
 
             {error && <p className="status-message error">{error}</p>}

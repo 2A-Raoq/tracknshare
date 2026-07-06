@@ -53,7 +53,11 @@ export default function FriendsPage() {
   }
 
   useEffect(() => {
-    loadData()
+    Promise.all([friendsApi.getFriends(), friendsApi.getFriendRequests()])
+      .then(([friendsData, requestsData]) => {
+        setFriends(friendsData)
+        setRequests(requestsData)
+      })
       .catch((err) => setError(formatApiError(err)))
       .finally(() => setLoading(false))
   }, [])

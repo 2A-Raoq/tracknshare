@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'wouter'
 import { messagesApi } from '../services/messages.api'
 import { teamsApi } from '../services/teams.api'
-import type { ConversationSummary, ConversationPeer } from '../types/messages'
+import { usersApi, type UserSearchResult } from '../services/users.api'
+import type { ConversationSummary } from '../types/messages'
 import type { TeamSummary } from '../types/teams'
 import AvatarInitial from './AvatarInitial'
 
@@ -19,17 +20,29 @@ export default function MessagesSidebar({ activeConversationId, activeTeamId }: 
   const [, navigate] = useLocation()
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [teams, setTeams] = useState<TeamSummary[]>([])
+  const [conversationsLoading, setConversationsLoading] = useState(true)
+  const [conversationsError, setConversationsError] = useState('')
+  const [teamsLoading, setTeamsLoading] = useState(true)
+  const [teamsError, setTeamsError] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
-  const [results, setResults] = useState<ConversationPeer[]>([])
+  const [results, setResults] = useState<UserSearchResult[]>([])
   const [hasSearched, setHasSearched] = useState(false)
   const [startingId, setStartingId] = useState<string | null>(null)
 
   useEffect(() => {
-    messagesApi.getConversations().then(setConversations).catch(() => {})
-    teamsApi.getMyTeams().then(setTeams).catch(() => {})
+    messagesApi
+      .getConversations()
+      .then(setConversations)
+      .catch(() => setConversationsError('Impossible de charger vos conversations.'))
+      .finally(() => setConversationsLoading(false))
+    teamsApi
+      .getMyTeams()
+      .then(setTeams)
+      .catch(() => setTeamsError('Impossible de charger vos équipes.'))
+      .finally(() => setTeamsLoading(false))
   }, [])
 
   function toggleSearch() {
@@ -47,7 +60,7 @@ export default function MessagesSidebar({ activeConversationId, activeTeamId }: 
     setSearching(true)
     setHasSearched(true)
     try {
-      const users = await messagesApi.searchUsers(query.trim())
+      const users = await usersApi.searchUsers(query.trim())
       setResults(users)
     } catch {
       setSearchError('Erreur de recherche.')
@@ -130,7 +143,9 @@ export default function MessagesSidebar({ activeConversationId, activeTeamId }: 
       )}
 
       <p className="dc-sidebar__section-label">PRIVÉS</p>
-      {conversations.length === 0 && (
+      {conversationsLoading && <p className="dc-sidebar__empty">Chargement...</p>}
+      {conversationsError && <p className="dc-sidebar__error">{conversationsError}</p>}
+      {!conversationsLoading && !conversationsError && conversations.length === 0 && (
         <p className="dc-sidebar__empty">Aucune conversation.</p>
       )}
       {conversations.map((conv) => {
@@ -150,7 +165,9 @@ export default function MessagesSidebar({ activeConversationId, activeTeamId }: 
       })}
 
       <p className="dc-sidebar__section-label">ÉQUIPES</p>
-      {teams.length === 0 && (
+      {teamsLoading && <p className="dc-sidebar__empty">Chargement...</p>}
+      {teamsError && <p className="dc-sidebar__error">{teamsError}</p>}
+      {!teamsLoading && !teamsError && teams.length === 0 && (
         <p className="dc-sidebar__empty">Aucune équipe.</p>
       )}
       {teams.map((team) => {

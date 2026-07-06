@@ -34,22 +34,15 @@ export default function TeamsPage() {
   const safeTeams = Array.isArray(teams) ? teams : []
 
   useEffect(() => {
-    if (authLoading) {
+    if (authLoading || !effectiveToken) {
       return
     }
-
-    if (!effectiveToken) {
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    setError('')
 
     teamsApi
       .getMyTeams()
       .then((data) => {
         setTeams(Array.isArray(data) ? data : [])
+        setError('')
       })
       .catch(() => {
         setTeams([])
@@ -57,6 +50,8 @@ export default function TeamsPage() {
       })
       .finally(() => setLoading(false))
   }, [authLoading, effectiveToken])
+
+  const isLoading = authLoading || (Boolean(effectiveToken) && loading)
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
@@ -132,10 +127,10 @@ export default function TeamsPage() {
           </div>
         </section>
 
-        {loading && <p className="status-message">Chargement des équipes...</p>}
+        {isLoading && <p className="status-message">Chargement des équipes...</p>}
         {error && <p className="status-message error">{error}</p>}
 
-        {!loading && !error && safeTeams.length === 0 && (
+        {!isLoading && !error && safeTeams.length === 0 && (
           <div className="empty-box">
             Vous n&apos;êtes dans aucune équipe. Créez-en une ou rejoignez-en une avec un code.
           </div>
