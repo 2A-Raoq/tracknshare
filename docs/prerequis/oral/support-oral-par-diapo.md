@@ -2,7 +2,7 @@
 
 > Compagnon de présentation : suit **l'ordre exact des 18 diapos** de la soutenance (`TrackNShare-Soutenance.pdf`).
 > Pour chaque diapo : **⏱ durée**, **🎤 qui parle**, **ce qu'il dit**, et les **fichiers à citer** si le jury creuse.
-> Détail technique complet fichier par fichier → voir [`explication-projet-et-code-oral.md`](docs/prerequis/explication-projet-et-code-oral.md).
+> Détail technique complet fichier par fichier → voir [`explication-projet-et-code-oral.md`](explication-projet-et-code-oral.md).
 >
 > **Objectif : 20 min, démo web + mobile comprise.** Le plan ci-dessous vise **19 min 30** → ~30 s de marge pour les transitions.
 > Règle d'or : une diapo = **1 à 2 idées fortes**, on ne lit pas la slide, on la commente.
@@ -57,7 +57,7 @@
 - « Notre réponse : **une seule maison** où tout est centralisé — stats, score, classement, équipes, chat. »
 - « La **vision** : un espace unifié où chaque joueur visualise, analyse et partage ses performances **en temps réel**. »
 
-*Réf. vulgarisation* : Partie A de [`explication-projet-et-code-oral.md`](docs/prerequis/explication-projet-et-code-oral.md).
+*Réf. vulgarisation* : Partie A de [`explication-projet-et-code-oral.md`](explication-projet-et-code-oral.md).
 
 ---
 
@@ -248,7 +248,7 @@
 **🎤 Ioane dit** : « De mon côté : NestJS, le DevOps et la CI, le chiffrement, les tests e2e. Ce qu'on referait : définir les **contrats d'API plus tôt** et intégrer les **tests dès le sprint 1**. En perspective : notifications push, OAuth Steam, tournois. »
 **🎤 Ensemble** : « Merci pour votre attention, nous sommes prêts à répondre à vos questions. »
 
-> Enchaîner sur la **Partie C** (questions probables du jury) de [`explication-projet-et-code-oral.md`](docs/prerequis/explication-projet-et-code-oral.md).
+> Enchaîner sur la **Partie C** (questions probables du jury) de [`explication-projet-et-code-oral.md`](explication-projet-et-code-oral.md).
 
 ---
 
@@ -272,7 +272,7 @@
 | — | Marge | — | 0:30 |
 | | **TOTAL** | | **20:00** |
 
-> Rappel : les questions du jury sont préparées en **Partie C** de [`explication-projet-et-code-oral.md`](docs/prerequis/explication-projet-et-code-oral.md).
+> Rappel : les questions du jury sont préparées en **Partie C** de [`explication-projet-et-code-oral.md`](explication-projet-et-code-oral.md).
 
 ---
 

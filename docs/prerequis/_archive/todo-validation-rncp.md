@@ -7,7 +7,7 @@
 >
 > Légende : 🔴 critique · 🟠 haute · 🟡 moyenne · 🟢 basse. `[ ]` à faire · `[x]` fait.
 >
-> **MàJ 2026-07-01** — L'essentiel est traité. Tests e2e écrits + branchés en CI, docs de suivi mises à jour (mobile), et **livrables rédigés dans [`livrables/`](livrables/)**. Ne restent que 3 finitions manuelles : exécuter l'audit RGAA, signer le PV de réception, préparer l'oral.
+> **MàJ 2026-07-01** — L'essentiel est traité. Tests e2e écrits + branchés en CI, docs de suivi mises à jour (mobile), et **livrables rédigés dans [`livrables/`](../livrables/)**. Ne restent que 3 finitions manuelles : exécuter l'audit RGAA, signer le PV de réception, préparer l'oral.
 
 ---
 
@@ -25,35 +25,35 @@ Les docs `ecart-doc-code-et-rncp.md` et `cartographie-competences-cdan.md` daten
 
 - [x] 🔴 **Activer et écrire les tests e2e** : `apps/api/test/app.e2e-spec.ts` réécrit — 8 tests (auth register→login→me, non-membre chat 403, anonyme 401, RGPD delete→relogin 401). ✅ **8/8 verts**
 - [x] 🟠 **Brancher les tests e2e dans la CI** : script `test:e2e` + étape CI + services PostgreSQL/Redis dans `.github/workflows/ci.yml`. ✅
-- [x] 🟡 **Formaliser un plan de tests** → [livrables/plan-de-tests.md](livrables/plan-de-tests.md) (76 tests). ✅
+- [x] 🟡 **Formaliser un plan de tests** → [livrables/plan-de-tests.md](../livrables/plan-de-tests.md) (76 tests). ✅
 
 ## 2. Accessibilité (BC01-7) — 🟠 haute
 
-- [x] 🟠 **Guide d'audit RGAA** rédigé (procédure Lighthouse/axe + revue mobile) → [livrables/audit-rgaa.md](livrables/audit-rgaa.md). ✅
+- [x] 🟠 **Guide d'audit RGAA** rédigé (procédure Lighthouse/axe + revue mobile) → [livrables/audit-rgaa.md](../livrables/audit-rgaa.md). ✅
 - [ ] 🟡 **Exécuter** Lighthouse/axe, consigner les scores dans la grille et corriger les écarts. ⚙️ *action manuelle restante*
 
 ## 3. Estimation de charge & performance (BC01-6) — 🟡 moyenne
 
-- [x] 🟡 **Note d'estimation de charge** (chiffres réels : ~1970 req/s, p99 83 ms, marge ~60×) → [livrables/estimation-charge.md](livrables/estimation-charge.md). ✅
+- [x] 🟡 **Note d'estimation de charge** (chiffres réels : ~1970 req/s, p99 83 ms, marge ~60×) → [livrables/estimation-charge.md](../livrables/estimation-charge.md). ✅
 - [x] 🟡 **Test de charge** autocannon reproductible → `apps/api/perf/load-test.mjs` (exécuté). ✅
 
 ## 4. Intégrations & RSE (BC03-6) — 🟡 moyenne
 
-- [x] 🟡 **Volet RSE / écoresponsabilité** → [livrables/rse-ecoresponsabilite.md](livrables/rse-ecoresponsabilite.md). ✅
+- [x] 🟡 **Volet RSE / écoresponsabilité** → [livrables/rse-ecoresponsabilite.md](../livrables/rse-ecoresponsabilite.md). ✅
 
 ## 5. Livrables formels du dossier (BC02-9, BC03-8, BC04-1) — 🟡 moyenne
 
-- [x] 🟡 **PV de réception** (modèle) → [livrables/pv-reception.md](livrables/pv-reception.md). ✅ *à dater/signer en recette*
-- [x] 🟡 **PAQ** → [livrables/paq.md](livrables/paq.md). ✅
-- [x] 🟡 **Compte-rendu d'activité (CRA)** + taux de disponibilité → [livrables/compte-rendu-activite.md](livrables/compte-rendu-activite.md). ✅
-- [x] 🟡 **Rétro-documentation** (module Auth) → [livrables/retro-documentation-auth.md](livrables/retro-documentation-auth.md). ✅
-- [x] 🟡 **Diagramme de workflow** → [livrables/diagramme-workflow.md](livrables/diagramme-workflow.md). ✅
+- [x] 🟡 **PV de réception** (modèle) → [livrables/pv-reception.md](../livrables/pv-reception.md). ✅ *à dater/signer en recette*
+- [x] 🟡 **PAQ** → [livrables/paq.md](../livrables/paq.md). ✅
+- [x] 🟡 **Compte-rendu d'activité (CRA)** + taux de disponibilité → [livrables/compte-rendu-activite.md](../livrables/compte-rendu-activite.md). ✅
+- [x] 🟡 **Rétro-documentation** (module Auth) → [livrables/retro-documentation-auth.md](../livrables/retro-documentation-auth.md). ✅
+- [x] 🟡 **Diagramme de workflow** → [livrables/diagramme-workflow.md](../livrables/diagramme-workflow.md). ✅
 - [ ] 🟢 **Document structuré en anglais** (BC02-13) — ex. un README technique EN. *(optionnel)*
 
 ## 6. Préparation de la soutenance (BC02-10) — 🟢 basse
 
 - [x] 🟢 **Harmoniser le mot de passe démo** : recette corrigée `DemoPassword123!` → `Demo1234!` (source seed). ✅
-- [x] 🟢 **Checklist du parcours de démo** → [livrables/checklist-demo.md](livrables/checklist-demo.md). ✅
+- [x] 🟢 **Checklist du parcours de démo** → [livrables/checklist-demo.md](../livrables/checklist-demo.md). ✅
 - [ ] 🟢 **Rejouer le parcours de démo end-to-end** avant l'oral (Docker → login → … → mobile → Swagger). ⚙️
 - [ ] 🟢 **Répartir les contributions par compétence** (dossier individuel Clément/Ioanes). ⚙️
 - [ ] 🟢 Préparer le **discours oral 20 min**. ⚙️
@@ -63,7 +63,7 @@ Les docs `ecart-doc-code-et-rncp.md` et `cartographie-competences-cdan.md` daten
 ## État au 2026-07-01
 
 Le seul critère **obligatoire** encore non prouvé (tests e2e) est **résolu**. Tous
-les livrables sont rédigés dans [`livrables/`](livrables/). Ne restent que des
+les livrables sont rédigés dans [`livrables/`](../livrables/). Ne restent que des
 **actions manuelles non bloquantes** :
 
 1. Exécuter l'audit RGAA et consigner les scores (§2).
