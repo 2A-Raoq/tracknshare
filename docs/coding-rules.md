@@ -4,7 +4,7 @@
 
 Ce fichier donne les règles de développement à respecter dans Track'N Share.
 
-Claude Code doit les suivre lors de la génération ou modification de code.
+Elles s'appliquent à toute création ou modification de code.
 
 ## Principes généraux
 
@@ -333,7 +333,7 @@ Mettre à jour la documentation quand :
 
 ## Règle finale
 
-Quand Claude Code hésite entre deux solutions, choisir :
+En cas d'hésitation entre deux solutions, choisir :
 
 1. la plus simple ;
 2. la plus sûre ;

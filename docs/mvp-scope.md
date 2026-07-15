@@ -4,8 +4,6 @@
 
 Ce fichier définit ce qui appartient au MVP Track'N Share, ce qui est important mais secondaire, et ce qui doit être reporté.
 
-Claude Code doit utiliser ce document pour éviter d'élargir le scope sans nécessité.
-
 ## Objectif du MVP
 
 Le MVP doit permettre de démontrer une plateforme gaming complète mais maîtrisée :
@@ -160,7 +158,7 @@ Règles :
 
 ## Règle de décision
 
-Quand une tâche est demandée, Claude Code doit se demander :
+Avant de commencer une tâche, se poser les questions suivantes :
 
 1. Est-ce nécessaire au MVP ?
 2. Est-ce une tâche P0 ?

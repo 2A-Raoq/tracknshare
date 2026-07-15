@@ -2,7 +2,7 @@
 
 ## Objectif du fichier
 
-Ce fichier donne à Claude Code les règles d'architecture du repository Track'N Share.
+Ce document décrit les règles d'architecture du repository Track'N Share.
 
 Le projet utilise un monorepo avec trois applications :
 
@@ -53,7 +53,6 @@ TRACKNSHARE/
   packages/
     shared-types/
   docs/
-    00-AI-Context/
     01-Gestion-Projet/
     02-Documentation-Fonctionnelle/
     03-Design-UX-UI/
@@ -73,7 +72,6 @@ TRACKNSHARE/
   pnpm-lock.yaml
   pnpm-workspace.yaml
   turbo.json
-  CLAUDE.md
   .gitignore
 ```
 
@@ -316,7 +314,7 @@ Le fichier `docker-compose.yml` doit permettre de lancer au minimum :
 
 Le Drive reste la documentation principale.
 
-Le dossier `docs/00-AI-Context` sert uniquement à donner un contexte court et exploitable aux IA et aux développeurs.
+Les documents de synthèse à la racine de `docs/` donnent un contexte court et exploitable aux développeurs.
 
 Quand une décision change :
 - endpoint modifié → mettre à jour la doc API ;

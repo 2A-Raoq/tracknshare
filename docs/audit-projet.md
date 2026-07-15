@@ -1,8 +1,8 @@
 # Audit projet — Track'N Share
 
 **Date :** 2026-06-05
-**Auteurs :** Audit réalisé par Claude Code sur la base du code source et de la documentation du dépôt.
-**Périmètre :** Code source complet (`apps/api`, `apps/web`), documentation `docs/00-AI-Context/` et `docs/drive-export/`, fichiers CSV de gestion de projet.
+**Auteurs :** Audit interne réalisé sur la base du code source et de la documentation du dépôt.
+**Périmètre :** Code source complet (`apps/api`, `apps/web`), documentation `docs/` et `docs/drive-export/`, fichiers CSV de gestion de projet.
 
 ---
 
@@ -42,7 +42,7 @@ Track'N Share est un projet avancé, bien architecturé et avec une documentatio
 
 ### Cohérence entre les documents
 
-La documentation est globalement cohérente et bien organisée. Les fichiers `docs/00-AI-Context/` sont des résumés synthétiques alignés avec les fichiers détaillés de `docs/drive-export/`. Aucune contradiction majeure entre les domaines fonctionnels.
+La documentation est globalement cohérente et bien organisée. Les fichiers `docs/` sont des résumés synthétiques alignés avec les fichiers détaillés de `docs/drive-export/`. Aucune contradiction majeure entre les domaines fonctionnels.
 
 **Points de friction détectés :**
 
@@ -52,13 +52,13 @@ La documentation est globalement cohérente et bien organisée. Les fichiers `do
 | `Recette-soutenance.md §6.2` | Mot de passe démo : `DemoPassword123!` | Le seed utilise `Demo1234!` (à vérifier dans `seed.ts` complet) |
 | `Variables-environnement.md` | Liste 120+ variables dont `DEMO_MODE`, `EXTERNAL_API_MODE`, `RATE_LIMIT_ENABLED` | `.env.example` de l'API n'en contient que 9 |
 | `Configuration-Docker.md` | Décrit 4 services (postgres, redis, backend, frontend) avec health checks | `docker-compose.yml` réel : 2 services uniquement |
-| `00-AI-Context/architecture.md` | Structure de dossiers suggérée (`config/`, `modules/`, `providers/`) | Implémentation réelle sans dossier `modules/` (direct dans `src/`) |
+| `docs/architecture.md` | Structure de dossiers suggérée (`config/`, `modules/`, `providers/`) | Implémentation réelle sans dossier `modules/` (direct dans `src/`) |
 
 ### Documents les plus utiles pour le développement
 
-1. `docs/00-AI-Context/api-contract.md` — source de vérité pour les endpoints et le format des réponses
-2. `docs/00-AI-Context/domain-model.md` — entités et relations
-3. `docs/00-AI-Context/mvp-scope.md` — périmètre P0/P1/P2
+1. `docs/api-contract.md` — source de vérité pour les endpoints et le format des réponses
+2. `docs/domain-model.md` — entités et relations
+3. `docs/mvp-scope.md` — périmètre P0/P1/P2
 4. `docs/drive-export/10-Tests/Recette-soutenance.md` — checklist complète pour la soutenance
 5. `docs/drive-export/13-Sprints-Milestones/Backlog-priorise.md` — état des tâches
 
@@ -76,7 +76,7 @@ La documentation est globalement cohérente et bien organisée. Les fichiers `do
 
 ### Fonctionnalités prévues dans le MVP (P0)
 
-Selon `docs/00-AI-Context/mvp-scope.md` et le backlog :
+Selon `docs/mvp-scope.md` et le backlog :
 
 | Fonctionnalité | Présente en back | Présente en front | Statut |
 |----------------|-----------------|------------------|--------|

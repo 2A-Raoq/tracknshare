@@ -4,7 +4,7 @@
 
 Ce fichier décrit les principales entités métier de Track'N Share.
 
-Il sert à aider Claude Code à comprendre les données à manipuler côté API, base de données et front-end.
+Il sert de référence pour les données manipulées côté API, base de données et front-end.
 
 ## Vue d'ensemble
 

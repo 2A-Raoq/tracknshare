@@ -12,7 +12,6 @@ Merci de votre intérêt pour Track'N Share ! Ce document définit les règles e
 - [Pull Requests](#pull-requests)
 - [Tests et qualité](#tests-et-qualité)
 - [Documentation](#documentation)
-- [AI Usage & Policy](#ai-usage--policy)
 - [Priorisation MVP](#priorisation-mvp)
 
 ---
@@ -35,13 +34,11 @@ Tous les contributeurs doivent :
 
 Avant toute contribution, lire :
 
-1. `CLAUDE.md` — Instructions et contexte global
-2. `AI_USAGE_POLICY.md` — **Politique d'usage de l'IA** (obligatoire si tu utilises Claude Code)
-3. `docs/00-AI-Context/project-overview.md` — Vue d'ensemble du projet
-4. `docs/00-AI-Context/mvp-scope.md` — Scope du MVP
-5. `docs/00-AI-Context/architecture.md` — Architecture du projet
-6. `docs/00-AI-Context/coding-rules.md` — Règles de code
-7. `docs/00-AI-Context/sprints-roadmap.md` — État des sprints
+1. `docs/project-overview.md` — Vue d'ensemble du projet
+2. `docs/mvp-scope.md` — Scope du MVP
+3. `docs/architecture.md` — Architecture du projet
+4. `docs/coding-rules.md` — Règles de code
+5. `docs/sprints-roadmap.md` — État des sprints
 
 ### Stack du projet
 
@@ -152,7 +149,7 @@ const handleSubmit = () => {
 - Centraliser les appels API dans `src/api/`
 - Gérer les états : `loading`, `error`, `empty`
 - Mobile-first responsive
-- Thème gaming sombre (voir `docs/00-AI-Context/front-ui-reference.md`)
+- Thème gaming sombre (voir `docs/front-ui-reference.md`)
 - Jamais de secrets frontend
 
 ### Backend (`apps/api`)
@@ -306,18 +303,12 @@ Comment tester cette PR :
 ## Screenshots/Vidéo
 [Si applicable, ajouter captures d'écran]
 
-## AI Contribution (si applicable)
-- [ ] Code généré avec l'IA
-- Scope : [architecture / code generation / tests / documentation]
-- Validé et compris ✅
-
 ## Checklist
 - [ ] Code reviewed
 - [ ] Tests ajoutés
 - [ ] Documentation mise à jour
 - [ ] Aucun breaking change non documenté
 - [ ] Aucun secret hardcoded
-- [ ] Politique IA respectée (si applicable)
 ```
 
 ### Revue de code
@@ -331,8 +322,7 @@ Comment tester cette PR :
 - ✅ Tests présents et significatifs
 - ✅ Documentation suffisante
 - ✅ Respect de l'architecture
-- ✅ Si code IA-généré : source documentée et code compris par le dev
-- ✅ Pas de secrets hardcoded (surtout si généré par IA)
+- ✅ Pas de secrets hardcoded
 
 **Approbation** :
 
@@ -406,7 +396,7 @@ describe('UserService', () => {
 
 - **README.md** : Vue d'ensemble du projet
 - **CONTRIBUTING.md** : Guide de contribution (ce fichier)
-- **docs/00-AI-Context/** : Documentation technique complète
+- **docs/** : Documentation technique complète
 - **Code comments** : Uniquement pour logique non-évidente
 
 ### Commenter le code
@@ -447,89 +437,6 @@ async getUser(@Param('id') id: string) {
   return this.usersService.findById(id);
 }
 ```
-
----
-
-## AI Usage & Policy
-
-### Contexte
-
-Track'N Share utilise Claude AI (Anthropic) pour accélérer le développement du MVP. **L'IA est un outil d'assistance, pas un remplaçant** — tout code généré reste la responsabilité du développeur qui l'accepte.
-
-### Lecture obligatoire
-
-**Avant d'utiliser l'IA sur ce projet, lire** :
-
-- 📋 **[AI_USAGE_POLICY.md](AI_USAGE_POLICY.md)** — Politique complète d'usage de l'IA
-
-Cette politique couvre :
-- ✅ Cas d'usage autorisés (CRUD, tests, docs, refactoring)
-- ❌ Cas d'usage interdits (sécurité, secrets, logique métier critique)
-- 🔍 Standards de qualité et validation
-- 🔐 Règles de sécurité absolues
-- 📝 Attribution et propriété intellectuelle
-- 👥 Processus de revue et approbation
-
-### Principes clés
-
-1. **L'IA augmente, ne remplace pas**
-   - Valider tout code avant merge
-   - Comprendre ce que l'IA génère
-   - Tester les fonctionnalités
-   - Documenter les choix
-
-2. **Responsabilité du développeur**
-   - Tu acceptes le code → tu es responsable
-   - Si un bug se produit → ta responsabilité
-   - Si une faille de sécurité → ta responsabilité
-
-3. **Zéro secrets**
-   - ❌ Jamais de clés API, tokens, passwords dans le code
-   - ✅ Toujours dans `.env` (git-ignored)
-   - 🔍 Validation pré-merge obligatoire
-
-4. **Cas critiques demandent approbation**
-   - Authentification & permissions
-   - Logique métier (scores, leaderboards)
-   - Décisions architecturales majeures
-   - → Créer une issue `ai-decision-needed` avant d'implémenter
-
-### Attribution dans les commits
-
-Si tu utilises l'IA, ajoute dans le commit :
-
-```
-feat(api): add score calculation with AI assistance
-
-Generated score algorithm with Claude
-Added tests and documentation
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-### Checklist IA avant PR
-
-- [ ] Code généré compris et validé
-- [ ] Tests écrits (70%+ couverture)
-- [ ] Aucun secret hardcoded
-- [ ] Lint et build passent
-- [ ] Source IA documentée dans commit
-- [ ] Revue sécurité si auth/permissions
-- [ ] Documentation mise à jour
-
-### Questions fréquentes sur l'IA
-
-**Q : Je peux générer du code d'authentification ?**
-R : Oui, mais doit être reviewé en détail avant merge. Voir AI_USAGE_POLICY.md section "Sécurité".
-
-**Q : Je peux générer le scoring ?**
-R : Oui, avec documentation de l'algorithme et tests exhaustifs. Demander approbation métier d'abord.
-
-**Q : Je peux générer les permissions d'équipe ?**
-R : Oui, mais revue sécurité obligatoire backend.
-
-**Q : Quel cas c'est pas bon pour l'IA ?**
-R : Voir AI_USAGE_POLICY.md "Cas d'usage interdits" — secrets, logique critique sans specs claires.
 
 ---
 
@@ -609,19 +516,7 @@ R : Utiliser le MockProvider pour le MVP. Les vrais providers restent pour aprè
 R : Demander d'abord. L'architecture est gelée pour le MVP.
 
 **Q : Quel est le plan pour la sécurité ?**
-R : Voir `docs/00-AI-Context/security-rgpd.md`. Review obligatoire pour tout changement d'auth ou permissions.
-
-**Q : Je peux utiliser l'IA pour générer du code ?**
-R : Oui, avec conditions. Lire [AI_USAGE_POLICY.md](AI_USAGE_POLICY.md) pour les cas autorisés/interdits, et attribuer Claude dans le commit.
-
-**Q : L'IA peut générer de la logique métier (scores, leaderboards) ?**
-R : Oui, mais doit avoir une spec claire d'abord et reviewer les tests. Sécurité + métier doivent approuver.
-
-**Q : Quoi je peux pas demander à l'IA de générer ?**
-R : Secrets, auth sans supervision, refactoring architecture sans approbation. Voir AI_USAGE_POLICY.md "Cas d'usage interdits".
-
-**Q : Comment on attribut l'IA dans les commits ?**
-R : Ajouter `Co-Authored-By: Claude <noreply@anthropic.com>` dans le footer du commit.
+R : Voir `docs/security-rgpd.md`. Review obligatoire pour tout changement d'auth ou permissions.
 
 ---
 
@@ -637,7 +532,6 @@ R : Ajouter `Co-Authored-By: Claude <noreply@anthropic.com>` dans le footer du c
 
 | Version | Date | Changements |
 |---------|------|-------------|
-| 1.1.0 | 2026-06-23 | Ajout de la politique d'usage IA et intégration AI_USAGE_POLICY.md |
 | 1.0.0 | 2026-06-23 | Création initiale du guide de contribution |
 
 ---

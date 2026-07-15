@@ -4,7 +4,7 @@
 
 Ce fichier résume les règles de sécurité et de confidentialité à respecter pendant le développement du MVP.
 
-Claude Code doit appliquer ces règles par défaut.
+Ces règles s'appliquent par défaut sur tout le projet.
 
 ## Données sensibles du projet
 

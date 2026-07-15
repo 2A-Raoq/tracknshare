@@ -4,7 +4,7 @@
 
 Ce fichier sert de référence visuelle pour le développement du front-end de Track'N Share.
 
-Claude Code doit s'en servir pour comprendre l'ambiance graphique attendue, surtout pour la landing page, le style général et le responsive desktop/mobile.
+Il décrit l'ambiance graphique attendue, surtout pour la landing page, le style général et le responsive desktop/mobile.
 
 ## Référence visuelle Figma
 
@@ -315,9 +315,9 @@ La landing page doit rester compatible PWA :
 - navigation clavier possible ;
 - ne pas transmettre l'information uniquement par la couleur.
 
-## Règles pour Claude Code
+## Périmètre de la landing
 
-Claude Code peut créer ou modifier :
+Fichiers concernés :
 
 ```txt
 apps/web/src/pages/LandingPage.tsx
@@ -326,36 +326,15 @@ apps/web/src/features/landing/components/ActionCard.tsx
 apps/web/src/features/landing/components/LandingHeader.tsx
 ```
 
-Claude Code doit éviter :
+À éviter :
 
-- de créer une landing trop complexe ;
-- de développer des fonctionnalités back-end pour cette tâche ;
-- de modifier l'authentification sans demande ;
-- d'ajouter des librairies inutiles ;
+- une landing trop complexe ;
+- des fonctionnalités back-end pour cette tâche ;
+- des modifications de l'authentification sans besoin identifié ;
+- des librairies inutiles ;
 - de casser la structure du monorepo ;
 - de copier exactement une image non libre ;
 - de rendre la landing dépendante d'une API.
-
-## Prompt recommandé pour générer la landing page
-
-```txt
-Crée la landing page Track'N Share en t'inspirant de :
-
-- docs/00-AI-Context/front-ui-reference.md
-- docs/drive-export/03-Design-UX-UI/Maquettes/landing-hero-figma-reference.png
-
-Respecte la structure actuelle du monorepo :
-- front dans apps/web
-- React + TypeScript + Vite
-- responsive mobile-first
-- style sombre gaming
-- header compact
-- hero avec image ou placeholder
-- cartes d'action : Check your stats, Build your team, Climb the leaderboard, Chat with your team
-
-Ne développe pas de fonctionnalités back-end.
-Crée seulement l'UI et les routes nécessaires côté front.
-```
 
 ## Résumé
 

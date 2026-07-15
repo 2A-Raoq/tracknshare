@@ -2,7 +2,7 @@
 
 ## Objectif du fichier
 
-Ce fichier donne à Claude Code une vision rapide du projet, de son objectif, de son périmètre et de son contexte fonctionnel.
+Ce document donne une vision rapide du projet, de son objectif, de son périmètre et de son contexte fonctionnel.
 
 ## Résumé du projet
 
@@ -85,7 +85,6 @@ TRACKNSHARE/
   package.json
   pnpm-workspace.yaml
   turbo.json
-  CLAUDE.md
 ```
 
 Même si certains documents du Drive parlent de `frontend/` et `backend/`, la structure actuelle `apps/web` et `apps/api` est valide. Il faut garder cette organisation pour le développement.
@@ -107,9 +106,9 @@ Ordre de priorité :
 9. Données de démo
 10. PWA / polish
 
-## Ce qui doit guider Claude Code
+## Ce qui doit guider le développement
 
-Claude Code doit aider à développer le MVP sans élargir inutilement le périmètre.
+Le développement doit rester centré sur le MVP, sans élargir inutilement le périmètre.
 
 À faire :
 - coder par sprint ;

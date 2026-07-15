@@ -11,7 +11,7 @@ import type { Response } from 'express'
 
 /**
  * Filtre d'exceptions global : normalise toutes les erreurs HTTP au format
- * du contrat API (docs/00-AI-Context/api-contract.md) :
+ * du contrat API (docs/api-contract.md) :
  *
  * ```json
  * {

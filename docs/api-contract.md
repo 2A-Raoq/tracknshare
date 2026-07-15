@@ -4,8 +4,6 @@
 
 Ce fichier définit les conventions API du MVP Track'N Share.
 
-Claude Code doit respecter ces formats lors de la création ou modification des endpoints.
-
 ## Base URL
 
 En développement :

@@ -4,7 +4,7 @@
 
 Ce fichier résume la roadmap de développement du MVP Track'N Share.
 
-Claude Code doit l'utiliser pour travailler sprint par sprint et éviter d'ajouter des fonctionnalités hors scope.
+Il sert à travailler sprint par sprint et à éviter d'ajouter des fonctionnalités hors scope.
 
 ## Vue d'ensemble des milestones
 
