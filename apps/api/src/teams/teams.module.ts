@@ -7,7 +7,6 @@ import { ChatMessage } from './entities/chat-message.entity'
 import { TeamsService } from './teams.service'
 import { TeamsController } from './teams.controller'
 import { TeamMemberGuard } from './guards/team-member.guard'
-import { TeamRoleGuard } from './guards/team-role.guard'
 import { ChatGateway } from './chat.gateway'
 import { SecurityModule } from '../security/security.module'
 
@@ -18,7 +17,7 @@ import { SecurityModule } from '../security/security.module'
     SecurityModule,
   ],
   controllers: [TeamsController],
-  providers: [TeamsService, TeamMemberGuard, TeamRoleGuard, ChatGateway],
-  exports: [TeamsService, TeamMemberGuard, TeamRoleGuard],
+  providers: [TeamsService, TeamMemberGuard, ChatGateway],
+  exports: [TeamsService, TeamMemberGuard],
 })
 export class TeamsModule {}

@@ -27,11 +27,6 @@ function ensureAchievementArray(payload: unknown): AchievementItem[] {
 }
 
 export const achievementsApi = {
-  getAchievements: async (): Promise<AchievementItem[]> => {
-    const res = await api.get<{ success: boolean; data: AchievementItem[] }>('/achievements')
-    return ensureAchievementArray(res.data?.data)
-  },
-
   getMyAchievements: async (): Promise<AchievementItem[]> => {
     const res = await api.get<{ success: boolean; data: AchievementItem[] }>('/achievements/me')
     return ensureAchievementArray(res.data?.data)

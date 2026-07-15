@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect, useRouter } from 'expo-router'
-import { Button, Card, ErrorText, Muted, Screen, TextField, Title } from '@/components/ui'
+import { Button, Card, ErrorState, ErrorText, Muted, Screen, TextField, Title } from '@/components/ui'
 import { teamsApi } from '@/services/teams.api'
 import type { TeamSummary } from '@/types'
 import { colors, radius, spacing } from '@/theme'
@@ -13,17 +13,26 @@ export default function TeamsScreen() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const load = useCallback(async () => {
+  const [loadError, setLoadError] = useState(false)
+
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
-      setTeams(await teamsApi.mine())
+      const data = await teamsApi.mine()
+      if (!isActive()) return
+      setTeams(data)
+      setLoadError(false)
     } catch {
-      setTeams([])
+      if (isActive()) setLoadError(true)
     }
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -46,7 +55,15 @@ export default function TeamsScreen() {
     <Screen>
       <Title>Mes équipes</Title>
 
-      {teams.length === 0 && <Muted>Tu n&apos;as rejoint aucune équipe.</Muted>}
+      {loadError && (
+        <ErrorState
+          message="Impossible de charger tes équipes."
+          onRetry={() => load()}
+        />
+      )}
+      {!loadError && teams.length === 0 && (
+        <Muted>Tu n&apos;as rejoint aucune équipe.</Muted>
+      )}
 
       {teams.map((team) => (
         <Pressable

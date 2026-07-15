@@ -22,6 +22,75 @@ function ensureTeamSummaryArray(payload: unknown): TeamSummary[] {
   })
 }
 
+function isTeamMemberInfo(value: unknown): value is TeamDetail['members'][number] {
+  const record = value as Record<string, unknown>
+  return (
+    !!value
+    && typeof value === 'object'
+    && typeof record.id === 'string'
+    && (typeof record.username === 'string' || record.username === null)
+    && typeof record.role === 'string'
+    && typeof record.joinedAt === 'string'
+  )
+}
+
+function ensureTeamDetail(payload: unknown): TeamDetail {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Invalid team response.')
+  }
+
+  const record = payload as Record<string, unknown>
+
+  if (
+    typeof record.id !== 'string'
+    || typeof record.name !== 'string'
+    || typeof record.tag !== 'string'
+    || typeof record.inviteCode !== 'string'
+    || (record.description !== null && typeof record.description !== 'string')
+    || !Array.isArray(record.members)
+  ) {
+    throw new Error('Invalid team response: malformed team detail.')
+  }
+
+  record.members.forEach((member) => {
+    if (!isTeamMemberInfo(member)) {
+      throw new Error('Invalid team response: malformed team member.')
+    }
+  })
+
+  return payload as TeamDetail
+}
+
+function isChatMessage(value: unknown): value is ChatMessage {
+  const record = value as Record<string, unknown>
+  const sender = record.sender as Record<string, unknown> | undefined
+  return (
+    !!value
+    && typeof value === 'object'
+    && typeof record.id === 'string'
+    && typeof record.teamId === 'string'
+    && !!sender
+    && typeof sender === 'object'
+    && typeof sender.id === 'string'
+    && (typeof sender.username === 'string' || sender.username === null)
+    && typeof record.content === 'string'
+    && typeof record.createdAt === 'string'
+  )
+}
+
+function ensureChatMessageArray(payload: unknown): ChatMessage[] {
+  if (!Array.isArray(payload)) {
+    throw new Error('Invalid team messages response: expected an array.')
+  }
+
+  return payload.map((item) => {
+    if (!isChatMessage(item)) {
+      throw new Error('Invalid team messages response: malformed message item.')
+    }
+    return item
+  })
+}
+
 export const teamsApi = {
   getMyTeams: async (): Promise<TeamSummary[]> => {
     const res = await api.get<{ success: boolean; data: TeamSummary[] }>('/teams/me')
@@ -30,7 +99,7 @@ export const teamsApi = {
 
   getTeam: async (teamId: string): Promise<TeamDetail> => {
     const res = await api.get<{ success: boolean; data: TeamDetail }>(`/teams/${teamId}`)
-    return res.data.data
+    return ensureTeamDetail(res.data?.data)
   },
 
   createTeam: async (data: { name: string; tag: string; description?: string }) => {
@@ -52,7 +121,7 @@ export const teamsApi = {
     const res = await api.get<{ success: boolean; data: ChatMessage[] }>(
       `/teams/${teamId}/messages`,
     )
-    return res.data.data
+    return ensureChatMessageArray(res.data?.data)
   },
 
   sendMessage: async (teamId: string, content: string): Promise<ChatMessage> => {

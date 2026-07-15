@@ -50,9 +50,16 @@ export default function ConversationScreen() {
     if (token) {
       const socket = createAuthenticatedSocket(token)
       socketRef.current = socket
-      socket.emit('conversation:join', { conversationId: id })
+      // (Re)joindre la room à chaque connexion : après une reconnexion auto
+      // (perte réseau, veille), le serveur a oublié les rooms du socket.
+      socket.on('connect', () => {
+        socket.emit('conversation:join', { conversationId: id })
+      })
       socket.on('private:message:new', (msg: PrivateMessageItem) => {
-        if (msg.conversationId === id) setMessages((prev) => [...prev, msg])
+        if (msg.conversationId !== id) return
+        setMessages((prev) =>
+          prev.some((item) => item.id === msg.id) ? prev : [...prev, msg],
+        )
       })
     }
 

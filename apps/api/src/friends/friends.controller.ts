@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common'
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,6 +11,7 @@ import {
   ApiBadRequestResponse,
 } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import type { AuthenticatedRequest } from '../common/types/authenticated-request'
 import { CreateFriendRequestDto } from './dto/create-friend-request.dto'
 import { FriendsService } from './friends.service'
 
@@ -34,7 +25,7 @@ export class FriendsController {
   @Get()
   @ApiOperation({ summary: 'List accepted friends of the current user' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async getFriends(@Req() req: any) {
+  async getFriends(@Req() req: AuthenticatedRequest) {
     const data = await this.friendsService.listFriends(req.user.userId)
     return { success: true, data }
   }
@@ -42,7 +33,7 @@ export class FriendsController {
   @Get('requests')
   @ApiOperation({ summary: 'List incoming and outgoing pending friend requests' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async getRequests(@Req() req: any) {
+  async getRequests(@Req() req: AuthenticatedRequest) {
     const data = await this.friendsService.listPendingRequests(req.user.userId)
     return { success: true, data }
   }
@@ -54,7 +45,7 @@ export class FriendsController {
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
   @ApiNotFoundResponse({ description: 'Recipient not found' })
   @ApiConflictResponse({ description: 'Request already pending or friendship already exists' })
-  async createRequest(@Req() req: any, @Body() dto: CreateFriendRequestDto) {
+  async createRequest(@Req() req: AuthenticatedRequest, @Body() dto: CreateFriendRequestDto) {
     const data = await this.friendsService.createRequest(req.user.userId, dto.recipientId)
     return { success: true, data }
   }
@@ -65,7 +56,7 @@ export class FriendsController {
   @ApiForbiddenResponse({ description: 'Only the recipient can accept' })
   @ApiNotFoundResponse({ description: 'Friend request not found' })
   @ApiConflictResponse({ description: 'Friend request is no longer pending' })
-  async acceptRequest(@Req() req: any, @Param('requestId') requestId: string) {
+  async acceptRequest(@Req() req: AuthenticatedRequest, @Param('requestId') requestId: string) {
     const data = await this.friendsService.acceptRequest(requestId, req.user.userId)
     return { success: true, data }
   }
@@ -76,7 +67,7 @@ export class FriendsController {
   @ApiForbiddenResponse({ description: 'Only the recipient can refuse' })
   @ApiNotFoundResponse({ description: 'Friend request not found' })
   @ApiConflictResponse({ description: 'Friend request is no longer pending' })
-  async refuseRequest(@Req() req: any, @Param('requestId') requestId: string) {
+  async refuseRequest(@Req() req: AuthenticatedRequest, @Param('requestId') requestId: string) {
     const data = await this.friendsService.refuseRequest(requestId, req.user.userId)
     return { success: true, data }
   }
@@ -87,7 +78,7 @@ export class FriendsController {
   @ApiForbiddenResponse({ description: 'Only the sender can cancel' })
   @ApiNotFoundResponse({ description: 'Friend request not found' })
   @ApiConflictResponse({ description: 'Friend request is no longer pending' })
-  async cancelRequest(@Req() req: any, @Param('requestId') requestId: string) {
+  async cancelRequest(@Req() req: AuthenticatedRequest, @Param('requestId') requestId: string) {
     const data = await this.friendsService.cancelRequest(requestId, req.user.userId)
     return { success: true, data }
   }
@@ -96,7 +87,7 @@ export class FriendsController {
   @ApiOperation({ summary: 'Remove a friend' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
   @ApiNotFoundResponse({ description: 'Friendship not found' })
-  async removeFriend(@Req() req: any, @Param('friendId') friendId: string) {
+  async removeFriend(@Req() req: AuthenticatedRequest, @Param('friendId') friendId: string) {
     const data = await this.friendsService.removeFriend(req.user.userId, friendId)
     return { success: true, data }
   }

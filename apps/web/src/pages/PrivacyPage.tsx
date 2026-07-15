@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation } from 'wouter'
 import { useSnapshot } from 'valtio'
-import { authStore } from '../store/auth.store'
+import { authStore, clearSession } from '../store/auth.store'
 import { usersApi } from '../services/users.api'
 
 export default function PrivacyPage() {
@@ -41,9 +41,7 @@ export default function PrivacyPage() {
     setMessage(null)
     try {
       await usersApi.deleteMyAccount()
-      authStore.user = null
-      authStore.token = null
-      localStorage.removeItem('access_token')
+      clearSession()
       navigate('/', { replace: true })
     } catch {
       setMessage('La suppression a échoué. Réessayez plus tard.')

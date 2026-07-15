@@ -45,10 +45,7 @@ export class UsersService {
     return this.toPublic(user)
   }
 
-  async updateProfile(
-    id: string,
-    data: { username: string },
-  ): Promise<PublicUser> {
+  async updateProfile(id: string, data: { username: string }): Promise<PublicUser> {
     const user = await this.findById(id)
     if (!user) throw new NotFoundException()
 
@@ -96,26 +93,20 @@ export class UsersService {
   async exportUserData(id: string) {
     const user = await this.getPublicById(id)
 
-    const [stats, teamsOwned, teamMemberships, gameAccounts, achievements] =
-      await Promise.all([
-        this.dataSource.query('SELECT * FROM player_stats WHERE "userId" = $1', [id]),
-        this.dataSource.query('SELECT * FROM teams WHERE "ownerId" = $1', [id]),
-        this.dataSource.query(
-          'SELECT * FROM team_members WHERE "userId" = $1',
-          [id],
-        ),
-        this.dataSource.query(
-          'SELECT * FROM game_accounts WHERE "userId" = $1',
-          [id],
-        ),
-        this.dataSource.query(
-          `SELECT a.code, a.name, ua."unlockedAt"
+    type Rows = Record<string, unknown>[]
+    const [stats, teamsOwned, teamMemberships, gameAccounts, achievements] = await Promise.all([
+      this.dataSource.query<Rows>('SELECT * FROM player_stats WHERE "userId" = $1', [id]),
+      this.dataSource.query<Rows>('SELECT * FROM teams WHERE "ownerId" = $1', [id]),
+      this.dataSource.query<Rows>('SELECT * FROM team_members WHERE "userId" = $1', [id]),
+      this.dataSource.query<Rows>('SELECT * FROM game_accounts WHERE "userId" = $1', [id]),
+      this.dataSource.query<Rows>(
+        `SELECT a.code, a.name, ua."unlockedAt"
              FROM user_achievements ua
              JOIN achievements a ON a.id = ua."achievementId"
             WHERE ua."userId" = $1`,
-          [id],
-        ),
-      ])
+        [id],
+      ),
+    ])
 
     return {
       profile: user,

@@ -59,7 +59,9 @@ export class LeaderboardsService {
       this.statsRepo
         .createQueryBuilder('stats')
         .where(resolvedGameId ? 'stats.gameId = :gameId' : '1=1', { gameId: resolvedGameId })
-        .andWhere(resolvedSeasonId ? 'stats.seasonId = :seasonId' : '1=1', { seasonId: resolvedSeasonId })
+        .andWhere(resolvedSeasonId ? 'stats.seasonId = :seasonId' : '1=1', {
+          seasonId: resolvedSeasonId,
+        })
 
     // Data query: only the columns we actually display (no SELECT *)
     const dataQb = buildBase()
@@ -100,10 +102,10 @@ export class LeaderboardsService {
       }
 
       if (cursorId) {
-        dataQb.andWhere(
-          '(stats.score < :cs OR (stats.score = :cs AND stats.id < :ci))',
-          { cs: cursorScore, ci: cursorId },
-        )
+        dataQb.andWhere('(stats.score < :cs OR (stats.score = :cs AND stats.id < :ci))', {
+          cs: cursorScore,
+          ci: cursorId,
+        })
       }
     } else {
       // Offset-based pagination (backward compatible with existing frontend)
@@ -112,10 +114,7 @@ export class LeaderboardsService {
     }
 
     // Run data query and total count in parallel
-    const [rows, total] = await Promise.all([
-      dataQb.getMany(),
-      buildBase().getCount(),
-    ])
+    const [rows, total] = await Promise.all([dataQb.getMany(), buildBase().getCount()])
 
     const hasMore = rows.length > limit
     const pageRows = hasMore ? rows.slice(0, limit) : rows
@@ -135,7 +134,11 @@ export class LeaderboardsService {
     const nextCursor =
       hasMore && lastRow
         ? Buffer.from(
-            JSON.stringify({ score: lastRow.score, id: lastRow.id, rank: rankOffset + pageRows.length }),
+            JSON.stringify({
+              score: lastRow.score,
+              id: lastRow.id,
+              rank: rankOffset + pageRows.length,
+            }),
           ).toString('base64')
         : null
 

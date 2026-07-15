@@ -69,14 +69,7 @@ export class FriendsService {
             user: this.toPublicFriend(request.sender.id, request.sender.username),
           }
         })
-        .filter((request): request is {
-          id: string
-          status: string
-          createdAt: Date
-          senderId: string
-          recipientId: string
-          user: { id: string; username: string; avatar: null }
-        } => !!request),
+        .filter((request): request is NonNullable<typeof request> => request !== null),
       outgoing: outgoing
         .map((request) => {
           if (!request.recipient?.id || !request.recipient?.username) {
@@ -92,14 +85,7 @@ export class FriendsService {
             user: this.toPublicFriend(request.recipient.id, request.recipient.username),
           }
         })
-        .filter((request): request is {
-          id: string
-          status: string
-          createdAt: Date
-          senderId: string
-          recipientId: string
-          user: { id: string; username: string; avatar: null }
-        } => !!request),
+        .filter((request): request is NonNullable<typeof request> => request !== null),
     }
   }
 
@@ -242,40 +228,6 @@ export class FriendsService {
     return {
       friendId,
       removed: true,
-    }
-  }
-
-  async getFriendshipStatus(userId: string, otherUserId: string) {
-    const relationship = await this.findRelationship(userId, otherUserId)
-
-    if (!relationship) {
-      return {
-        status: 'NONE',
-        requestId: null,
-        direction: null,
-      }
-    }
-
-    if (relationship.status === FriendRequestStatus.ACCEPTED) {
-      return {
-        status: 'FRIEND',
-        requestId: relationship.id,
-        direction: null,
-      }
-    }
-
-    if (relationship.status === FriendRequestStatus.PENDING) {
-      return {
-        status: 'PENDING',
-        requestId: relationship.id,
-        direction: relationship.senderId === userId ? 'OUTGOING' : 'INCOMING',
-      }
-    }
-
-    return {
-      status: 'NONE',
-      requestId: null,
-      direction: null,
     }
   }
 

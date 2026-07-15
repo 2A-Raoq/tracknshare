@@ -44,9 +44,16 @@ export default function TeamChatScreen() {
     if (token) {
       const socket = createAuthenticatedSocket(token)
       socketRef.current = socket
-      socket.emit('team:join', { teamId: id })
+      // (Re)joindre la room à chaque connexion : après une reconnexion auto
+      // (perte réseau, veille), le serveur a oublié les rooms du socket.
+      socket.on('connect', () => {
+        socket.emit('team:join', { teamId: id })
+      })
       socket.on('team:message:new', (msg: ChatMessage) => {
-        if (msg.teamId === id) setMessages((prev) => [...prev, msg])
+        if (msg.teamId !== id) return
+        setMessages((prev) =>
+          prev.some((item) => item.id === msg.id) ? prev : [...prev, msg],
+        )
       })
     }
 

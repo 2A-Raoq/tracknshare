@@ -8,9 +8,6 @@ export const teamsApi = {
   getTeam: async (teamId: string) =>
     (await api.get<ApiEnvelope<TeamDetail>>(`/teams/${teamId}`)).data.data,
 
-  create: async (data: { name: string; tag: string; description?: string }) =>
-    (await api.post<ApiEnvelope<TeamSummary>>('/teams', data)).data.data,
-
   join: async (inviteCode: string) =>
     (await api.post<ApiEnvelope<unknown>>('/teams/join', { inviteCode })).data
       .data,

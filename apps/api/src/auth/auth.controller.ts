@@ -1,17 +1,7 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
 import { AuthService } from './auth.service'
-import { JwtAuthGuard } from './jwt-auth.guard'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 
@@ -35,12 +25,5 @@ export class AuthController {
   async login(@Body() dto: LoginDto) {
     const data = await this.authService.login(dto.email, dto.password)
     return { success: true, data }
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @Get('me')
-  me(@Req() req: any) {
-    return { success: true, data: req.user }
   }
 }

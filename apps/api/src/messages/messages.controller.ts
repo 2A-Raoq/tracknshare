@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-  Param,
-} from '@nestjs/common'
+import { Body, Controller, Get, Patch, Post, Req, UseGuards, Param } from '@nestjs/common'
 import {
   ApiBearerAuth,
   ApiBody,
@@ -18,6 +9,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import type { AuthenticatedRequest } from '../common/types/authenticated-request'
 import { MessagesService } from './messages.service'
 import { CreateConversationDto } from './dto/create-conversation.dto'
 import { SendPrivateMessageDto } from './dto/send-private-message.dto'
@@ -33,7 +25,7 @@ export class MessagesController {
   @Get('conversations')
   @ApiOperation({ summary: 'List my private conversations' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async getConversations(@Req() req: any) {
+  async getConversations(@Req() req: AuthenticatedRequest) {
     const conversations = await this.messagesService.listConversations(req.user.userId)
     return { success: true, data: conversations }
   }
@@ -43,7 +35,7 @@ export class MessagesController {
   @ApiBody({ type: CreateConversationDto })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
   @ApiNotFoundResponse({ description: 'Recipient not found' })
-  async createConversation(@Req() req: any, @Body() dto: CreateConversationDto) {
+  async createConversation(@Req() req: AuthenticatedRequest, @Body() dto: CreateConversationDto) {
     const conversation = await this.messagesService.createDirectConversation(
       req.user.userId,
       dto.recipientId,
@@ -58,7 +50,7 @@ export class MessagesController {
   @ApiForbiddenResponse({ description: 'User is not a participant' })
   @ApiNotFoundResponse({ description: 'Conversation not found' })
   async getConversationMessages(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('conversationId') conversationId: string,
   ) {
     const data = await this.messagesService.getConversationMessages(conversationId, req.user.userId)
@@ -73,7 +65,7 @@ export class MessagesController {
   @ApiForbiddenResponse({ description: 'User is not a participant' })
   @ApiNotFoundResponse({ description: 'Conversation not found' })
   async sendMessage(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('conversationId') conversationId: string,
     @Body() dto: SendPrivateMessageDto,
   ) {
@@ -92,7 +84,7 @@ export class MessagesController {
   @ApiForbiddenResponse({ description: 'User is not a participant' })
   @ApiNotFoundResponse({ description: 'Conversation not found' })
   async markConversationAsRead(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('conversationId') conversationId: string,
   ) {
     const result = await this.messagesService.markConversationAsRead(

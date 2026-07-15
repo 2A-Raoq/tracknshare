@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { AxiosError } from 'axios'
 import GameProviderBadge from './GameProviderBadge'
 import SteamGameSelectionModal from './SteamGameSelectionModal'
 import SteamLinkModal from './SteamLinkModal'
@@ -16,6 +17,18 @@ import type { PlayerStatsData } from '../types/stats'
 type SteamConnectionCardProps = {
   title?: string
   description?: string
+}
+
+type SteamApiErrorPayload = {
+  message?: string
+  error?: {
+    message?: string
+  }
+}
+
+function extractApiMessage(err: unknown): string | undefined {
+  const apiError = err as AxiosError<SteamApiErrorPayload>
+  return apiError.response?.data?.message ?? apiError.response?.data?.error?.message
 }
 
 export default function SteamConnectionCard({
@@ -46,11 +59,8 @@ export default function SteamConnectionCard({
           setSteamIdInput(steamAccount.externalId)
         }
       })
-      .catch((error: any) => {
-        const message = error?.response?.data?.message
-          ?? error?.response?.data?.error?.message
-          ?? 'Impossible de charger votre liaison Steam.'
-        setSteamError(message)
+      .catch((error: unknown) => {
+        setSteamError(extractApiMessage(error) ?? 'Impossible de charger votre liaison Steam.')
       })
       .finally(() => setSteamLoading(false))
   }, [])
@@ -72,11 +82,8 @@ export default function SteamConnectionCard({
       setSteamGames([])
       setSelectedAppIds([])
       setSteamModalOpen(false)
-    } catch (error: any) {
-      const message = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
-        ?? 'Impossible de lier ce compte Steam.'
-      setSteamError(message)
+    } catch (error) {
+      setSteamError(extractApiMessage(error) ?? 'Impossible de lier ce compte Steam.')
     } finally {
       setLinkingSteam(false)
     }
@@ -93,11 +100,8 @@ export default function SteamConnectionCard({
       const accounts = await getMyGameAccounts()
       setSteamAccounts(accounts)
       setSteamSuccess(`Synchronisation Steam terminée pour ${updated.length} jeu(x).`)
-    } catch (error: any) {
-      const message = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
-        ?? 'Impossible de synchroniser Steam.'
-      setSteamError(message)
+    } catch (error) {
+      setSteamError(extractApiMessage(error) ?? 'Impossible de synchroniser Steam.')
     } finally {
       setSyncingSteam(false)
     }
@@ -115,9 +119,8 @@ export default function SteamConnectionCard({
       if (games.length === 0) {
         setSteamSuccess('Aucun jeu Steam jouable détecté.')
       }
-    } catch (error: any) {
-      const apiMessage = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
+    } catch (error) {
+      const apiMessage = extractApiMessage(error)
       if (apiMessage === 'STEAM_NO_GAMES_FOUND') {
         setSteamGames([])
         setSelectedAppIds([])
@@ -125,10 +128,7 @@ export default function SteamConnectionCard({
         setGamesLoading(false)
         return
       }
-      const message = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
-        ?? 'Impossible de charger les jeux Steam.'
-      setSteamError(message)
+      setSteamError(apiMessage ?? 'Impossible de charger les jeux Steam.')
     } finally {
       setGamesLoading(false)
     }
@@ -156,11 +156,8 @@ export default function SteamConnectionCard({
       setSelectedAppIds(updatedGames.filter((game) => game.isTracked).map((game) => game.appId))
       setSteamSuccess('Sélection Steam enregistrée.')
       setGamesModalOpen(false)
-    } catch (error: any) {
-      const message = error?.response?.data?.message
-        ?? error?.response?.data?.error?.message
-        ?? 'Impossible d’enregistrer la sélection Steam.'
-      setSteamError(message)
+    } catch (error) {
+      setSteamError(extractApiMessage(error) ?? 'Impossible d’enregistrer la sélection Steam.')
     } finally {
       setGamesSaving(false)
     }

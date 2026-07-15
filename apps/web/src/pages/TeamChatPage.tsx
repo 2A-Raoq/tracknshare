@@ -4,7 +4,7 @@ import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
 import { authStore } from '../store/auth.store'
 import { teamsApi } from '../services/teams.api'
-import { createTeamSocket } from '../lib/socket'
+import { createAuthenticatedSocket } from '../lib/socket'
 import type { ChatMessage, TeamDetail } from '../types/teams'
 import AppNavigation from '../components/AppNavigation'
 import MessagesSidebar from '../components/MessagesSidebar'
@@ -30,8 +30,6 @@ export default function TeamChatPage() {
 
   useEffect(() => {
     if (!teamId) {
-      setError("Identifiant d'équipe manquant.")
-      setLoading(false)
       return
     }
 
@@ -49,7 +47,7 @@ export default function TeamChatPage() {
       return
     }
 
-    const socket = createTeamSocket(effectiveToken)
+    const socket = createAuthenticatedSocket(effectiveToken)
     socketRef.current = socket
 
     socket.on('connect', () => {
@@ -67,6 +65,12 @@ export default function TeamChatPage() {
       setSendError('')
     })
 
+    socket.on('error', (payload: { code?: string }) => {
+      if (payload?.code === 'TEAM_MEMBER_REQUIRED') {
+        setSendError("Accès refusé à ce chat d'équipe.")
+      }
+    })
+
     socket.on('disconnect', () => {
       setSocketReady(false)
     })
@@ -80,6 +84,9 @@ export default function TeamChatPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const pageError = teamId ? error : "Identifiant d'équipe manquant."
+  const isLoading = Boolean(teamId) && loading
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -137,10 +144,11 @@ export default function TeamChatPage() {
             </span>
           </div>
 
-          <div className="dc-chat__feed">
-            {loading && <p className="dc-chat__status">Chargement...</p>}
-            {error && <p className="dc-chat__status dc-chat__status--error">{error}</p>}
-            {!loading && !error && messages.length === 0 && (
+          {/* tabIndex : zone scrollable utilisable au clavier (RGAA 12.x). */}
+          <div className="dc-chat__feed" role="log" aria-label="Messages de l'équipe" tabIndex={0}>
+            {isLoading && <p className="dc-chat__status">Chargement...</p>}
+            {pageError && <p className="dc-chat__status dc-chat__status--error">{pageError}</p>}
+            {!isLoading && !pageError && messages.length === 0 && (
               <p className="dc-chat__status">Aucun message. Soyez le premier à écrire.</p>
             )}
             {messages.map((message) => {

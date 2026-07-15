@@ -110,11 +110,4 @@ export const friendsApi = {
     const res = await api.delete<{ success: boolean; data: unknown }>(`/friends/${friendId}`)
     return res.data.data
   },
-
-  getRequests: async (): Promise<FriendRequestsData> => friendsApi.getFriendRequests(),
-  createRequest: async (recipientId: string): Promise<FriendRequestItem> =>
-    friendsApi.createFriendRequest(recipientId),
-  acceptRequest: async (requestId: string) => friendsApi.acceptFriendRequest(requestId),
-  refuseRequest: async (requestId: string) => friendsApi.refuseFriendRequest(requestId),
-  cancelRequest: async (requestId: string) => friendsApi.cancelFriendRequest(requestId),
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 import { Link, useRouter } from 'expo-router'
 import {
   Button,
@@ -13,9 +13,7 @@ import {
 import { authApi } from '@/services/auth.api'
 import { setSession } from '@/store/auth'
 import { colors, spacing } from '@/theme'
-import { API_URL } from '@/config'
-import { Text } from 'react-native'
-import axios from 'axios'
+import { isAxiosError } from 'axios'
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -32,16 +30,12 @@ export default function LoginScreen() {
       await setSession(res.user, res.accessToken)
       router.replace('/(tabs)/dashboard')
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          // Le serveur a répondu (donc joignable) : vraie erreur d'identifiants.
-          setError(`Identifiants incorrects (HTTP ${err.response.status}).`)
-        } else {
-          // Aucune réponse : le téléphone n'a pas joint l'API.
-          setError(`Serveur injoignable → ${API_URL}\n(${err.message})`)
-        }
+      if (isAxiosError(err) && err.response) {
+        // Le serveur a répondu (donc joignable) : vraie erreur d'identifiants.
+        setError('Email ou mot de passe incorrect.')
       } else {
-        setError('Erreur inconnue.')
+        // Aucune réponse : le téléphone n'a pas joint l'API.
+        setError('Connexion impossible. Vérifie ta connexion et réessaie.')
       }
     } finally {
       setLoading(false)
@@ -53,7 +47,6 @@ export default function LoginScreen() {
       <View style={{ gap: spacing.xs, marginTop: spacing.xl }}>
         <Title>Track&apos;N Share</Title>
         <Muted>Connecte-toi pour suivre tes performances.</Muted>
-        <Muted>API : {API_URL}</Muted>
       </View>
 
       <Card>

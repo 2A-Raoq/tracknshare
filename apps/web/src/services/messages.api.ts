@@ -62,19 +62,6 @@ function ensureConversationArray(payload: unknown): ConversationSummary[] {
   })
 }
 
-function ensureSearchArray(payload: unknown): ConversationPeer[] {
-  if (!Array.isArray(payload)) {
-    throw new Error('Invalid user search response: expected an array.')
-  }
-
-  return payload.map((item) => {
-    if (!isConversationPeer(item)) {
-      throw new Error('Invalid user search response: malformed user item.')
-    }
-    return item
-  })
-}
-
 function ensureConversationDetail(payload: unknown): ConversationDetail {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Invalid conversation detail response.')
@@ -155,12 +142,5 @@ export const messagesApi = {
       `/messages/conversations/${conversationId}/read`,
     )
     return res.data.data
-  },
-
-  searchUsers: async (query: string): Promise<ConversationPeer[]> => {
-    const res = await api.get<{ success: boolean; data: ConversationPeer[] }>('/users/search', {
-      params: { q: query },
-    })
-    return ensureSearchArray(res.data?.data)
   },
 }

@@ -42,9 +42,7 @@ describe('TeamsService.leave', () => {
 
   it('rejette si l’utilisateur n’est pas membre', async () => {
     memberRepo.findOne.mockResolvedValue(null)
-    await expect(service.leave('team-1', 'user-x')).rejects.toThrow(
-      NotFoundException,
-    )
+    await expect(service.leave('team-1', 'user-x')).rejects.toThrow(NotFoundException)
   })
 
   it('retire simplement un membre non-propriétaire', async () => {
@@ -82,9 +80,7 @@ describe('TeamsService.leave', () => {
   it('dissout l’équipe si le propriétaire est le dernier membre', async () => {
     memberRepo.findOne.mockResolvedValue({ teamId: 'team-1', userId: 'user-1' })
     teamRepo.findOne.mockResolvedValue({ id: 'team-1', ownerId: 'user-1' })
-    memberRepo.find.mockResolvedValue([
-      { teamId: 'team-1', userId: 'user-1', role: 'CAPTAIN' },
-    ])
+    memberRepo.find.mockResolvedValue([{ teamId: 'team-1', userId: 'user-1', role: 'CAPTAIN' }])
 
     const result = await service.leave('team-1', 'user-1')
 

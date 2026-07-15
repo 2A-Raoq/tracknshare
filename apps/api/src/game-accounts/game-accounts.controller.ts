@@ -7,6 +7,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import type { AuthenticatedRequest } from '../common/types/authenticated-request'
 import { GameAccountsService } from './game-accounts.service'
 import { LinkSteamAccountDto } from './dto/link-steam-account.dto'
 import { UpdateTrackedSteamGamesDto } from './dto/update-tracked-steam-games.dto'
@@ -21,7 +22,7 @@ export class GameAccountsController {
   @Get('me')
   @ApiOperation({ summary: 'List my linked game accounts' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async getMyAccounts(@Req() req: any) {
+  async getMyAccounts(@Req() req: AuthenticatedRequest) {
     const accounts = await this.gameAccountsService.getMyAccounts(req.user.userId)
     return { success: true, data: accounts }
   }
@@ -30,7 +31,7 @@ export class GameAccountsController {
   @ApiOperation({ summary: 'Link a Steam account by SteamID64' })
   @ApiBody({ type: LinkSteamAccountDto })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async linkSteam(@Req() req: any, @Body() dto: LinkSteamAccountDto) {
+  async linkSteam(@Req() req: AuthenticatedRequest, @Body() dto: LinkSteamAccountDto) {
     const account = await this.gameAccountsService.linkSteamAccount(req.user.userId, dto.steamId)
     return { success: true, data: account }
   }
@@ -38,7 +39,7 @@ export class GameAccountsController {
   @Get('steam/games')
   @ApiOperation({ summary: 'List my playable Steam games with tracked status' })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async getSteamGames(@Req() req: any) {
+  async getSteamGames(@Req() req: AuthenticatedRequest) {
     const games = await this.gameAccountsService.getSteamGames(req.user.userId)
     return { success: true, data: games }
   }
@@ -47,7 +48,10 @@ export class GameAccountsController {
   @ApiOperation({ summary: 'Update the list of tracked Steam games' })
   @ApiBody({ type: UpdateTrackedSteamGamesDto })
   @ApiUnauthorizedResponse({ description: 'JWT missing or invalid' })
-  async updateTrackedSteamGames(@Req() req: any, @Body() dto: UpdateTrackedSteamGamesDto) {
+  async updateTrackedSteamGames(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateTrackedSteamGamesDto,
+  ) {
     const games = await this.gameAccountsService.updateTrackedSteamGames(
       req.user.userId,
       dto.appIds,

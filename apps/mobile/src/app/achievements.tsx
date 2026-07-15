@@ -2,25 +2,33 @@ import { useCallback, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { Muted, Screen, Title } from '@/components/ui'
+import { ErrorState, Muted, Screen, Title } from '@/components/ui'
 import { achievementsApi } from '@/services/achievements.api'
 import type { AchievementItem } from '@/types'
 import { colors, radius, spacing } from '@/theme'
 
 export default function AchievementsScreen() {
   const [items, setItems] = useState<AchievementItem[]>([])
+  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
-      setItems(await achievementsApi.mine())
+      const data = await achievementsApi.mine()
+      if (!isActive()) return
+      setItems(data)
+      setError(false)
     } catch {
-      setItems([])
+      if (isActive()) setError(true)
     }
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -32,6 +40,13 @@ export default function AchievementsScreen() {
       <Muted>
         {unlocked}/{items.length} débloqués
       </Muted>
+
+      {error && (
+        <ErrorState
+          message="Impossible de charger tes succès."
+          onRetry={() => load()}
+        />
+      )}
 
       {items.map((a) => (
         <View key={a.id} style={[styles.row, !a.unlocked && { opacity: 0.55 }]}>

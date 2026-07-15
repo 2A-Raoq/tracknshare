@@ -4,7 +4,7 @@ import { useSnapshot } from 'valtio'
 import type { Socket } from 'socket.io-client'
 import { authStore } from '../store/auth.store'
 import { messagesApi } from '../services/messages.api'
-import { createPrivateSocket } from '../lib/socket'
+import { createAuthenticatedSocket } from '../lib/socket'
 import type { ConversationSummary, PrivateMessageItem } from '../types/messages'
 import { searchEmojis } from '../data/emojis'
 import type { EmojiItem } from '../data/emojis'
@@ -39,8 +39,6 @@ export default function ConversationPage() {
 
   useEffect(() => {
     if (!conversationId) {
-      setError('Conversation introuvable.')
-      setLoading(false)
       return
     }
 
@@ -62,7 +60,7 @@ export default function ConversationPage() {
       return
     }
 
-    const socket = createPrivateSocket(effectiveToken)
+    const socket = createAuthenticatedSocket(effectiveToken)
     socketRef.current = socket
 
     socket.on('connect', () => {
@@ -199,6 +197,8 @@ export default function ConversationPage() {
   }
 
   const peer = conversation?.participant?.username ?? null
+  const pageError = conversationId ? error : 'Conversation introuvable.'
+  const isLoading = Boolean(conversationId) && loading
 
   return (
     <div className="page-shell dc-page-shell">
@@ -230,10 +230,11 @@ export default function ConversationPage() {
             </span>
           </div>
 
-          <div className="dc-chat__feed">
-            {loading && <p className="dc-chat__status">Chargement...</p>}
-            {error && <p className="dc-chat__status dc-chat__status--error">{error}</p>}
-            {!loading && !error && messages.length === 0 && (
+          {/* tabIndex : zone scrollable utilisable au clavier (RGAA 12.x). */}
+          <div className="dc-chat__feed" role="log" aria-label="Messages de la conversation" tabIndex={0}>
+            {isLoading && <p className="dc-chat__status">Chargement...</p>}
+            {pageError && <p className="dc-chat__status dc-chat__status--error">{pageError}</p>}
+            {!isLoading && !pageError && messages.length === 0 && (
               <p className="dc-chat__status">Aucun message pour le moment.</p>
             )}
             {messages.map((message) => {

@@ -28,8 +28,6 @@ export default function TeamDetailPage() {
 
   useEffect(() => {
     if (!teamId) {
-      setError("Identifiant d'équipe manquant.")
-      setLoading(false)
       return
     }
 
@@ -40,7 +38,10 @@ export default function TeamDetailPage() {
       .finally(() => setLoading(false))
   }, [teamId])
 
-  if (loading) {
+  const pageError = teamId ? error : "Identifiant d'équipe manquant."
+  const isLoading = Boolean(teamId) && loading
+
+  if (isLoading) {
     return (
       <div className="page-shell">
         <AppNavigation />
@@ -49,11 +50,11 @@ export default function TeamDetailPage() {
     )
   }
 
-  if (error) {
+  if (pageError) {
     return (
       <div className="page-shell">
         <AppNavigation />
-        <div className="status-message error">{error}</div>
+        <div className="status-message error">{pageError}</div>
         <div className="button-row" style={{ marginTop: '16px' }}>
           <button onClick={() => navigate('/teams')} className="ghost-button">
             Retour aux équipes

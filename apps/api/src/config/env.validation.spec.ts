@@ -14,15 +14,13 @@ describe('validateEnv', () => {
   })
 
   it('rejette un JWT_SECRET absent', () => {
-    expect(() => validateEnv({ MESSAGE_ENCRYPTION_KEY: VALID_KEY })).toThrow(
-      /JWT_SECRET/,
-    )
+    expect(() => validateEnv({ MESSAGE_ENCRYPTION_KEY: VALID_KEY })).toThrow(/JWT_SECRET/)
   })
 
   it('rejette un JWT_SECRET trop court', () => {
-    expect(() =>
-      validateEnv({ JWT_SECRET: 'court', MESSAGE_ENCRYPTION_KEY: VALID_KEY }),
-    ).toThrow(/JWT_SECRET/)
+    expect(() => validateEnv({ JWT_SECRET: 'court', MESSAGE_ENCRYPTION_KEY: VALID_KEY })).toThrow(
+      /JWT_SECRET/,
+    )
   })
 
   it('rejette une clé de chiffrement absente', () => {

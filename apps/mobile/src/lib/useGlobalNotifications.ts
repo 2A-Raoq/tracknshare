@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSnapshot } from 'valtio'
 import { createAuthenticatedSocket } from '@/lib/socket'
 import { authStore } from '@/store/auth'
@@ -19,23 +19,42 @@ import type { ChatMessage, PrivateMessageItem } from '@/types'
 export function useGlobalNotifications() {
   const { token, user } = useSnapshot(authStore)
   const userId = user?.id
+  // Rooms connues de l'utilisateur, conservées pour re-join après reconnexion.
+  const roomsRef = useRef<{ conversationIds: string[]; teamIds: string[] }>({
+    conversationIds: [],
+    teamIds: [],
+  })
 
   useEffect(() => {
     if (!token || !userId) return
     let cancelled = false
     const socket = createAuthenticatedSocket(token)
 
-    // Rejoindre toutes les rooms de l'utilisateur pour recevoir ses messages.
+    function joinRooms() {
+      roomsRef.current.conversationIds.forEach((conversationId) =>
+        socket.emit('conversation:join', { conversationId }),
+      )
+      roomsRef.current.teamIds.forEach((teamId) =>
+        socket.emit('team:join', { teamId }),
+      )
+    }
+
+    // (Re)joindre toutes les rooms à chaque connexion : après une reconnexion
+    // auto (perte réseau, veille), le serveur a oublié les rooms du socket.
+    socket.on('connect', joinRooms)
+
+    // Charger la liste des rooms de l'utilisateur puis les rejoindre.
     void (async () => {
       const [convos, teams] = await Promise.all([
         messagesApi.getConversations().catch(() => []),
         teamsApi.mine().catch(() => []),
       ])
       if (cancelled) return
-      convos.forEach((c) =>
-        socket.emit('conversation:join', { conversationId: c.id }),
-      )
-      teams.forEach((t) => socket.emit('team:join', { teamId: t.id }))
+      roomsRef.current = {
+        conversationIds: convos.map((c) => c.id),
+        teamIds: teams.map((t) => t.id),
+      }
+      if (socket.connected) joinRooms()
     })()
 
     socket.on('private:message:new', (msg: PrivateMessageItem) => {

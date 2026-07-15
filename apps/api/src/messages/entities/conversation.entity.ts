@@ -19,7 +19,7 @@ export class Conversation {
   id: string
 
   @Column({ default: ConversationType.DIRECT })
-  type: string
+  type: ConversationType
 
   @OneToMany(() => ConversationParticipant, (participant) => participant.conversation)
   participants: ConversationParticipant[]

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router'
-import { Card, Muted, Screen, Title } from '@/components/ui'
+import { Card, ErrorState, Muted, Screen, Title } from '@/components/ui'
 import { playersApi } from '@/services/players.api'
 import type { PublicPlayerProfile } from '@/types'
 import { colors, radius, spacing } from '@/theme'
@@ -10,25 +10,51 @@ export default function PublicProfileScreen() {
   const { username } = useLocalSearchParams<{ username: string }>()
   const [profile, setProfile] = useState<PublicPlayerProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
-    if (!username) return
-    try {
-      setProfile(await playersApi.getProfile(username))
-    } catch {
-      setProfile(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [username])
+  const load = useCallback(
+    async (isActive: () => boolean = () => true) => {
+      if (!username) return
+      try {
+        const data = await playersApi.getProfile(username)
+        if (!isActive()) return
+        setProfile(data)
+        setError(false)
+      } catch {
+        if (isActive()) {
+          setProfile(null)
+          setError(true)
+        }
+      } finally {
+        if (isActive()) setLoading(false)
+      }
+    },
+    [username],
+  )
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
   if (loading) return <Screen><Muted>Chargement…</Muted></Screen>
+  if (error)
+    return (
+      <Screen>
+        <ErrorState
+          message="Impossible de charger ce profil (introuvable ou erreur réseau)."
+          onRetry={() => {
+            setLoading(true)
+            load()
+          }}
+        />
+      </Screen>
+    )
   if (!profile) return <Screen><Muted>Profil introuvable.</Muted></Screen>
 
   return (

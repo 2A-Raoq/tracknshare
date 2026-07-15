@@ -4,6 +4,7 @@ import { ThrottlerGuard } from '@nestjs/throttler'
 import request from 'supertest'
 import { App } from 'supertest/types'
 import { AppModule } from './../src/app.module'
+import { AllExceptionsFilter } from './../src/common/filters/all-exceptions.filter'
 
 /**
  * Tests end-to-end du parcours critique (preuves RNCP BC03-7 / BC01-5).
@@ -19,6 +20,15 @@ import { AppModule } from './../src/app.module'
  * facultatif (dégradation gracieuse du cache). Le ThrottlerGuard est neutralisé
  * ici : on teste le métier, pas la limitation de débit (couverte ailleurs).
  */
+/** Corps de réponse des endpoints d'authentification (register/login). */
+interface AuthResponseBody {
+  success: boolean
+  data: {
+    accessToken: string
+    user: { email: string }
+  }
+}
+
 describe('Parcours critique (e2e)', () => {
   let app: INestApplication<App>
   let http: App
@@ -50,6 +60,7 @@ describe('Parcours critique (e2e)', () => {
     // Réplique la configuration de production (main.ts) utile aux tests.
     app.setGlobalPrefix('api')
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
+    app.useGlobalFilters(new AllExceptionsFilter())
     await app.init()
     http = app.getHttpServer()
   }, 30000)
@@ -68,22 +79,23 @@ describe('Parcours critique (e2e)', () => {
 
     it('inscrit, connecte et accède à une route protégée', async () => {
       const res = await register('auth').expect(201)
-      expect(res.body.success).toBe(true)
-      expect(res.body.data.accessToken).toEqual(expect.any(String))
-      const email = res.body.data.user.email
+      const body = res.body as AuthResponseBody
+      expect(body.success).toBe(true)
+      expect(body.data.accessToken).toEqual(expect.any(String))
+      const email = body.data.user.email
 
       const login = await request(http)
         .post('/api/auth/login')
         .send({ email, password: pwd })
         .expect(200)
-      const token = login.body.data.accessToken
+      const token = (login.body as AuthResponseBody).data.accessToken
       expect(token).toEqual(expect.any(String))
 
       const me = await request(http)
-        .get('/api/auth/me')
+        .get('/api/users/me')
         .set('Authorization', `Bearer ${token}`)
         .expect(200)
-      expect(me.body.data).toBeDefined()
+      expect((me.body as { data?: unknown }).data).toBeDefined()
     })
 
     it('refuse une connexion aux identifiants invalides (401)', async () => {
@@ -94,24 +106,24 @@ describe('Parcours critique (e2e)', () => {
     })
   })
 
-  describe('Sécurité — accès au chat d\'équipe', () => {
+  describe("Sécurité — accès au chat d'équipe", () => {
     let teamId: string
     let outsiderToken: string
 
     beforeAll(async () => {
       // Membre : crée une équipe.
       const owner = await register('owner')
-      const ownerToken = owner.body.data.accessToken
+      const ownerToken = (owner.body as AuthResponseBody).data.accessToken
       const team = await request(http)
         .post('/api/teams')
         .set('Authorization', `Bearer ${ownerToken}`)
         .send({ name: `Squad ${run}`.slice(0, 30), tag: 'E2E' })
         .expect(201)
-      teamId = team.body.data.id
+      teamId = (team.body as { data: { id: string } }).data.id
 
       // Étranger : utilisateur authentifié mais NON membre.
       const outsider = await register('outsider')
-      outsiderToken = outsider.body.data.accessToken
+      outsiderToken = (outsider.body as AuthResponseBody).data.accessToken
     }, 30000)
 
     it('interdit à un non-membre de lire les messages (403)', async () => {
@@ -121,7 +133,7 @@ describe('Parcours critique (e2e)', () => {
         .expect(403)
     })
 
-    it('interdit à un non-membre d\'envoyer un message (403)', async () => {
+    it("interdit à un non-membre d'envoyer un message (403)", async () => {
       await request(http)
         .post(`/api/teams/${teamId}/messages`)
         .set('Authorization', `Bearer ${outsiderToken}`)
@@ -129,7 +141,7 @@ describe('Parcours critique (e2e)', () => {
         .expect(403)
     })
 
-    it('interdit à un non-membre de voir le détail de l\'équipe (403)', async () => {
+    it("interdit à un non-membre de voir le détail de l'équipe (403)", async () => {
       await request(http)
         .get(`/api/teams/${teamId}`)
         .set('Authorization', `Bearer ${outsiderToken}`)
@@ -141,10 +153,10 @@ describe('Parcours critique (e2e)', () => {
     })
   })
 
-  describe('RGPD — droit à l\'oubli', () => {
+  describe("RGPD — droit à l'oubli", () => {
     it('supprime le compte puis rend la reconnexion impossible (401)', async () => {
       const res = await register('rgpd').expect(201)
-      const { accessToken, user } = res.body.data
+      const { accessToken, user } = (res.body as AuthResponseBody).data
 
       // Le compte fonctionne avant suppression.
       await request(http)

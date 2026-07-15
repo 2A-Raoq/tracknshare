@@ -1,22 +1,51 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'wouter'
+import { z } from 'zod'
 import { api } from '../services/api'
 import { authStore } from '../store/auth.store'
 import AppNavigation from '../components/AppNavigation'
+
+// Aligné sur LoginDto côté back (email valide, mot de passe requis).
+const loginSchema = z.object({
+  email: z.email('Adresse email invalide.'),
+  password: z.string().min(1, 'Le mot de passe est requis.'),
+})
+
+type LoginFieldErrors = Partial<Record<'email' | 'password', string>>
+
+function toFieldErrors(error: z.ZodError): LoginFieldErrors {
+  const errors: LoginFieldErrors = {}
+  for (const issue of error.issues) {
+    const field = issue.path[0]
+    if ((field === 'email' || field === 'password') && !errors[field]) {
+      errors[field] = issue.message
+    }
+  }
+  return errors
+}
 
 export default function LoginPage() {
   const [, navigate] = useLocation()
   const [email, setEmail] = useState('demo@tracknshare.local')
   const [password, setPassword] = useState('Demo1234!')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({})
   const [loading, setLoading] = useState(false)
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
+
+    const result = loginSchema.safeParse({ email, password })
+    if (!result.success) {
+      setFieldErrors(toFieldErrors(result.error))
+      return
+    }
+
     setLoading(true)
     try {
-      const res = await api.post('/auth/login', { email, password })
+      const res = await api.post('/auth/login', result.data)
       const { user, accessToken } = res.data.data
       authStore.user = user
       authStore.token = accessToken
@@ -66,6 +95,9 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              {fieldErrors.email && (
+                <p className="status-message error">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="field">
@@ -78,6 +110,9 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {fieldErrors.password && (
+                <p className="status-message error">{fieldErrors.password}</p>
+              )}
             </div>
 
             {error && <p className="status-message error">{error}</p>}

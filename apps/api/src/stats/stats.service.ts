@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { PlayerStats } from './entities/player-stats.entity'
@@ -12,6 +9,8 @@ import { calculateKdRatio, calculateWinrate, calculateScore } from './utils/scor
 import { SteamStatsProvider } from '../providers/steam/steam-stats.provider'
 import { GameAccountsService } from '../game-accounts/game-accounts.service'
 import { SteamTrackedGame } from '../game-accounts/entities/steam-tracked-game.entity'
+import { RedisService } from '../redis/redis.service'
+import { isUniqueViolation } from '../common/database/is-unique-violation'
 
 @Injectable()
 export class StatsService {
@@ -22,6 +21,7 @@ export class StatsService {
     private readonly mockProvider: MockStatsProvider,
     private readonly steamStatsProvider: SteamStatsProvider,
     private readonly gameAccountsService: GameAccountsService,
+    private readonly redis: RedisService,
   ) {}
 
   async getMyStats(userId: string): Promise<PlayerStats[]> {
@@ -57,7 +57,8 @@ export class StatsService {
 
   async syncSteamStats(userId: string): Promise<PlayerStats[]> {
     const season = await this.getActiveSeason()
-    const { account, trackedGames } = await this.gameAccountsService.getTrackedSteamGamesOrThrow(userId)
+    const { account, trackedGames } =
+      await this.gameAccountsService.getTrackedSteamGamesOrThrow(userId)
     const syncedItems: PlayerStats[] = []
 
     for (const trackedGame of trackedGames) {
@@ -135,12 +136,34 @@ export class StatsService {
     stats.provider = input.provider
     stats.fetchedAt = new Date()
 
-    await this.statsRepo.save(stats)
+    try {
+      await this.statsRepo.save(stats)
+    } catch (error) {
+      // Race entre le findOne et le save : contrainte unique (userId, gameId, seasonId).
+      if (isUniqueViolation(error)) throw new ConflictException('STATS_SYNC_CONFLICT')
+      throw error
+    }
+
+    // Les stats ont changé : invalide les caches leaderboard (Redis service +
+    // cache HTTP) pour que le classement reflète la synchro immédiatement.
+    await this.invalidateLeaderboardCache(input.game.id, input.season.id)
 
     return this.statsRepo.findOne({
       where: { id: stats.id },
       relations: ['game', 'season'],
     }) as Promise<PlayerStats>
+  }
+
+  /**
+   * Invalide les entrées de cache leaderboard :
+   * - clés `lb:<gameId>:<seasonId>:...` posées par LeaderboardsService ;
+   * - clés `http:<url>` posées par HttpCacheInterceptor sur GET /leaderboards/solo.
+   */
+  private async invalidateLeaderboardCache(gameId: string, seasonId: string) {
+    await Promise.all([
+      this.redis.delByPattern(`lb:${gameId}:${seasonId}:*`),
+      this.redis.delByPattern('http:*leaderboards*'),
+    ])
   }
 
   private async getActiveSeason() {

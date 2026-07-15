@@ -9,10 +9,7 @@ import { MockStatsProvider } from '../providers/mock/mock-stats.provider'
 import { GameAccountsModule } from '../game-accounts/game-accounts.module'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([PlayerStats, Game, Season]),
-    GameAccountsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([PlayerStats, Game, Season]), GameAccountsModule],
   providers: [StatsService, MockStatsProvider],
   controllers: [StatsController],
   exports: [StatsService],

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Alert, StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
-import { Button, Card, Muted, Screen, Title } from '@/components/ui'
+import { Button, Card, ErrorState, Muted, Screen, Title } from '@/components/ui'
 import { teamsApi } from '@/services/teams.api'
 import type { TeamDetail } from '@/types'
 import { colors, radius, spacing } from '@/theme'
@@ -11,21 +11,35 @@ export default function TeamDetailScreen() {
   const router = useRouter()
   const [team, setTeam] = useState<TeamDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
-    if (!id) return
-    try {
-      setTeam(await teamsApi.getTeam(id))
-    } catch {
-      setTeam(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
+  const load = useCallback(
+    async (isActive: () => boolean = () => true) => {
+      if (!id) return
+      try {
+        const data = await teamsApi.getTeam(id)
+        if (!isActive()) return
+        setTeam(data)
+        setError(false)
+      } catch {
+        if (isActive()) {
+          setTeam(null)
+          setError(true)
+        }
+      } finally {
+        if (isActive()) setLoading(false)
+      }
+    },
+    [id],
+  )
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -49,6 +63,18 @@ export default function TeamDetailScreen() {
   }
 
   if (loading) return <Screen><Muted>Chargement…</Muted></Screen>
+  if (error)
+    return (
+      <Screen>
+        <ErrorState
+          message="Impossible de charger l'équipe (introuvable, accès refusé ou erreur réseau)."
+          onRetry={() => {
+            setLoading(true)
+            load()
+          }}
+        />
+      </Screen>
+    )
   if (!team) return <Screen><Muted>Équipe introuvable ou accès refusé.</Muted></Screen>
 
   return (

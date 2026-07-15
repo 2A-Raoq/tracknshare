@@ -5,9 +5,7 @@
  * est absente ou invalide, l'application refuse de démarrer (fail-fast) plutôt
  * que de tourner dans un état non sécurisé (ex. JWT_SECRET vide).
  */
-export function validateEnv(
-  config: Record<string, unknown>,
-): Record<string, unknown> {
+export function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
   const errors: string[] = []
 
   const jwtSecret = config.JWT_SECRET
@@ -33,9 +31,7 @@ export function validateEnv(
   }
 
   if (errors.length > 0) {
-    throw new Error(
-      `Configuration d'environnement invalide :\n- ${errors.join('\n- ')}`,
-    )
+    throw new Error(`Configuration d'environnement invalide :\n- ${errors.join('\n- ')}`)
   }
 
   return config

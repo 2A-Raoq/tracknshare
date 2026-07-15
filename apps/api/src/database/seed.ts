@@ -71,52 +71,236 @@ const seedGames = [
   { name: 'CS Mock', slug: 'cs-mock', platform: 'PC', isTeamBased: true },
 ]
 
-const playerStatsData: Record<string, { kills: number; deaths: number; wins: number; losses: number; matchesPlayed: number; playtimeMinutes: number }> = {
-  AceKiller:    { kills: 3200, deaths: 980,  wins: 72, losses: 18, matchesPlayed: 90,  playtimeMinutes: 3800 },
-  TitanFrag:    { kills: 2900, deaths: 1100, wins: 65, losses: 25, matchesPlayed: 90,  playtimeMinutes: 3500 },
-  GhostOp:      { kills: 2750, deaths: 950,  wins: 60, losses: 20, matchesPlayed: 80,  playtimeMinutes: 3200 },
-  DemoPlayer:   { kills: 2600, deaths: 1050, wins: 55, losses: 25, matchesPlayed: 80,  playtimeMinutes: 3000 },
-  ClutchMaster: { kills: 2400, deaths: 1200, wins: 50, losses: 30, matchesPlayed: 80,  playtimeMinutes: 2900 },
-  ProGamer:     { kills: 2200, deaths: 1000, wins: 48, losses: 32, matchesPlayed: 80,  playtimeMinutes: 2800 },
-  SniperX:      { kills: 2000, deaths: 900,  wins: 45, losses: 35, matchesPlayed: 80,  playtimeMinutes: 2600 },
-  BlazeRunner:  { kills: 1800, deaths: 1100, wins: 40, losses: 40, matchesPlayed: 80,  playtimeMinutes: 2400 },
-  NexusOne:     { kills: 1600, deaths: 1200, wins: 35, losses: 45, matchesPlayed: 80,  playtimeMinutes: 2200 },
-  VoidWalker:   { kills: 1400, deaths: 1300, wins: 30, losses: 50, matchesPlayed: 80,  playtimeMinutes: 2000 },
-  RushB:        { kills: 1200, deaths: 1400, wins: 25, losses: 55, matchesPlayed: 80,  playtimeMinutes: 1800 },
-  NewPlayer:    { kills: 600,  deaths: 1800, wins: 10, losses: 60, matchesPlayed: 70,  playtimeMinutes: 1200 },
-  FriendTester: { kills: 1750, deaths: 1120, wins: 39, losses: 36, matchesPlayed: 75,  playtimeMinutes: 2300 },
-  SearchTester: { kills: 1680, deaths: 1080, wins: 37, losses: 34, matchesPlayed: 71,  playtimeMinutes: 2180 },
+const playerStatsData: Record<
+  string,
+  {
+    kills: number
+    deaths: number
+    wins: number
+    losses: number
+    matchesPlayed: number
+    playtimeMinutes: number
+  }
+> = {
+  AceKiller: {
+    kills: 3200,
+    deaths: 980,
+    wins: 72,
+    losses: 18,
+    matchesPlayed: 90,
+    playtimeMinutes: 3800,
+  },
+  TitanFrag: {
+    kills: 2900,
+    deaths: 1100,
+    wins: 65,
+    losses: 25,
+    matchesPlayed: 90,
+    playtimeMinutes: 3500,
+  },
+  GhostOp: {
+    kills: 2750,
+    deaths: 950,
+    wins: 60,
+    losses: 20,
+    matchesPlayed: 80,
+    playtimeMinutes: 3200,
+  },
+  DemoPlayer: {
+    kills: 2600,
+    deaths: 1050,
+    wins: 55,
+    losses: 25,
+    matchesPlayed: 80,
+    playtimeMinutes: 3000,
+  },
+  ClutchMaster: {
+    kills: 2400,
+    deaths: 1200,
+    wins: 50,
+    losses: 30,
+    matchesPlayed: 80,
+    playtimeMinutes: 2900,
+  },
+  ProGamer: {
+    kills: 2200,
+    deaths: 1000,
+    wins: 48,
+    losses: 32,
+    matchesPlayed: 80,
+    playtimeMinutes: 2800,
+  },
+  SniperX: {
+    kills: 2000,
+    deaths: 900,
+    wins: 45,
+    losses: 35,
+    matchesPlayed: 80,
+    playtimeMinutes: 2600,
+  },
+  BlazeRunner: {
+    kills: 1800,
+    deaths: 1100,
+    wins: 40,
+    losses: 40,
+    matchesPlayed: 80,
+    playtimeMinutes: 2400,
+  },
+  NexusOne: {
+    kills: 1600,
+    deaths: 1200,
+    wins: 35,
+    losses: 45,
+    matchesPlayed: 80,
+    playtimeMinutes: 2200,
+  },
+  VoidWalker: {
+    kills: 1400,
+    deaths: 1300,
+    wins: 30,
+    losses: 50,
+    matchesPlayed: 80,
+    playtimeMinutes: 2000,
+  },
+  RushB: {
+    kills: 1200,
+    deaths: 1400,
+    wins: 25,
+    losses: 55,
+    matchesPlayed: 80,
+    playtimeMinutes: 1800,
+  },
+  NewPlayer: {
+    kills: 600,
+    deaths: 1800,
+    wins: 10,
+    losses: 60,
+    matchesPlayed: 70,
+    playtimeMinutes: 1200,
+  },
+  FriendTester: {
+    kills: 1750,
+    deaths: 1120,
+    wins: 39,
+    losses: 36,
+    matchesPlayed: 75,
+    playtimeMinutes: 2300,
+  },
+  SearchTester: {
+    kills: 1680,
+    deaths: 1080,
+    wins: 37,
+    losses: 34,
+    matchesPlayed: 71,
+    playtimeMinutes: 2180,
+  },
 }
 
 const DEMO_INVITE_CODE = 'DEMO0001'
 
 const demoMessages = [
-  { username: 'AceKiller',    content: "Salut l'équipe ! Prêts pour le match ce soir ?" },
-  { username: 'TitanFrag',    content: 'Toujours partant. On se retrouve à 20h ?' },
-  { username: 'DemoPlayer',   content: "Je serai là ! J'ai affiné ma config hier." },
-  { username: 'GhostOp',      content: 'Bonne chance à tous. On va les démonter.' },
-  { username: 'AceKiller',    content: "Let's go ! Track Masters en force" },
-  { username: 'DemoPlayer',   content: "Mon K/D remonte bien cette saison, content de vous avoir dans l'équipe." },
+  { username: 'AceKiller', content: "Salut l'équipe ! Prêts pour le match ce soir ?" },
+  { username: 'TitanFrag', content: 'Toujours partant. On se retrouve à 20h ?' },
+  { username: 'DemoPlayer', content: "Je serai là ! J'ai affiné ma config hier." },
+  { username: 'GhostOp', content: 'Bonne chance à tous. On va les démonter.' },
+  { username: 'AceKiller', content: "Let's go ! Track Masters en force" },
+  {
+    username: 'DemoPlayer',
+    content: "Mon K/D remonte bien cette saison, content de vous avoir dans l'équipe.",
+  },
 ]
 
 const demoDirectMessages = [
-  { username: 'DemoPlayer', content: 'Salut ClutchMaster, tu peux relire la strat avant ce soir ?' },
+  {
+    username: 'DemoPlayer',
+    content: 'Salut ClutchMaster, tu peux relire la strat avant ce soir ?',
+  },
   { username: 'ClutchMaster', content: 'Oui, je check le scoreboard et je te fais un retour.' },
   { username: 'DemoPlayer', content: 'Parfait. Je passe par la conversation privée pour la démo.' },
 ]
 
 const seedAchievements = [
-  { code: 'FIRST_LOGIN',        name: 'First Login',    description: 'Connecte-toi pour la première fois.',             icon: 'LOGIN',  iconKey: 'login',   points: 10, targetValue: 1,  category: 'ACCOUNT'     },
-  { code: 'FIRST_STATS_SYNC',   name: 'Stat Tracker',   description: 'Synchronise tes statistiques une première fois.', icon: 'SYNC',   iconKey: 'stats',   points: 20, targetValue: 1,  category: 'STATS'       },
-  { code: 'TOP_5_LEADERBOARD',  name: 'Top 5',          description: 'Atteins le top 5 du leaderboard.',                icon: 'TOP5',   iconKey: 'trophy',  points: 50, targetValue: 1,  category: 'COMPETITION' },
-  { code: 'TEAM_FOUNDER',       name: 'Team Founder',   description: "Crée ou rejoins une équipe.",                     icon: 'TEAM',   iconKey: 'team',    points: 30, targetValue: 1,  category: 'TEAM'        },
-  { code: 'SOCIAL_PLAYER',      name: 'Social Player',  description: 'Envoie 5 messages privés ou d\'équipe.',          icon: 'SOCIAL', iconKey: 'message', points: 25, targetValue: 5,  category: 'SOCIAL'      },
-  { code: 'FRIENDLY',           name: 'Friendly',       description: 'Ajoute 3 amis.',                                  icon: 'FRIEND', iconKey: 'friends', points: 15, targetValue: 3,  category: 'SOCIAL'      },
-  { code: 'CHATTER',            name: 'Chatter',        description: 'Envoie 10 messages.',                             icon: 'CHAT',   iconKey: 'chat',    points: 15, targetValue: 10, category: 'SOCIAL'      },
+  {
+    code: 'FIRST_LOGIN',
+    name: 'First Login',
+    description: 'Connecte-toi pour la première fois.',
+    icon: 'LOGIN',
+    iconKey: 'login',
+    points: 10,
+    targetValue: 1,
+    category: 'ACCOUNT',
+  },
+  {
+    code: 'FIRST_STATS_SYNC',
+    name: 'Stat Tracker',
+    description: 'Synchronise tes statistiques une première fois.',
+    icon: 'SYNC',
+    iconKey: 'stats',
+    points: 20,
+    targetValue: 1,
+    category: 'STATS',
+  },
+  {
+    code: 'TOP_5_LEADERBOARD',
+    name: 'Top 5',
+    description: 'Atteins le top 5 du leaderboard.',
+    icon: 'TOP5',
+    iconKey: 'trophy',
+    points: 50,
+    targetValue: 1,
+    category: 'COMPETITION',
+  },
+  {
+    code: 'TEAM_FOUNDER',
+    name: 'Team Founder',
+    description: 'Crée ou rejoins une équipe.',
+    icon: 'TEAM',
+    iconKey: 'team',
+    points: 30,
+    targetValue: 1,
+    category: 'TEAM',
+  },
+  {
+    code: 'SOCIAL_PLAYER',
+    name: 'Social Player',
+    description: "Envoie 5 messages privés ou d'équipe.",
+    icon: 'SOCIAL',
+    iconKey: 'message',
+    points: 25,
+    targetValue: 5,
+    category: 'SOCIAL',
+  },
+  {
+    code: 'FRIENDLY',
+    name: 'Friendly',
+    description: 'Ajoute 3 amis.',
+    icon: 'FRIEND',
+    iconKey: 'friends',
+    points: 15,
+    targetValue: 3,
+    category: 'SOCIAL',
+  },
+  {
+    code: 'CHATTER',
+    name: 'Chatter',
+    description: 'Envoie 10 messages.',
+    icon: 'CHAT',
+    iconKey: 'chat',
+    points: 15,
+    targetValue: 10,
+    category: 'SOCIAL',
+  },
 ]
 
 const userAchievementMap: Record<string, string[]> = {
-  DemoPlayer: ['FIRST_LOGIN', 'FIRST_STATS_SYNC', 'TOP_5_LEADERBOARD', 'TEAM_FOUNDER', 'SOCIAL_PLAYER', 'CHATTER'],
+  DemoPlayer: [
+    'FIRST_LOGIN',
+    'FIRST_STATS_SYNC',
+    'TOP_5_LEADERBOARD',
+    'TEAM_FOUNDER',
+    'SOCIAL_PLAYER',
+    'CHATTER',
+  ],
   FriendTester: ['FIRST_LOGIN', 'FRIENDLY'],
   SearchTester: ['FIRST_LOGIN'],
   ClutchMaster: ['FIRST_LOGIN', 'SOCIAL_PLAYER'],
@@ -143,12 +327,12 @@ function encryptSeedMessage(key: Buffer, content: string) {
 async function seed() {
   const encryptionKey = getSeedEncryptionKey()
   await dataSource.initialize()
-  const userRepo    = dataSource.getRepository(User)
-  const gameRepo    = dataSource.getRepository(Game)
-  const seasonRepo  = dataSource.getRepository(Season)
-  const statsRepo   = dataSource.getRepository(PlayerStats)
-  const teamRepo    = dataSource.getRepository(Team)
-  const memberRepo  = dataSource.getRepository(TeamMember)
+  const userRepo = dataSource.getRepository(User)
+  const gameRepo = dataSource.getRepository(Game)
+  const seasonRepo = dataSource.getRepository(Season)
+  const statsRepo = dataSource.getRepository(PlayerStats)
+  const teamRepo = dataSource.getRepository(Team)
+  const memberRepo = dataSource.getRepository(TeamMember)
   const messageRepo = dataSource.getRepository(ChatMessage)
   const conversationRepo = dataSource.getRepository(Conversation)
   const conversationParticipantRepo = dataSource.getRepository(ConversationParticipant)
@@ -163,7 +347,9 @@ async function seed() {
   for (const u of seedUsers) {
     let user = await userRepo.findOne({ where: { email: u.email } })
     if (!user) {
-      user = await userRepo.save(userRepo.create({ email: u.email, username: u.username, passwordHash }))
+      user = await userRepo.save(
+        userRepo.create({ email: u.email, username: u.username, passwordHash }),
+      )
       console.log(`Created user: ${u.username}`)
     } else {
       console.log(`Exists: ${u.username}`)
@@ -181,17 +367,20 @@ async function seed() {
     }
     if (g.slug === 'valorant-mock') valorant = game
   }
-  if (!valorant) valorant = await gameRepo.findOne({ where: { slug: 'valorant-mock' } }) as Game
+  if (!valorant) valorant = await gameRepo.findOne({ where: { slug: 'valorant-mock' } })
+  if (!valorant) throw new Error('Seed impossible : jeu "valorant-mock" introuvable')
 
   // Upsert active season
   let season = await seasonRepo.findOne({ where: { status: 'ACTIVE' } })
   if (!season) {
-    season = await seasonRepo.save(seasonRepo.create({
-      name: 'Saison 1 — 2026',
-      startDate: '2026-01-01',
-      endDate: null,
-      status: 'ACTIVE',
-    }))
+    season = await seasonRepo.save(
+      seasonRepo.create({
+        name: 'Saison 1 — 2026',
+        startDate: '2026-01-01',
+        endDate: null,
+        status: 'ACTIVE',
+      }),
+    )
     console.log('Created season: Saison 1 — 2026')
   }
 
@@ -219,13 +408,15 @@ async function seed() {
   let team = await teamRepo.findOne({ where: { inviteCode: DEMO_INVITE_CODE } })
   if (!team) {
     const captain = userMap['DemoPlayer']
-    team = await teamRepo.save(teamRepo.create({
-      name: 'Track Masters',
-      tag: 'TMS',
-      description: "L'équipe officielle de démonstration Track'N Share.",
-      ownerId: captain.id,
-      inviteCode: DEMO_INVITE_CODE,
-    }))
+    team = await teamRepo.save(
+      teamRepo.create({
+        name: 'Track Masters',
+        tag: 'TMS',
+        description: "L'équipe officielle de démonstration Track'N Share.",
+        ownerId: captain.id,
+        inviteCode: DEMO_INVITE_CODE,
+      }),
+    )
     console.log('Created team: Track Masters')
   } else {
     console.log('Exists: Track Masters')
@@ -233,10 +424,10 @@ async function seed() {
 
   // Upsert team members
   const teamMembersToAdd = [
-    { username: 'DemoPlayer',   role: 'CAPTAIN' },
-    { username: 'AceKiller',    role: 'MEMBER' },
-    { username: 'TitanFrag',    role: 'MEMBER' },
-    { username: 'GhostOp',      role: 'MEMBER' },
+    { username: 'DemoPlayer', role: 'CAPTAIN' },
+    { username: 'AceKiller', role: 'MEMBER' },
+    { username: 'TitanFrag', role: 'MEMBER' },
+    { username: 'GhostOp', role: 'MEMBER' },
     { username: 'ClutchMaster', role: 'MEMBER' },
   ]
 
@@ -245,7 +436,9 @@ async function seed() {
     if (!user) continue
     const existing = await memberRepo.findOne({ where: { teamId: team.id, userId: user.id } })
     if (!existing) {
-      await memberRepo.save(memberRepo.create({ teamId: team.id, userId: user.id, role: entry.role }))
+      await memberRepo.save(
+        memberRepo.create({ teamId: team.id, userId: user.id, role: entry.role }),
+      )
       console.log(`Added member: ${entry.username} (${entry.role})`)
     }
   }
@@ -273,12 +466,7 @@ async function seed() {
 
   const existingTeamMessages = await messageRepo
     .createQueryBuilder('message')
-    .addSelect([
-      'message.content',
-      'message.encryptedContent',
-      'message.iv',
-      'message.authTag',
-    ])
+    .addSelect(['message.content', 'message.encryptedContent', 'message.iv', 'message.authTag'])
     .where('message.teamId = :teamId', { teamId: team.id })
     .getMany()
 
@@ -310,10 +498,10 @@ async function seed() {
         .map((entry) => entry.conversation)
         .find(
           (conversation) =>
-            conversation.type === ConversationType.DIRECT
-            && conversation.participants.length === 2
-            && conversation.participants.some((p) => p.userId === demoUser.id)
-            && conversation.participants.some((p) => p.userId === clutchUser.id),
+            conversation.type === ConversationType.DIRECT &&
+            conversation.participants.length === 2 &&
+            conversation.participants.some((p) => p.userId === demoUser.id) &&
+            conversation.participants.some((p) => p.userId === clutchUser.id),
         ) ?? null
 
     if (!directConversation) {
@@ -363,12 +551,7 @@ async function seed() {
 
     const existingPrivateMessages = await privateMessageRepo
       .createQueryBuilder('message')
-      .addSelect([
-        'message.content',
-        'message.encryptedContent',
-        'message.iv',
-        'message.authTag',
-      ])
+      .addSelect(['message.content', 'message.encryptedContent', 'message.iv', 'message.authTag'])
       .where('message.conversationId = :conversationId', {
         conversationId: directConversation.id,
       })

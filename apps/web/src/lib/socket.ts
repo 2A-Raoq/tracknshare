@@ -8,11 +8,3 @@ export function createAuthenticatedSocket(token: string): Socket {
     autoConnect: true,
   })
 }
-
-export function createTeamSocket(token: string): Socket {
-  return createAuthenticatedSocket(token)
-}
-
-export function createPrivateSocket(token: string): Socket {
-  return createAuthenticatedSocket(token)
-}

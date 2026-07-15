@@ -11,6 +11,8 @@ export const colors = {
   accent: '#43B581',
   danger: '#F04747',
   warning: '#FAA61A',
+  /** Couleur des ombres portées (iOS shadowColor). */
+  shadow: '#000000',
 }
 
 export const spacing = {

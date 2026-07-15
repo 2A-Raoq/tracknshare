@@ -25,26 +25,28 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<PublicPlayerProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [friendStateLoading, setFriendStateLoading] = useState(false)
-  const [friends, setFriends] = useState<FriendUser[]>([])
-  const [requests, setRequests] = useState<FriendRequestsData>({ incoming: [], outgoing: [] })
+  const [friendData, setFriendData] = useState<{
+    friends: FriendUser[]
+    requests: FriendRequestsData
+  } | null>(null)
   const [friendActionLoading, setFriendActionLoading] = useState(false)
   const [friendActionError, setFriendActionError] = useState('')
   const [friendActionSuccess, setFriendActionSuccess] = useState('')
   const [startingConversation, setStartingConversation] = useState(false)
   const [messageError, setMessageError] = useState('')
 
+  const pageError = username ? error : 'Pseudo joueur manquant.'
+  const isLoading = Boolean(username) && loading
+  const needsFriendState = Boolean(user && profile && user.id !== profile.id)
+  const friends = needsFriendState && friendData ? friendData.friends : []
+  const requests: FriendRequestsData =
+    needsFriendState && friendData ? friendData.requests : { incoming: [], outgoing: [] }
+  const friendStateLoading = needsFriendState && friendData === null
+
   useEffect(() => {
     if (!username) {
-      setError('Pseudo joueur manquant.')
-      setLoading(false)
       return
     }
-
-    setLoading(true)
-    setError('')
-    setMessageError('')
-    setFriendActionSuccess('')
 
     playersApi
       .getPublicProfile(username)
@@ -62,30 +64,18 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     if (!user || !profile || user.id === profile.id) {
-      setFriends([])
-      setRequests({ incoming: [], outgoing: [] })
-      setFriendStateLoading(false)
       return
     }
 
-    setFriendStateLoading(true)
-    setFriendActionError('')
-
-    Promise.all([friendsApi.getFriends(), friendsApi.getRequests()])
+    Promise.all([friendsApi.getFriends(), friendsApi.getFriendRequests()])
       .then(([friendsData, requestsData]) => {
-        setFriends(friendsData)
-        setRequests(requestsData)
+        setFriendData({ friends: friendsData, requests: requestsData })
       })
       .catch(() => {
+        setFriendData({ friends: [], requests: { incoming: [], outgoing: [] } })
         setFriendActionError("Impossible de charger l'état d'amitié pour ce profil.")
       })
-      .finally(() => setFriendStateLoading(false))
   }, [user, profile])
-
-  useEffect(() => {
-    setFriendActionError('')
-    setFriendActionSuccess('')
-  }, [profile?.id, user?.id])
 
   async function refreshFriendState() {
     if (!user || !profile || user.id === profile.id) {
@@ -97,8 +87,7 @@ export default function PublicProfilePage() {
       friendsApi.getFriendRequests(),
     ])
 
-    setFriends(friendsData)
-    setRequests(requestsData)
+    setFriendData({ friends: friendsData, requests: requestsData })
   }
 
   async function runFriendAction(
@@ -280,14 +269,14 @@ export default function PublicProfilePage() {
           </div>
         </section>
 
-        {loading && <p className="status-message">Chargement du profil joueur...</p>}
-        {error && <p className="status-message error">{error}</p>}
+        {isLoading && <p className="status-message">Chargement du profil joueur...</p>}
+        {pageError && <p className="status-message error">{pageError}</p>}
 
-        {!loading && !error && !profile && (
+        {!isLoading && !pageError && !profile && (
           <div className="empty-box">Aucun profil joueur à afficher.</div>
         )}
 
-        {profile && !loading && !error && (
+        {profile && !isLoading && !pageError && (
           <>
             <section className="split-grid">
               <article className="panel">

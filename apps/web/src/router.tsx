@@ -39,7 +39,7 @@ export default function AppRouter() {
         <LeaderboardPage />
       </Route>
       <Route path="/players/:username">
-        <PublicProfilePage />
+        {(params) => <PublicProfilePage key={params.username} />}
       </Route>
       <Route path="/teams">
         <ProtectedRoute>

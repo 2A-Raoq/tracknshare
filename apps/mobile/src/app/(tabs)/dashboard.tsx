@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useFocusEffect } from 'expo-router'
 import { useSnapshot } from 'valtio'
-import { Card, Muted, Title } from '@/components/ui'
+import { Card, ErrorState, Muted, Title } from '@/components/ui'
 import { statsApi } from '@/services/stats.api'
 import { authStore } from '@/store/auth'
 import type { PlayerStat } from '@/types'
@@ -13,21 +13,31 @@ export default function DashboardScreen() {
   const [stats, setStats] = useState<PlayerStat[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
-      setStats(await statsApi.mine())
+      const data = await statsApi.mine()
+      if (!isActive()) return
+      setStats(data)
+      setError(false)
     } catch {
-      setStats([])
+      if (isActive()) setError(true)
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      if (isActive()) {
+        setLoading(false)
+        setRefreshing(false)
+      }
     }
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      load()
+      let active = true
+      load(() => active)
+      return () => {
+        active = false
+      }
     }, [load]),
   )
 
@@ -54,7 +64,16 @@ export default function DashboardScreen() {
       </View>
 
       {loading && <Muted>Chargement des statistiques…</Muted>}
-      {!loading && stats.length === 0 && (
+      {!loading && error && (
+        <ErrorState
+          message="Impossible de charger les statistiques."
+          onRetry={() => {
+            setLoading(true)
+            load()
+          }}
+        />
+      )}
+      {!loading && !error && stats.length === 0 && (
         <Card>
           <Muted>Aucune statistique pour le moment.</Muted>
         </Card>
@@ -62,7 +81,7 @@ export default function DashboardScreen() {
 
       {stats.map((s) => (
         <Card key={s.id}>
-          <Text style={styles.gameName}>{s.gameName ?? 'Jeu'}</Text>
+          <Text style={styles.gameName}>{s.game?.name ?? 'Jeu'}</Text>
           <View style={styles.statsRow}>
             <Stat label="Score" value={s.score} highlight />
             <Stat label="K/D" value={s.kdRatio} />

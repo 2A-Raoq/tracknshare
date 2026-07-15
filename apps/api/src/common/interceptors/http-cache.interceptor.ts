@@ -19,8 +19,9 @@ export class HttpCacheInterceptor implements NestInterceptor {
     if (cached !== null) return of(cached)
 
     return next.handle().pipe(
-      tap(async (response) => {
-        await this.redis.set(cacheKey, response, HTTP_CACHE_TTL)
+      tap((response) => {
+        // Fire-and-forget: a cache write failure must not break the response
+        void this.redis.set(cacheKey, response, HTTP_CACHE_TTL)
       }),
     )
   }

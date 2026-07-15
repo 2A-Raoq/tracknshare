@@ -61,19 +61,15 @@ export class SteamStatsProvider implements IStatsProvider {
     const playtimeForever = Math.max(0, request.playtimeForever ?? 0)
     const playtime2Weeks = request.playtime2Weeks ?? 0
     const seed = this.hashSeed(`${request.userId}:${externalGameId}:${playtimeForever}`)
-    const matchesPlayed = playtimeForever > 0
-      ? Math.max(1, Math.min(600, Math.round(playtimeForever / (28 + (seed % 18)))))
-      : 0
-    const wins = matchesPlayed > 0
-      ? Math.round(matchesPlayed * (0.41 + ((seed % 19) / 100)))
-      : 0
+    const matchesPlayed =
+      playtimeForever > 0
+        ? Math.max(1, Math.min(600, Math.round(playtimeForever / (28 + (seed % 18)))))
+        : 0
+    const wins = matchesPlayed > 0 ? Math.round(matchesPlayed * (0.41 + (seed % 19) / 100)) : 0
     const losses = Math.max(0, matchesPlayed - wins)
-    const deaths = matchesPlayed > 0
-      ? Math.max(1, Math.round(matchesPlayed * (6.2 + ((seed % 11) / 10))))
-      : 0
-    const kills = deaths > 0
-      ? Math.max(deaths, Math.round(deaths * (1.02 + ((seed % 83) / 100))))
-      : 0
+    const deaths =
+      matchesPlayed > 0 ? Math.max(1, Math.round(matchesPlayed * (6.2 + (seed % 11) / 10))) : 0
+    const kills = deaths > 0 ? Math.max(deaths, Math.round(deaths * (1.02 + (seed % 83) / 100))) : 0
     const recentBoost = playtime2Weeks > 0 ? Math.min(24, Math.round(playtime2Weeks / 90)) : 0
 
     return {
@@ -95,12 +91,9 @@ export class SteamStatsProvider implements IStatsProvider {
 
     const response = await this.request<{
       response?: { players?: SteamPlayerSummary[] }
-    }>(
-      'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/',
-      {
-        steamids: steamId,
-      },
-    )
+    }>('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/', {
+      steamids: steamId,
+    })
 
     const player = response.response?.players?.[0]
     if (!player) {
@@ -144,15 +137,12 @@ export class SteamStatsProvider implements IStatsProvider {
   private async getOwnedGames(steamId: string): Promise<SteamOwnedGame[]> {
     const response = await this.request<{
       response?: { games?: SteamOwnedGame[] }
-    }>(
-      'https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/',
-      {
-        steamid: steamId,
-        include_appinfo: '1',
-        include_played_free_games: '1',
-        format: 'json',
-      },
-    )
+    }>('https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/', {
+      steamid: steamId,
+      include_appinfo: '1',
+      include_played_free_games: '1',
+      format: 'json',
+    })
 
     return response.response?.games ?? []
   }
@@ -160,7 +150,7 @@ export class SteamStatsProvider implements IStatsProvider {
   private hashSeed(input: string): number {
     let hash = 0
     for (let index = 0; index < input.length; index += 1) {
-      hash = ((hash << 5) - hash) + input.charCodeAt(index)
+      hash = (hash << 5) - hash + input.charCodeAt(index)
       hash |= 0
     }
 
@@ -192,7 +182,7 @@ export class SteamStatsProvider implements IStatsProvider {
     }
 
     try {
-      return await response.json() as T
+      return (await response.json()) as T
     } catch {
       throw new ServiceUnavailableException('STEAM_API_INVALID_RESPONSE')
     }
